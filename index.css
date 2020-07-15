@@ -1,0 +1,96 @@
+.classSearchSection{
+  margin-bottom: 15px;
+}
+.classSearch{
+    width: 94%;
+    float: left;
+}
+.classSearchButton{
+    width: 6%;
+    float: left;
+}
+.classOptions{
+  width: 31%;
+  margin: 1%;
+  float: left;
+  text-align: center;
+}
+.property-search{
+    width: 48%;
+    float: left;
+}
+
+.add-filter{
+    width: 4%;
+    float: left;
+}
+
+.chip {
+  display: inline-block;
+  padding: 0 10px;
+  height: 25px;
+  font-size: 12px;
+  line-height: 25px;
+  border-radius: 12px;
+  background-color: #f1f1f1;
+}
+
+.closebtn {
+  padding-left: 10px;
+  color: #888;
+  font-weight: bold;
+  float: right;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.closebtn:hover {
+  color: #000;
+}
+.modal {
+    display:    none;
+    position:   fixed;
+    z-index:    1000;
+    top:        0;
+    left:       0;
+    height:     100%;
+    width:      100%;
+    background: rgba( 255, 255, 255, .8 ) 
+                url('http://i.stack.imgur.com/FhHRx.gif') 
+                50% 50% 
+                no-repeat;
+}
+
+/* When the body has the loading class, we turn
+   the scrollbar off with overflow:hidden */
+body.loading .modal {
+    overflow: hidden;   
+}
+
+/* Anytime the body has the loading class, our
+   modal element will be visible */
+body.loading .modal {
+    display: block;
+}
+#dataTable {
+  font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#dataTable td, #dataTable th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+#dataTable tr:nth-child(even){background-color: #f2f2f2;}
+
+#dataTable tr:hover {background-color: #ddd;}
+
+#dataTable th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: #4CAF50;
+  color: white;
+}
