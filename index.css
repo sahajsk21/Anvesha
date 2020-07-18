@@ -1,6 +1,10 @@
 .classSearchSection{
   margin-bottom: 15px;
 }
+.header{
+  font-size: 1.2em;
+  margin-bottom: 20px;
+}
 .classSearch{
     width: 94%;
     float: left;
@@ -10,10 +14,10 @@
     float: left;
 }
 .classOptions{
-  width: 31%;
-  margin: 1%;
+  width: 100%;
+  margin-top: 1%;
   float: left;
-  text-align: center;
+  /* text-align: center; */
 }
 .property-search{
     width: 48%;

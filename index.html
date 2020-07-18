@@ -7,6 +7,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
 
 </head>
 
@@ -22,29 +23,23 @@
         </div>
     </nav>
     <div class="container" id="app">
-        <div class="classSearchSection">
-            <label for="" style="width: 100%;">Class</label>
-            <input v-model="classLabel" class="classSearch" type="text">
-            <button v-on:click="viewItems" class="classSearchButton">Search</button>
-        </div>
-        <div id="classOptionsSection">
-            <a class="classOptions" v-on:click="addFilters">Add Filters</a>
-            <a class="classOptions" v-on:click="">More general class</a>
-            <a class="classOptions" v-on:click="">More specific class</a>
-        </div>
-        <div id="displaySection">
-            <ul id="filtersList">
-                <display-item v-for="filter in filters" v-bind:key="filter.id" v-bind:code="filter.code" v-bind:value="filter.value"></display-item>
-            </ul>
-            <ul id="filterValuesList">
-                <display-item v-for="filter in selectedFilters" v-bind:key="filter.id" v-bind:code="filter.code"
-                    v-bind:value="filter.value"></display-item>
-            </ul>
-        </div>
-        <div class="modal" id='loader' style='display: none;'>
-        </div>
+        <class-filter @change-page="updatePage" v-show="page == 'class-filter'" :class-label="classLabel" :filters="filters"></class-filter>
+        <view-all-items @change-page="updatePage" v-show="page =='view-all-items'" :class-label="classLabel" :filters="filters"></view-all-items>
+        <filters-view @change-page="updatePage" v-show="page =='filters-view'" :class-label="classLabel" :filters="filters"></filters-view>
+        
+        
+        <div class="modal" id='loader' style='display: none;'></div>
     </div>
     <script src="index.js"></script>
 </body>
 
 </html>
+<!-- <div id="displaySection">
+    <ul id="filtersList">
+        <display-item v-for="filter in filters" v-bind:key="filter.id" v-bind:code="filter.code" v-bind:value="filter.value"></display-item>
+    </ul>
+    <ul id="filterValuesList">
+        <display-item v-for="filter in selectedFilters" v-bind:key="filter.id" v-bind:code="filter.code"
+            v-bind:value="filter.value"></display-item>
+    </ul>
+</div> -->
