@@ -7,8 +7,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-    <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.2/axios.min.js"></script>
 </head>
 
 <body>
@@ -23,23 +22,61 @@
         </div>
     </nav>
     <div class="container" id="app">
-        <class-filter @change-page="updatePage" v-show="page == 'class-filter'" :class-label="classLabel" :filters="filters"></class-filter>
-        <view-all-items @change-page="updatePage" v-show="page =='view-all-items'" :class-label="classLabel" :filters="filters"></view-all-items>
-        <filters-view @change-page="updatePage" v-show="page =='filters-view'" :class-label="classLabel" :filters="filters"></filters-view>
+
+        <class-filter
+            @change-page="updatePage"
+            @class-label="updateClassValue"
+            @remove-filter="removeFilter"
+            v-if="page == 'class-filter'"
+            :class-value="classValue"
+            :class-label="classLabel"
+            :applied-filters="appliedFilters">
+        </class-filter>
+
+        <view-all-items
+            @change-page="updatePage"
+            v-if="page =='view-all-items'"
+            :class-label="classLabel"
+            :applied-filters="appliedFilters">
+        </view-all-items>
+
+        <filters-view 
+            @change-page="updatePage"
+            @update-filter="updateFilter"
+            v-if="page =='filters-view'"
+            :class-label="classLabel"
+            :applied-filters="appliedFilters">
+        </filters-view>
+
+        <filter-values 
+            @change-page="updatePage"
+            @apply-filter="applyFilter" 
+            v-if="page =='filter-values'" 
+            :class-label="classLabel"
+            :current-Filter="currentFilter"
+            :applied-filters="appliedFilters">
+        </filter-values>
+
+        <subclass-view
+            @change-page="updatePage"
+            @update-class="updateClass"
+            v-if="page =='subclass-view'" 
+            :class-label="classLabel"
+            :current-Filter="currentFilter" 
+            :applied-filters="appliedFilters">
+        </subclass-view>
+
+        <superclass-view
+            @change-page="updatePage"
+            @update-class="updateClass"
+            v-if="page =='superclass-view'" 
+            :class-label="classLabel"
+            :current-Filter="currentFilter" 
+            :applied-filters="appliedFilters">
+        </superclass-view>
         
-        
-        <div class="modal" id='loader' style='display: none;'></div>
     </div>
     <script src="index.js"></script>
 </body>
 
 </html>
-<!-- <div id="displaySection">
-    <ul id="filtersList">
-        <display-item v-for="filter in filters" v-bind:key="filter.id" v-bind:code="filter.code" v-bind:value="filter.value"></display-item>
-    </ul>
-    <ul id="filterValuesList">
-        <display-item v-for="filter in selectedFilters" v-bind:key="filter.id" v-bind:code="filter.code"
-            v-bind:value="filter.value"></display-item>
-    </ul>
-</div> -->
