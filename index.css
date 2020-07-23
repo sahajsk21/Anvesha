@@ -1,3 +1,6 @@
+a{
+  cursor: pointer;
+}
 .classSearchSection{
   margin-bottom: 15px;
 }
@@ -5,16 +8,12 @@
   margin-bottom: 20px;
 }
 .classSearch{
-    width: 94%;
-    float: left;
-}
-.classSearchButton{
-    width: 6%;
+    width: 100%;
     float: left;
 }
 .classOptions{
   width: 100%;
-  margin-top: 1%;
+  margin-bottom:5px;
   float: left;
   /* text-align: center; */
 }

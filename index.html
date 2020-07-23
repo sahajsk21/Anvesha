@@ -26,7 +26,6 @@
         <class-filter
             @change-page="updatePage"
             @class-label="updateClassValue"
-            @remove-filter="removeFilter"
             v-if="page == 'class-filter'"
             :class-value="classValue"
             :class-label="classLabel"
@@ -35,8 +34,11 @@
 
         <view-all-items
             @change-page="updatePage"
+            @remove-filter="removeFilter"
             v-if="page =='view-all-items'"
+            :total-values="totalValues"
             :class-label="classLabel"
+            :key="componentKey"
             :applied-filters="appliedFilters">
         </view-all-items>
 
@@ -44,6 +46,7 @@
             @change-page="updatePage"
             @update-filter="updateFilter"
             v-if="page =='filters-view'"
+            :total-values="totalValues"
             :class-label="classLabel"
             :applied-filters="appliedFilters">
         </filters-view>
@@ -52,6 +55,7 @@
             @change-page="updatePage"
             @apply-filter="applyFilter" 
             v-if="page =='filter-values'" 
+            :total-values="totalValues"
             :class-label="classLabel"
             :current-Filter="currentFilter"
             :applied-filters="appliedFilters">
