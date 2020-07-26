@@ -1,6 +1,8 @@
+var queryString = window.location.search;
+var urlParams = new URLSearchParams(queryString);
 Vue.config.devtools = true;
 classfilter = Vue.component('class-filter', {
-    props:['classValue','appliedFilters','classLabel'],
+    props: ['classValue', 'classLabel'],
     template: `
     <div>
         <div class="classSearchSection">
@@ -9,52 +11,50 @@ classfilter = Vue.component('class-filter', {
         </div>
         <a @click="submit">Browse this class</a>
     </div>`,
-    data(){
+    data() {
         return {
             localClassValue: this.classValue,
-            localClassLabel:this.classLabel
+            localClassLabel: this.classLabel
         }
     },
     methods: {
         changePage(page) {
             this.$emit('change-page', page)
         },
-        submit(){
-            this.$emit("class-label", this.localClassValue, this.localClassLabel);
-            // this.classValue = "";
+        submit() {
+            this.$emit("class-label", this.localClassValue);
             this.changePage('view-all-items')
         },
-        
+
     }
 })
 
 viewallitems = Vue.component('view-all-items', {
-    props: ['classLabel', 'appliedFilters','totalValues'],
-    data(){
+    props: ['classValue','classLabel', 'appliedFilters', 'totalValues'],
+    data() {
         return {
-            items:[],
-            filtersCount:-1,
-            itemsCount:''
+            items: [],
+            filtersCount: -1,
+            itemsCount: ''
         }
     },
     template: `
     <div>
-    <a @click="changePage('class-filter')">back</a>
         <div class="header">
             <p><b>Class</b>: {{ classLabel }} </p>
-            <p v-for="filter in appliedFilters"><b>{{filter.filterValueLabel}}</b>: {{ filter.valueLabel }} (<a @click="removeFilter(filter.value)">X</a>)</p>
+            <p v-for="filter in appliedFilters"><b>{{filter.filterValue}}</b>: {{ filter.value }} (<a @click="removeFilter(filter.value)">X</a>)</p>
         </div>
         <div class="content" id="viewallitems">
             <div class="classOptionsSection">
                 <p v-if="filtersCount==-1"></p>
                 <p v-else-if="filtersCount==0">No filters are defined for this class.</p>
-                <p v-else><a class="classOptions" @click="changePage('filters-view', itemsCount)">Add a filter</a></p>
-                <a class="classOptions" @click="changePage('superclass-view', itemsCount)">More general class</a>
-                <a class="classOptions" @click="changePage('subclass-view', itemsCount)">More specific class</a>
-                <a class="classOptions" @click="changePage('class-filter', itemsCount)" style="margin-bottom:20px">Change to a new class</a>
+                <p v-else><a class="classOptions" @click="changePage('filters-view')">Add a filter</a></p>
+                <a class="classOptions" @click="changePage('superclass-view')">More general class</a>
+                <a class="classOptions" @click="changePage('subclass-view')">More specific class</a>
+                <a class="classOptions" @click="changePage('class-new-filter')" style="margin-bottom:20px">Change to a new class</a>
             </div>
             <img v-if="!items.length" src='loading.gif'>
-            <p v-else-if="items[0].value=='Empty'">No data</p>
+            <p v-else-if="items[0].value=='Empty'">No items match this description.</p>
             <div v-else>
                 <p>There are <b>{{ itemsCount }}</b> items that match this description.</p>
                     <ul>
@@ -66,33 +66,33 @@ viewallitems = Vue.component('view-all-items', {
         </div>
     </div>`,
     methods: {
-        changePage(page, totalValues) {
-            this.$emit('change-page', page, totalValues)
+        changePage(page) {
+            this.$emit('change-page', page)
         },
         removeFilter(value) {
             this.$emit("remove-filter", value);
         }
     },
-    created(){
-        var filterQuery = "SELECT (COUNT(?value) AS ?c) WHERE {\n" +
-            "  wd:"+ app.classValue +" wdt:P1963 ?value;\n" +
+    mounted() {
+        var filterQuery = "SELECT (COUNT(?value) AS ?count) WHERE {\n" +
+            "  wd:" + this.classValue + " wdt:P1963 ?value;\n" +
             "}\n" +
             "LIMIT 20";
         const filterUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(filterQuery);
         axios.get(filterUrl)
-            .then(response => this.filtersCount = response.data['results']['bindings'][0].c.value)
+            .then(response => this.filtersCount = response.data['results']['bindings'][0].count.value)
             .catch(error => {
                 this.items.push({ value: "Error" })
             })
-        
-        var filterString="";
-        for (let i = 0; i < app.appliedFilters.length; i++) {
-            filterString += "wdt:" + app.appliedFilters[i].filterValue + " wd:" + app.appliedFilters[i].value +";\n";
+
+        var filterString = "";
+        for (let i = 0; i < this.appliedFilters.length; i++) {
+            filterString += "wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ";\n";
         }
 
         var countQuery = "SELECT (COUNT(?value) AS ?c) WHERE {\n" +
-            "  ?value wdt:P31 wd:"+app.classValue+";\n" +
-            filterString+
+            "  ?value wdt:P31 wd:" + this.classValue + ";\n" +
+            filterString +
             "}";
         const countUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(countQuery);
         axios.get(countUrl)
@@ -102,8 +102,8 @@ viewallitems = Vue.component('view-all-items', {
             })
 
         var sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
-            "  ?value wdt:P31 wd:"+app.classValue+";\n" +
-                filterString +
+            "  ?value wdt:P31 wd:" + this.classValue + ";\n" +
+            filterString +
             "         rdfs:label ?valueLabel;\n" +
             "  \n" +
             "  FILTER((LANG(?valueLabel)) = \"en\")\n" +
@@ -111,32 +111,31 @@ viewallitems = Vue.component('view-all-items', {
             "LIMIT 20";
         const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
         axios.get(fullUrl)
-            .then(response => (response.data['results']['bindings'].length ? this.items = [...response.data['results']['bindings']] : this.items.push({value:"Empty",valueLabel:"No data"})))
+            .then(response => (response.data['results']['bindings'].length ? this.items = [...response.data['results']['bindings']] : this.items.push({ value: "Empty", valueLabel: "No data" })))
             .catch(error => {
                 this.items.push({ value: "Error" })
             })
-        }
+    }
 })
 
 filtersview = Vue.component('filters-view', {
-    props: ['classLabel','appliedFilters','totalValues'],
+    props: ['classValue','classLabel', 'appliedFilters', 'totalValues'],
     data() {
         return { filters: [] }
     },
     template: `
     <div>
-        <a @click="changePage('view-all-items')">back</a>
         <div class="header">
             <p><b>Class</b>: {{ classLabel }} </p>
             <p><b>Current Filters</b>:</p>
             <p v-if="!appliedFilters.length">   No filters</p>
             <ul>
-                <li v-for="filter in appliedFilters"><b>{{filter.filterValueLabel}}</b>: {{filter.valueLabel}}</li>
+                <li v-for="filter in appliedFilters"><b>{{filter.filterValue}}</b>: {{filter.value}}</li>
             </ul>
         </div>
         <div class="content">
             <img v-if="!filters.length" src='loading.gif'>
-            <p v-else-if="filters[0].value=='Empty'">No data</p>
+            <p v-else-if="filters[0].value=='Empty'">No filters available</p>
             <div v-else>
                 <p>There are <b>{{ totalValues }}</b> items that match this description.</p>
                 <p><b>Add a filter:</b></p> 
@@ -152,13 +151,13 @@ filtersview = Vue.component('filters-view', {
         changePage(page) {
             this.$emit('change-page', page)
         },
-        showFilter(filter){
+        showFilter(filter) {
             this.$emit('update-filter', filter)
         }
     },
     mounted() {
         var sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
-            "  wd:"+app.classValue+" wdt:P1963 ?value.\n" +
+            "  wd:" + this.classValue + " wdt:P1963 ?value.\n" +
             "  ?value rdfs:label ?valueLabel.\n" +
             "  FILTER((LANG(?valueLabel)) = \"en\")\n" +
             "}";
@@ -168,28 +167,27 @@ filtersview = Vue.component('filters-view', {
             .catch(error => {
                 this.items.push({ value: "Error" })
             })
-        }
+    }
 })
 
-filtervalues = Vue.component('filter-values',{
-    props: ['classLabel', 'currentFilter', 'appliedFilters','totalValues'],
+filtervalues = Vue.component('filter-values', {
+    props: ['classValue','classLabel', 'currentFilter', 'appliedFilters', 'totalValues'],
     data() {
         return { items: [] }
     },
-    template:`
+    template: `
     <div>
-        <a @click="changePage('filters-view')">back</a>
         <div class="header">
             <p><b>Class</b>: {{ classLabel }} </p>
             <p><b>Current Filters</b>:</p>
             <p v-if="!appliedFilters.length">No filters</p>
             <ul>
-                <li v-for="filter in appliedFilters"><b>{{filter.filterValueLabel}}</b>: {{filter.valueLabel}}</li>
+                <li v-for="filter in appliedFilters"><b>{{filter.filterValue}}</b>: {{filter.value}}</li>
             </ul>
         </div>
         <div class="content">
             <img v-if="!items.length" src='loading.gif'>
-                <p v-else-if="items[0].value=='Empty'">No data</p>
+                <p v-else-if="items[0].value=='Empty'">There are no values for the filter <b>{{ currentFilter.valueLabel }}</b>.</p>
                 <p v-else-if="items[0].value=='Error'">The attempt to display a list of items took too long; please consider adding more filters.</p>
                 <div v-else>
                     <p>There are <b>{{ totalValues }}</b> items that match this description.</p>
@@ -206,19 +204,19 @@ filtervalues = Vue.component('filter-values',{
         changePage(page) {
             this.$emit('change-page', page)
         },
-        applyFilter(filter){
+        applyFilter(filter) {
             this.$emit('apply-filter', filter)
         }
     },
     mounted() {
         var filterString = "";
-        for (let i = 0; i < app.appliedFilters.length; i++) {
-            filterString += "wdt:" + app.appliedFilters[i].filterValue + " wd:" + app.appliedFilters[i].value + ";\n";
+        for (let i = 0; i < this.appliedFilters.length; i++) {
+            filterString += "wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ";\n";
         }
         var sparqlQuery = "SELECT ?value ?valueLabel (COUNT(?value) AS ?count) WHERE {\n" +
-            "  ?v wdt:P31 wd:"+app.classValue+";\n" +
-                filterString+
-            "     wdt:"+app.currentFilter.value+" ?value.\n" +
+            "  ?v wdt:P31 wd:" + this.classValue + ";\n" +
+            filterString +
+            "     wdt:" + this.currentFilter.value + " ?value.\n" +
             "  ?value rdfs:label ?valueLabel\n" +
             "  FILTER(LANG(?valueLabel) = 'en').\n" +
             "}\n" +
@@ -226,92 +224,37 @@ filtervalues = Vue.component('filter-values',{
             "ORDER BY DESC(?count)";
         const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
         axios.get(fullUrl)
-            .then(response => (response.data['results']['bindings'].length ? this.items = [...response.data['results']['bindings']] : this.items.push({ value: "Empty"})))
+            .then(response => (response.data['results']['bindings'].length ? this.items = [...response.data['results']['bindings']] : this.items.push({ value: "Empty" })))
             .catch(error => {
-                this.items.push({ value: "Error"})
+                this.items.push({ value: "Error" })
             })
     }
 })
 
-subclass = Vue.component('subclass-view',{
-    props: ['classLabel', 'appliedFilters'],
+subclass = Vue.component('subclass-view', {
+    props: ['classValue','classLabel', 'appliedFilters'],
     data() {
         return { items: [] }
     },
-    template:`
+    template: `
     <div>
-        <a @click="changePage('view-all-items')">back</a>
         <div class="header">
             <p><b>Class</b>: {{ classLabel }} </p>
             <p><b>Current Filters</b>:</p>
             <p v-if="!appliedFilters.length">No filters</p>
             <ul>
-                <li v-for="filter in appliedFilters"><b>{{filter.filterValueLabel}}</b>: {{filter.valueLabel}}</li>
+                <li v-for="filter in appliedFilters"><b>{{filter.filterValue}}</b>: {{filter.value}}</li>
             </ul>
         </div>
         <p><i>(Note: if you change the class, you will lose the current set of filters.)</i></p>
         <p><b>Change from "{{ classLabel }}" to a more specific class:</b><p>
         <div class="content">
             <img v-if="!items.length" src='loading.gif'>
-            <p v-else-if="items[0].value=='Empty'">No data</p>
+            <p v-else-if="items[0].value=='Empty'">No items match this description.</p>
             <div v-else>
                 <ul>
                     <li v-for="item in items">
-                        <a @click="updateClass(item)">{{item.valueLabel.value}}</a>
-                    </li>
-                </ul>
-            </div>
-        </div>  
-    </div>
-    `,
-    methods: {
-        changePage(page) {
-            this.$emit('change-page', page)
-        },
-        updateClass(item){
-             this.$emit('update-class', item)
-        }
-    },
-    mounted() {
-        var sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
-            "  ?value wdt:P279 wd:"+app.classValue+";\n" +
-            "         rdfs:label ?valueLabel;\n" +
-            "  FILTER((LANG(?valueLabel)) = \"en\")\n" +
-            "}";
-        const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
-        axios.get(fullUrl)
-            .then(response => (response.data['results']['bindings'].length ? this.items = [...response.data['results']['bindings']] : this.items.push({ value: "Empty", valueLabel: "No data" })))
-            .catch(error => {
-                this.items.push({ value: "Error" })
-            })
-        }
-})
-
-superclass = Vue.component('superclass-view', {
-    props: ['classLabel', 'appliedFilters'],
-    data() {
-        return { items: [] }
-    },
-    template: `
-    <div>
-        <a @click="changePage('view-all-items')">back</a>
-        <div class="header">
-            <p><b>Class</b>: {{ classLabel }} </p>
-            <p><b>Current Filters</b>:</p>
-            <p v-if="!appliedFilters.length">No filters</p>
-            <ul>
-                <li v-for="filter in appliedFilters"><b>{{filter.filterValueLabel}}</b>: {{filter.valueLabel}}</li>
-            </ul>
-        </div>
-        <p><i>(Note: if you change the class, you will lose the current set of filters.)</i></p>
-        <p><b>Change from "{{ classLabel }}" to a more general class:</b><p>
-        <div class="content">
-            <img v-if="!items.length" src='loading.gif'>
-            <p v-else-if="items[0].value=='Empty'">No data</p>
-            <div v-else>
-                <ul>
-                    <li v-for="item in items">
-                        <a @click="updateClass(item)">{{item.valueLabel.value}}</a>
+                        <a @click="updateClass(item)">{{item.valueLabel.value}}</a> ({{item.count.value}} results)
                     </li>
                 </ul>
             </div>
@@ -327,12 +270,70 @@ superclass = Vue.component('superclass-view', {
         }
     },
     mounted() {
-        var sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
-            "  wd:"+app.classValue+" wdt:P279 ?value.\n" +
+        var sparqlQuery = "SELECT ?value ?valueLabel (COUNT(?value) AS ?count) WHERE {\n" +
+            "  ?v wdt:P31 ?value.\n" +
+            "  ?value wdt:P279 wd:"+this.classValue+".\n" +
             "  ?value rdfs:label ?valueLabel.\n" +
             "  \n" +
             "  FILTER((LANG(?valueLabel)) = \"en\")\n" +
-            "}";
+            "}\n" +
+            "GROUP BY ?value ?valueLabel";
+        const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
+        axios.get(fullUrl)
+            .then(response => (response.data['results']['bindings'].length ? this.items = [...response.data['results']['bindings']] : this.items.push({ value: "Empty", valueLabel: "No data" })))
+            .catch(error => {
+                this.items.push({ value: "Error" })
+            })
+    }
+})
+
+superclass = Vue.component('superclass-view', {
+    props: ['classValue','classLabel', 'appliedFilters'],
+    data() {
+        return { items: [] }
+    },
+    template: `
+    <div>
+        <div class="header">
+            <p><b>Class</b>: {{ classLabel }} </p>
+            <p><b>Current Filters</b>:</p>
+            <p v-if="!appliedFilters.length">No filters</p>
+            <ul>
+                <li v-for="filter in appliedFilters"><b>{{filter.filterValue}}</b>: {{filter.value}}</li>
+            </ul>
+        </div>
+        <p><i>(Note: if you change the class, you will lose the current set of filters.)</i></p>
+        <p><b>Change from "{{ classLabel }}" to a more general class:</b><p>
+        <div class="content">
+            <img v-if="!items.length" src='loading.gif'>
+            <p v-else-if="items[0].value=='Empty'">No items match this description.</p>
+            <div v-else>
+                <ul>
+                    <li v-for="item in items">
+                        <a @click="updateClass(item)">{{item.valueLabel.value}}</a> ({{item.count.value}} results)
+                    </li>
+                </ul>
+            </div>
+        </div>  
+    </div>
+    `,
+    methods: {
+        changePage(page) {
+            this.$emit('change-page', page)
+        },
+        updateClass(item) {
+            this.$emit('update-class', item)
+        }
+    },
+    mounted() {
+        var sparqlQuery = "SELECT ?value ?valueLabel (COUNT(?value) AS ?count) WHERE {\n" +
+            "  ?v wdt:P31 ?value.\n" +
+            "  wd:"+this.classValue+" wdt:P279 ?value.\n" +
+            "  ?value rdfs:label ?valueLabel.\n" +
+            "  \n" +
+            "  FILTER((LANG(?valueLabel)) = \"en\")\n" +
+            "}\n" +
+            "GROUP BY ?value ?valueLabel";
         const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
         axios.get(fullUrl)
             .then(response => (response.data['results']['bindings'].length ? this.items = [...response.data['results']['bindings']] : this.items.push({ value: "Empty", valueLabel: "No data" })))
@@ -341,56 +342,97 @@ superclass = Vue.component('superclass-view', {
 
 var app = new Vue({
     el: '#app',
-    components:{
+    components: {
         classfilter, viewallitems, filtersview, filtervalues
     },
     data: {
-        classValue: 'Q5398426',
-        classLabel:'TV Series',
-        page: 'class-filter',
-        currentFilter:'',
-        appliedFilters:[],
-        componentKey:0,
-        totalValues:''
+        classLabel: '',
+        currentFilterLabel:'',
+        componentKey: 0,
+        totalValues: ''
     },
     methods: {
-        updatePage: function (page, total) {
-            this.page = page
-            this.totalValues = total
+        updatePage: function (page) {
+            if(page == 'class-new-filter'){
+                urlParams=new URLSearchParams("")
+                urlParams.set('view', 'class-filter')
+            }
+            else{
+                urlParams.set('view', page)
+            }
+            window.location.search = "?" + urlParams
         },
-        updateClassValue: function (classValue, classLabel) {
-            this.classValue = classValue;
-            this.classLabel = classLabel 
-            this.currentFilter='';
-            this.appliedFilters=[];
-            this.componentKey=0;
+        updateClassValue: function (classValue) {
+            urlParams.set('c', classValue)
+            window.location.search = "?" + urlParams
+            this.appliedFilters = [];
+            this.componentKey = 0;
         },
         updateFilter: function (filter) {
-            this.currentFilter = { value: filter.value.value.split('/').slice(-1)[0], valueLabel: filter.valueLabel.value}
-            this.page = 'filter-values'
+            urlParams.set('cf', filter.value.value.split('/').slice(-1)[0])
+            this.updatePage('filter-values')
         },
-        applyFilter: function(filter){
-            this.appliedFilters.push({
-                filterValue:this.currentFilter.value,
-                filterValueLabel: this.currentFilter.valueLabel,
-                value: filter.value.value.split('/').slice(-1)[0],
-                valueLabel: filter.valueLabel.value
-            });
-            this.page='view-all-items'
+        applyFilter: function (filter) {
+            filterValue = this.currentFilter.value
+            value = filter.value.value.split('/').slice(-1)[0]
+            urlParams.set("filter["+value+"]", filterValue)
+            this.updatePage('view-all-items')
         },
         forceRerender() {
             this.componentKey += 1;
         },
-        removeFilter: function(value){
-            index = this.appliedFilters.findIndex(filter => filter.value==value);
-            this.appliedFilters.splice(index,1)
+        removeFilter: function (value) {
+            index = this.appliedFilters.findIndex(filter => filter.value == value);
+            this.appliedFilters.splice(index, 1)
+            console.log("filter\[" + value + "\]");
+            urlParams.delete("filter\["+value+"\]")
+            this.updatePage('view-all-items')
             this.forceRerender()
         },
-        updateClass: function(item){
-            this.classValue = item.value.value.split('/').slice(-1)[0]
-            this.classLabel = item.valueLabel.value
-            this.appliedFilters=[]
-            this.page = "class-filter"
+        updateClass: function (item) {
+            urlParams = new URLSearchParams("")
+            classValue = item.value.value.split('/').slice(-1)[0]
+            this.updateClassValue(classValue)
+            this.currentFilterLabel = ''
+            this.updatePage("view-all-items")
+        },
+    },
+    computed:{
+        page: function(){
+            return urlParams.has('view') ? urlParams.get('view') : 'class-filter'
+        },
+        classValue: function(){
+            value = urlParams.has('c') ? urlParams.get('c') : 'Q5398426'
+            var sparqlQuery = "SELECT ?value WHERE {\n" +
+                "  wd:" + value + " rdfs:label ?value.\n" +
+                "  FILTER(LANG(?value) = \"en\")\n" +
+                "}";
+            const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
+            axios.get(fullUrl)
+                .then(response => this.classLabel = response.data['results']['bindings'][0].value.value)
+            return value
+        },
+        currentFilter: function () {
+            currentFilterValue = urlParams.has('cf') ? urlParams.get('cf') : ''
+            var sparqlQuery = "SELECT ?value WHERE {\n" +
+                "  wd:" + currentFilterValue + " rdfs:label ?value.\n" +
+                "  FILTER(LANG(?value) = \"en\")\n" +
+                "}";
+            const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
+            axios.get(fullUrl)
+                .then(response => this.currentFilterLabel = response.data['results']['bindings'][0].value.value)
+            return { value: currentFilterValue, valueLabel: this.currentFilterLabel}
+        },
+        appliedFilters: function(){
+            url = decodeURI(urlParams);
+            var res = url.match(/filter\[Q\d+\]/g);
+            filters = []
+            if(res != null){
+                for (var i=0;i<res.length;i++) {
+                    filters.push({ value: res[i].split("[")[1].slice(0, -1), filterValue: urlParams.get(res[i])})
+                }
+            }
+            return filters
         }
     }
 })
