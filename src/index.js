@@ -148,7 +148,7 @@ filtersview = Vue.component('filters-view', {
         </div>
     </div>`,
     methods: {
-        changePage(page) {
+        changePage(page,) {
             this.$emit('change-page', page)
         },
         showFilter(filter) {
@@ -354,7 +354,8 @@ var app = new Vue({
         currentFilterValue: '',
         appFilters: [],
         getFiltersFromURL:1,
-        componentKey: 0,
+        allItemscomponentKey: 0,
+        filterscomponentKey: 0,
         totalValues: ''
     },
     methods: {
@@ -371,13 +372,14 @@ var app = new Vue({
             this.classLabel = classLabel
             this.currentFilterLabel = '';
             this.appFilters = [];
-            this.componentKey = 0;
+            this.allItemscomponentKey = 0;
+            this.filterscomponentKey = 0;
         },
         updateFilter: function (filter) {
             this.currentFilterLabel=filter.valueLabel.value
             this.currentFilterValue = filter.value.value.split('/').slice(-1)[0]
             urlParams.set('cf', filter.value.value.split('/').slice(-1)[0])
-            this.updatePage('filter-values')
+            this.updatePage('filter-values', this.totalValues)
         },
         applyFilter: function (filter) {
             this.appFilters.push({
@@ -389,14 +391,18 @@ var app = new Vue({
             urlParams.set("filter[" + this.currentFilter.value + "]", filter.value.value.split('/').slice(-1)[0])
             this.updatePage('view-all-items')
         },
-        forceRerender() {
-            this.componentKey += 1;
+        forceAllItemsRerender() {
+            this.allItemscomponentKey += 1;
+        },
+        forceFiltersRerender() {
+            this.filterscomponentKey += 1;
         },
         removeFilter: function (value) {
             index = this.appliedFilters.findIndex(filter => filter.value == value);
             this.appFilters.splice(index, 1)
             this.getFiltersFromURL = 0
-            this.forceRerender()
+            this.forceAllItemsRerender()
+            this.forceFiltersRerender()
         },
         updateClass: function (item) {
             this.clsValue = item.value.value.split('/').slice(-1)[0]

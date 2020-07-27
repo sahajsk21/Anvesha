@@ -39,7 +39,7 @@
             :total-values="totalValues"
             :class-label="classLabel"
             :class-value="classValue"
-            :key="componentKey"
+            :key="allItemscomponentKey"
             :applied-filters="appliedFilters">
         </view-all-items>
 
@@ -58,6 +58,7 @@
             @apply-filter="applyFilter" 
             @remove-filter="removeFilter"
             v-if="view =='filter-values'" 
+            :key="filterscomponentKey"
             :total-values="totalValues"
             :class-label="classLabel"
             :class-value="classValue"
