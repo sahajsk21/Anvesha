@@ -364,11 +364,7 @@ var app = new Vue({
             this.page = page
             this.totalValues = total
             urlParams.set('view', page)
-<<<<<<< HEAD
             window.history.replaceState(null, '', window.location.pathname+"/?" + urlParams);
-=======
-            window.history.replaceState(null, '', "/?" + urlParams);
->>>>>>> 6f7634af76938903420ff3797815524a63ba86ba
         },
         updateClassValue: function (classValue, classLabel) {
             urlParams.set('c', classValue)
