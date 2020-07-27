@@ -26,12 +26,6 @@ classfilter = Vue.component('class-filter', {
             // this.changePage('view-all-items')
         },
 
-    },
-    mounted(){
-        urlParams.set("c", this.localClassValue)
-        urlParams.set("view","class-filter")
-        window.history.replaceState(null, '', "/?" + urlParams);
-
     }
 })
 
@@ -168,7 +162,6 @@ filtersview = Vue.component('filters-view', {
             "  FILTER((LANG(?valueLabel)) = \"en\")\n" +
             "}";
         const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
-        console.log('yes');
         axios.get(fullUrl)
             .then(response => (response.data['results']['bindings'].length ? this.filters = [...response.data['results']['bindings']] : this.filters.push({ value: "Empty", valueLabel: "No data" })))
             .catch(error => {
@@ -262,7 +255,7 @@ subclass = Vue.component('subclass-view', {
             <div v-else>
                 <ul>
                     <li v-for="item in items">
-                        <a @click="updateClass(item)">{{item.valueLabel.value}}</a>
+                        <a @click="updateClass(item)">{{item.valueLabel.value}}</a> ({{item.count.value}} results)
                     </li>
                 </ul>
             </div>
@@ -274,15 +267,18 @@ subclass = Vue.component('subclass-view', {
             this.$emit('change-page', page)
         },
         updateClass(item) {
-            this.$emit('update-class', item)
+            this.$emit('update-class', item.value.value.split('/').slice(-1)[0], item.valueLabel.value)
         }
     },
     mounted() {
-        var sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
-            "  ?value wdt:P279 wd:" + this.classValue + ";\n" +
-            "         rdfs:label ?valueLabel;\n" +
+        var sparqlQuery = "SELECT ?value ?valueLabel (COUNT(?value) AS ?count) WHERE {\n" +
+            "  ?v wdt:P31 ?value.\n" +
+            "  ?value wdt:P279 wd:" + this.classValue + ".\n" +
+            "  ?value rdfs:label ?valueLabel.\n" +
+            "  \n" +
             "  FILTER((LANG(?valueLabel)) = \"en\")\n" +
-            "}";
+            "}\n" +
+            "GROUP BY ?value ?valueLabel";
         const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
         axios.get(fullUrl)
             .then(response => (response.data['results']['bindings'].length ? this.items = [...response.data['results']['bindings']] : this.items.push({ value: "Empty", valueLabel: "No data" })))
@@ -315,7 +311,7 @@ superclass = Vue.component('superclass-view', {
             <div v-else>
                 <ul>
                     <li v-for="item in items">
-                        <a @click="updateClass(item)">{{item.valueLabel.value}}</a>
+                        <a @click="updateClass(item)">{{item.valueLabel.value}}</a> ({{item.count.value}} results)
                     </li>
                 </ul>
             </div>
@@ -327,16 +323,18 @@ superclass = Vue.component('superclass-view', {
             this.$emit('change-page', page)
         },
         updateClass(item) {
-            this.$emit('update-class', item)
+            this.$emit('update-class', item.value.value.split('/').slice(-1)[0], item.valueLabel.value)
         }
     },
     mounted() {
-        var sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
+        var sparqlQuery = "SELECT ?value ?valueLabel (COUNT(?value) AS ?count) WHERE {\n" +
+            "  ?v wdt:P31 ?value.\n" +
             "  wd:" + this.classValue + " wdt:P279 ?value.\n" +
             "  ?value rdfs:label ?valueLabel.\n" +
             "  \n" +
             "  FILTER((LANG(?valueLabel)) = \"en\")\n" +
-            "}";
+            "}\n" +
+            "GROUP BY ?value ?valueLabel";
         const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
         axios.get(fullUrl)
             .then(response => (response.data['results']['bindings'].length ? this.items = [...response.data['results']['bindings']] : this.items.push({ value: "Empty", valueLabel: "No data" })))
@@ -364,7 +362,7 @@ var app = new Vue({
             this.page = page
             this.totalValues = total
             urlParams.set('view', page)
-            window.history.replaceState(null, '', window.location.pathname+"/?" + urlParams);
+            window.history.replaceState(null, '', window.location.pathname+"?" + urlParams);
         },
         updateClassValue: function (classValue, classLabel) {
             urlParams.set('c', classValue)
@@ -404,7 +402,7 @@ var app = new Vue({
             this.clsValue = item.value.value.split('/').slice(-1)[0]
             this.classLabel = item.valueLabel.value
             this.appFilters = []
-            this.page = "class-filter"
+            this.updatePage("class-filter")
         }
     },
     computed: {
@@ -441,13 +439,15 @@ var app = new Vue({
             else {
                 val = this.currentFilterValue
             }
-            var sparqlQuery = "SELECT ?value WHERE {\n" +
+            if( val != ''){
+                var sparqlQuery = "SELECT ?value WHERE {\n" +
                 "  wd:" + val + " rdfs:label ?value.\n" +
                 "  FILTER(LANG(?value) = \"en\")\n" +
                 "}";
-            const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
-            axios.get(fullUrl)
-                .then(response => this.currentFilterLabel = response.data['results']['bindings'][0].value.value)
+                const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
+                axios.get(fullUrl)
+                    .then(response => response.data['results']['bindings'][0].value.value)
+            }
             return { value: val, valueLabel: this.currentFilterLabel }
         },
         appliedFilters: function () {
