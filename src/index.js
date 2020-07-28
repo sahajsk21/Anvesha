@@ -1,5 +1,14 @@
 var queryString = window.location.search;
 var urlParams = new URLSearchParams(queryString);
+(function (history) {
+    var pushState = history.pushState;
+    history.pushState = function (state) {
+        if (typeof history.onpushstate == "function") {
+            history.onpushstate({ state: state });
+        }
+        return pushState.apply(history, arguments);
+    }
+})(window.history);
 Vue.config.devtools = true;
 classfilter = Vue.component('class-filter', {
     props: ['classValue', 'appliedFilters', 'classLabel'],
@@ -23,7 +32,6 @@ classfilter = Vue.component('class-filter', {
         },
         submit() {
             this.$emit("class-label", this.localClassValue, this.localClassLabel);
-            // this.changePage('view-all-items')
         },
 
     }
@@ -42,7 +50,7 @@ viewallitems = Vue.component('view-all-items', {
     <div>
         <div class="header">
             <p><b>Class</b>: {{ classLabel }} </p>
-            <p v-for="filter in appliedFilters"><b>{{filter.filterValueLabel}}</b>: {{ filter.valueLabel }} (<a @click="removeFilter(filter.value)">X</a>)</p>
+            <p v-for="filter in appliedFilters"><b>{{filter.filterValueLabel}}</b>: {{ filter.valueLabel }} (<a @click="removeFilter(filter.filterValue)">X</a>)</p>
         </div>
         <div class="content" id="viewallitems">
             <div class="classOptionsSection">
@@ -54,7 +62,7 @@ viewallitems = Vue.component('view-all-items', {
                 <a class="classOptions" @click="changePage('class-filter', itemsCount)" style="margin-bottom:20px">Change to a new class</a>
             </div>
             <img v-if="!items.length" src='loading.gif'>
-            <p v-else-if="items[0].value=='Empty'">No data</p>
+            <p v-else-if="items[0].value=='Empty'">No items match this description.</p>
             <div v-else>
                 <p>There are <b>{{ itemsCount }}</b> items that match this description.</p>
                     <ul>
@@ -67,10 +75,10 @@ viewallitems = Vue.component('view-all-items', {
     </div>`,
     methods: {
         changePage(page, totalValues) {
-            this.$emit('change-page', page, totalValues)
+            this.$emit('change-page', page)
         },
         removeFilter(value) {
-            this.$emit("remove-filter", value);
+            this.$emit("remove-filter", value, 'view-all-items');
         }
     },
     mounted() {
@@ -135,7 +143,7 @@ filtersview = Vue.component('filters-view', {
         </div>
         <div class="content">
             <img v-if="!filters.length" src='loading.gif'>
-            <p v-else-if="filters[0].value=='Empty'">No data</p>
+            <p v-else-if="filters[0].value=='Empty'">No filters available</p>
             <div v-else>
                 <p>There are <b>{{ totalValues }}</b> items that match this description.</p>
                 <p><b>Add a filter:</b></p> 
@@ -156,9 +164,15 @@ filtersview = Vue.component('filters-view', {
         }
     },
     mounted() {
-        var sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
-            "  wd:" + this.classValue + " wdt:P1963 ?value.\n" +
+        var sparqlQuery = "\n" +
+            "SELECT ?value ?valueLabel WHERE {\n" +
+            "  wd:"+this.classValue+" wdt:P1963 ?value.\n" +
             "  ?value rdfs:label ?valueLabel.\n" +
+            "  FILTER (\n" +
+            "     !EXISTS {\n" +
+            "       ?value wikibase:propertyType wikibase:ExternalId\n" +
+            "     }\n" +
+            "   )  \n" +
             "  FILTER((LANG(?valueLabel)) = \"en\")\n" +
             "}";
         const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
@@ -181,11 +195,11 @@ filtervalues = Vue.component('filter-values', {
             <p><b>Class</b>: {{ classLabel }} </p>
             <p><b>Current Filters</b>:</p>
             <p v-if="!appliedFilters.length">No filters</p>
-            <p v-for="filter in appliedFilters"><b>{{filter.filterValueLabel}}</b>: {{ filter.valueLabel }} (<a @click="removeFilter(filter.value)">X</a>)</p>
+            <p v-for="filter in appliedFilters"><b>{{filter.filterValueLabel}}</b>: {{ filter.valueLabel }} (<a @click="removeFilter(filter.filterValue)">X</a>)</p>
         </div>
         <div class="content">
             <img v-if="!items.length" src='loading.gif'>
-                <p v-else-if="items[0].value=='Empty'">No data</p>
+                <p v-else-if="items[0].value=='Empty'">There are no values for the filter <b>{{currentFilter.valueLabel}}</b>.</p>
                 <p v-else-if="items[0].value=='Error'">The attempt to display a list of items took too long; please consider adding more filters.</p>
                 <div v-else>
                     <p>There are <b>{{ totalValues }}</b> items that match this description.</p>
@@ -206,7 +220,7 @@ filtervalues = Vue.component('filter-values', {
             this.$emit('apply-filter', filter)
         },
         removeFilter(value) {
-            this.$emit("remove-filter", value);
+            this.$emit("remove-filter", value, 'filter-values');
         }
     },
     mounted() {
@@ -251,7 +265,7 @@ subclass = Vue.component('subclass-view', {
         <p><b>Change from "{{ classLabel }}" to a more specific class:</b><p>
         <div class="content">
             <img v-if="!items.length" src='loading.gif'>
-            <p v-else-if="items[0].value=='Empty'">No data</p>
+            <p v-else-if="items[0].value=='Empty'">No items match this description.</p>
             <div v-else>
                 <ul>
                     <li v-for="item in items">
@@ -307,7 +321,7 @@ superclass = Vue.component('superclass-view', {
         <p><b>Change from "{{ classLabel }}" to a more general class:</b><p>
         <div class="content">
             <img v-if="!items.length" src='loading.gif'>
-            <p v-else-if="items[0].value=='Empty'">No data</p>
+            <p v-else-if="items[0].value=='Empty'">No items match this description.</p>
             <div v-else>
                 <ul>
                     <li v-for="item in items">
@@ -358,28 +372,46 @@ var app = new Vue({
         filterscomponentKey: 0,
         totalValues: ''
     },
+    created: function(){
+        window.onpopstate = history.onpushstate = function (e) {
+            if(e.state) {
+                app.page = e.state.page
+                app.clsValue = e.state.classValue
+            } else {
+                app.page='class-filter'
+            }
+        };
+    },
     methods: {
-        updatePage: function (page, total=0) {
+        updatePage: function (page) {
             this.page = page
-            this.totalValues = total
             urlParams.set('view', page)
-            window.history.replaceState(null, '', window.location.pathname+"?" + urlParams);
+            window.history.pushState({
+                    page: page,
+                    classValue : this.classValue
+                }, '',
+                window.location.pathname+"?" + urlParams
+                );
         },
         updateClassValue: function (classValue, classLabel) {
+            urlParams = new URLSearchParams("")
             urlParams.set('c', classValue)
             this.updatePage('view-all-items')
             this.clsValue = classValue;
             this.classLabel = classLabel
             this.currentFilterLabel = '';
+            this.currentFilterValue = '';
             this.appFilters = [];
+            this.getFiltersFromURL=1;
             this.allItemscomponentKey = 0;
             this.filterscomponentKey = 0;
+            this.totalValues=''
         },
         updateFilter: function (filter) {
             this.currentFilterLabel=filter.valueLabel.value
             this.currentFilterValue = filter.value.value.split('/').slice(-1)[0]
             urlParams.set('cf', filter.value.value.split('/').slice(-1)[0])
-            this.updatePage('filter-values', this.totalValues)
+            this.updatePage('filter-values')
         },
         applyFilter: function (filter) {
             this.appFilters.push({
@@ -397,19 +429,16 @@ var app = new Vue({
         forceFiltersRerender() {
             this.filterscomponentKey += 1;
         },
-        removeFilter: function (value) {
+        removeFilter: function (value, page) {
             index = this.appliedFilters.findIndex(filter => filter.value == value);
             this.appFilters.splice(index, 1)
+            urlParams.delete("filter["+value+"]")
+            this.updatePage(page)
             this.getFiltersFromURL = 0
             this.forceAllItemsRerender()
             this.forceFiltersRerender()
         },
-        updateClass: function (item) {
-            this.clsValue = item.value.value.split('/').slice(-1)[0]
-            this.classLabel = item.valueLabel.value
-            this.appFilters = []
-            this.updatePage("class-filter")
-        }
+        
     },
     computed: {
         view: function () {
@@ -460,7 +489,6 @@ var app = new Vue({
             if( this.appFilters.length == 0 && this.getFiltersFromURL==1 ){
                 url = decodeURI(urlParams);
                 var res = url.match(/filter\[P\d+\]/g);
-                // filters = []
                 if (res != null) {
                     for (var i = 0; i < res.length; i++) {
                         this.appFilters.push({ 
@@ -476,3 +504,7 @@ var app = new Vue({
         }
     }
 })
+
+
+
+
