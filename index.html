@@ -35,12 +35,14 @@
         <view-all-items
             @change-page="updatePage"
             @remove-filter="removeFilter"
+            @remove-range="removeRange"
             v-if="view =='view-all-items'"
             :total-values="totalValues"
             :class-label="classLabel"
             :class-value="classValue"
             :key="allItemscomponentKey"
-            :applied-filters="appliedFilters">
+            :applied-filters="appliedFilters"
+            :applied-ranges="appliedRanges">
         </view-all-items>
 
         <filters-view 
@@ -50,20 +52,24 @@
             :total-values="totalValues"
             :class-label="classLabel"
             :class-value="classValue"
-            :applied-filters="appliedFilters">
+            :applied-filters="appliedFilters"
+            :applied-ranges="appliedRanges">
         </filters-view>
 
         <filter-values 
             @change-page="updatePage"
-            @apply-filter="applyFilter" 
+            @apply-filter="applyFilter"
+            @apply-range="applyRange" 
             @remove-filter="removeFilter"
+            @remove-range="removeRange"
             v-if="view =='filter-values'" 
             :key="filterscomponentKey"
             :total-values="totalValues"
             :class-label="classLabel"
             :class-value="classValue"
             :current-Filter="currentFilter"
-            :applied-filters="appliedFilters">
+            :applied-filters="appliedFilters"
+            :applied-ranges="appliedRanges">
         </filter-values>
 
         <subclass-view
@@ -73,7 +79,8 @@
             :class-label="classLabel"
             :class-value="classValue"
             :current-Filter="currentFilter" 
-            :applied-filters="appliedFilters">
+            :applied-filters="appliedFilters"
+            :applied-ranges="appliedRanges">
         </subclass-view>
 
         <superclass-view
@@ -83,7 +90,8 @@
             :class-label="classLabel"
             :class-value="classValue"
             :current-Filter="currentFilter" 
-            :applied-filters="appliedFilters">
+            :applied-filters="appliedFilters"
+            :applied-ranges="appliedRanges">
         </superclass-view>
         
     </div>
