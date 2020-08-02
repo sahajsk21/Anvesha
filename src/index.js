@@ -341,7 +341,7 @@ filtervalues = Vue.component('filter-values', {
             }
 
             len > 50000 ? val = 0 : val = 1;
-            
+
             index = this.appliedRanges.findIndex(filter => filter.filterValue == range.value);
             if (index != -1) {
                 ll = new Date(this.appliedRanges[index].valueLL);
@@ -772,7 +772,7 @@ var app = new Vue({
         },
         applyRange: function (range) {
             const i = this.appRanges.findIndex(_item => _item.filterValue == this.currentFilter.value);
-            if (i > -1){
+            if (i > -1) {
                 this.appRanges[i] = {
                     filterValue: this.currentFilter.value,
                     filterValueLabel: this.currentFilter.valueLabel,
@@ -780,8 +780,8 @@ var app = new Vue({
                     valueLL: range.bucketLL,
                     valueUL: range.bucketUL
                 }
-            } 
-            else{
+            }
+            else {
                 this.appRanges.push({
                     filterValue: this.currentFilter.value,
                     filterValueLabel: this.currentFilter.valueLabel,
