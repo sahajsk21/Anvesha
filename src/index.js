@@ -90,7 +90,7 @@ viewallitems = Vue.component('view-all-items', {
             <p><b>Class</b>: {{ classLabel }} </p>
             <p v-for="filter in appliedFilters"><b>{{filter.filterValueLabel}}</b>: {{ filter.valueLabel }} (<a @click="removeFilter(filter.filterValue)">X</a>)</p>
             <p v-for="range in appliedRanges"><b>{{range.filterValueLabel}}</b>: {{ range.valueLabel }} (<a @click="removeRange(range)">X</a>)</p>
-            <p v-for="quantity in appliedQuantities"><b>{{quantity.filterValueLabel}}</b>: {{ quantity.valueLabel }} (<a @click="removeQuantity(quantity)">X</a>)</p>
+            <p v-for="quantity in appliedQuantities"><b>{{quantity.filterValueLabel}}</b>: {{ quantity.valueLabel }} {{quantity.unit}}(<a @click="removeQuantity(quantity)">X</a>)</p>
         </div>
         <div class="content" id="viewallitems">
             <div class="classOptionsSection">
@@ -114,7 +114,7 @@ viewallitems = Vue.component('view-all-items', {
         </div>
     </div>`,
     methods: {
-        changePage(page, totalValues) {
+        changePage(page) {
             this.$emit('change-page', page)
         },
         removeFilter(value) {
@@ -154,9 +154,17 @@ viewallitems = Vue.component('view-all-items', {
         }
         var filterQuantities = "";
         for (let i = 0; i < this.appliedQuantities.length; i++) {
-            filterQuantities += "?value (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
-                "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
-                "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
+            if(this.appliedQuantities[i].unit == ""){
+                filterQuantities += "?value (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                    "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
+                    "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
+            }
+            else {
+                filterQuantities += "?value (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                    "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
+                    "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
+
+            }
         }
         // Fetch results
         var sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
@@ -249,7 +257,7 @@ filtervalues = Vue.component('filter-values', {
             <p v-if="!appliedFilters.length">No filters</p>
             <p v-for="filter in appliedFilters"><b>{{filter.filterValueLabel}}</b>: {{ filter.valueLabel }} (<a @click="removeFilter(filter.filterValue)">X</a>)</p>
             <p v-for="range in appliedRanges"><b>{{range.filterValueLabel}}</b>: {{ range.valueLabel }} (<a @click="removeRange(range)">X</a>)</p>
-            <p v-for="quantity in appliedQuantities"><b>{{quantity.filterValueLabel}}</b>: {{ quantity.valueLabel }} (<a @click="removeQuantity(quantity)">X</a>)</p>
+            <p v-for="quantity in appliedQuantities"><b>{{quantity.filterValueLabel}}</b>: {{ quantity.valueLabel }} {{quantity.unit}}(<a @click="removeQuantity(quantity)">X</a>)</p>
             </div>
         <div class="content">
             <img v-if="itemsType==''" src='loading.gif'>
@@ -735,9 +743,17 @@ filtervalues = Vue.component('filter-values', {
         }
         var filterQuantities = "";
         for (let i = 0; i < this.appliedQuantities.length; i++) {
-            filterQuantities += "?item (p:"+this.appliedQuantities[i].filterValue+"/psv:"+this.appliedQuantities[i].filterValue+") ?amount"+i+".\n" +
-                "  ?amount"+i+" wikibase:quantityAmount ?amountValue"+i+".\n" +
-                "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue"+i+" && ?amountValue"+i+" >" + this.appliedQuantities[i].valueLL+")\n"
+            if (this.appliedQuantities[i].unit == "") {
+                filterQuantities += "?item (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                    "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
+                    "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >" + this.appliedQuantities[i].valueLL + ")\n"
+        }
+            else {
+                filterQuantities += "?item (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                    "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
+                    "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >" + this.appliedQuantities[i].valueLL + ")\n"
+
+            }
         }
 
         if (this.currentFilter.property == "Time") {
@@ -1049,7 +1065,8 @@ var app = new Vue({
                     filterValueLabel: this.currentFilter.valueLabel,
                     valueLabel: range.bucketName,
                     valueLL: range.bucketLL,
-                    valueUL: range.bucketUL
+                    valueUL: range.bucketUL,
+                    unit: range.unit
                 }
             }
             else {
@@ -1058,7 +1075,8 @@ var app = new Vue({
                     filterValueLabel: this.currentFilter.valueLabel,
                     valueLabel: range.bucketName,
                     valueLL: range.bucketLL,
-                    valueUL: range.bucketUL
+                    valueUL: range.bucketUL,
+                    unit:range.unit
                 });
             }
 
@@ -1193,7 +1211,8 @@ var app = new Vue({
                             filterValueLabel: res[i].split("[")[1].slice(0, -1),
                             valueLL: urlParams.get(res[i]).split("|")[0].trim(),
                             valueUL: urlParams.get(res[i]).split("|")[1].trim(),
-                            valueLabel: urlParams.get(res[i]).split("|")[0].trim() + " - " + urlParams.get(res[i]).split("|")[1].trim()
+                            valueLabel: urlParams.get(res[i]).split("|")[0].trim() + " - " + urlParams.get(res[i]).split("|")[1].trim(),
+                            unit:''
                         })
                     }
                 }
