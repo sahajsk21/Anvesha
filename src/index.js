@@ -215,16 +215,11 @@ filtersview = Vue.component('filters-view', {
         }
     },
     mounted() {
-        var sparqlQuery = "\n" +
-            "SELECT ?value ?valueLabel ?property WHERE {\n" +
-            "  wd:" + this.classValue + " wdt:P1963 ?value.\n" +
+        var sparqlQuery = "SELECT ?value ?valueLabel ?property WHERE {\n" +
+            "  wd:"+this.classValue+" wdt:P1963 ?value.\n" +
             "  ?value rdfs:label ?valueLabel.\n" +
             "  ?value wikibase:propertyType ?property.\n" +
-            "  FILTER (\n" +
-            "     !EXISTS {\n" +
-            "       ?value wikibase:propertyType wikibase:ExternalId\n" +
-            "     }\n" +
-            "   )  \n" +
+            "  FILTER (?property in (wikibase:Time, wikibase:Quantity, wikibase:WikibaseItem))  \n" +
             "  FILTER((LANG(?valueLabel)) = \"en\")\n" +
             "}";
         const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
@@ -288,7 +283,7 @@ filtervalues = Vue.component('filter-values', {
                     <p> Select a value for <b>{{currentFilter.valueLabel}}</b>:</p>
                     <ul v-if="displayCount == 1">
                         <li v-for="item in items">
-                            <a @click="applyQuantityRange(item)">{{item.bucketName}} </a> ({{item.numValues}} results)
+                            <a @click="applyQuantityRange(item)">{{item.bucketName}} {{item.unit}} </a> ({{item.numValues}} results)
                         </li>
                     </ul>
                     <ul v-if="displayCount == 0">
@@ -626,7 +621,7 @@ filtervalues = Vue.component('filter-values', {
             var numDecimalPlaces = Math.max(0, 0 - significantFigureOfDifference);
             return niceNumber.toFixed(numDecimalPlaces);
         },
-        generateIndividualFilterValuesFromNumbers(uniqueValues) {
+        generateIndividualFilterValuesFromNumbers(uniqueValues, unit) {
             // Unfortunately, object keys aren't necessarily cycled through
             // in the correct order - put them in an array, so that they can
             // be sorted.
@@ -646,11 +641,12 @@ filtervalues = Vue.component('filter-values', {
                 curBucket['numValues'] = uniqueValues[uniqueValue];
                 curBucket['bucketUL'] = uniqueValue;
                 curBucket['bucketLL'] = uniqueValue;
+                curBucket['unit'] = unit;
                 propertyValues.push(curBucket);
             }
             return propertyValues;
         },
-        generateFilterValuesFromNumbers(numberArray) {
+        generateFilterValuesFromNumbers(numberArray, unit) {
             var numNumbers = numberArray.length;
             // First, find the number of unique values - if it's the value of
             // gBucketsPerFilter, or fewer, just display each one as its own
@@ -670,7 +666,7 @@ filtervalues = Vue.component('filter-values', {
                 }
             }
             if (numUniqueValues <= gBucketsPerFilter) {
-                return this.generateIndividualFilterValuesFromNumbers(uniqueValues);
+                return this.generateIndividualFilterValuesFromNumbers(uniqueValues, unit);
             }
             var propertyValues = [];
             var separatorValue = Number(numberArray[0].amount.value);
@@ -710,6 +706,7 @@ filtervalues = Vue.component('filter-values', {
                 curBucket['bucketName'] = curFilter.toString();
                 curBucket['bucketLL'] = curFilter.lowNumber;
                 curBucket['bucketUL'] = curFilter.highNumber;
+                curBucket['unit'] = unit;
                 propertyValues.push(curBucket);
                 oldSeparatorValue = separatorValue;
             }
@@ -729,30 +726,29 @@ filtervalues = Vue.component('filter-values', {
     mounted() {
         var filterString = "";
         for (let i = 0; i < this.appliedFilters.length; i++) {
-            filterString += "?value wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n";
+            filterString += "?item wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n";
         }
         var filterRanges = "";
         for (let i = 0; i < this.appliedRanges.length; i++) {
-            filterRanges += "?value wdt:" + this.appliedRanges[i].filterValue + " ?time" + i + ".\n" +
+            filterRanges += "?item wdt:" + this.appliedRanges[i].filterValue + " ?time" + i + ".\n" +
                 "  FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?time" + i + " && ?time" + i + " < '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n"
         }
         var filterQuantities = "";
         for (let i = 0; i < this.appliedQuantities.length; i++) {
-            filterQuantities += "?v (p:"+this.appliedQuantities[i].filterValue+"/psv:"+this.appliedQuantities[i].filterValue+") ?amount"+i+".\n" +
+            filterQuantities += "?item (p:"+this.appliedQuantities[i].filterValue+"/psv:"+this.appliedQuantities[i].filterValue+") ?amount"+i+".\n" +
                 "  ?amount"+i+" wikibase:quantityAmount ?amountValue"+i+".\n" +
                 "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue"+i+" && ?amountValue"+i+" >" + this.appliedQuantities[i].valueLL+")\n"
         }
 
         if (this.currentFilter.property == "Time") {
             var sparqlQuery = "SELECT ?time WHERE {\n" +
-                "?value wdt:P31 wd:"+this.classValue+".\n" +
+                "?item wdt:P31 wd:"+this.classValue+".\n" +
                 filterString +
-                "?value wdt:"+this.currentFilter.value+" ?time.\n" +
+                "?item wdt:"+this.currentFilter.value+" ?time.\n" +
                 filterRanges +
                 filterQuantities +
                 "}\n" +
                 "ORDER by ?time";
-                console.log(sparqlQuery);
             const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
             axios.get(fullUrl)
                 .then(response => (response.data['results']['bindings'].length ? (this.itemsType = 'Time', this.items = this.generateDatePropertyValues(response.data['results']['bindings'], this.currentFilter)) : this.itemsType = 'Empty'))
@@ -762,9 +758,9 @@ filtervalues = Vue.component('filter-values', {
         }
         else if (this.currentFilter.property == "Quantity") {
             var sparqlQuery = "SELECT ?amount WHERE {\n" +
-                "    ?value wdt:P31 wd:"+this.classValue+".\n" +
+                "    ?item wdt:P31 wd:"+this.classValue+".\n" +
                 filterString +
-                "    ?value (p:"+this.currentFilter.value+"/psn:"+this.currentFilter.value+") ?v.\n" +
+                "    ?item (p:"+this.currentFilter.value+"/psn:"+this.currentFilter.value+") ?v.\n" +
                 "    ?v wikibase:quantityAmount ?amount.\n" +
                 filterRanges +
                 filterQuantities+
@@ -773,29 +769,40 @@ filtervalues = Vue.component('filter-values', {
             const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
             let vm = this;
             axios.get(fullUrl)
-                .then(response => (response.data['results']['bindings'].length>10 ? (this.itemsType = 'Quantity', this.items = this.generateFilterValuesFromNumbers(response.data['results']['bindings'])) : this.itemsType = ''))
+                .then(response => (response.data['results']['bindings'].length ? response : this.itemsType = ''))
                 .then(
                     function (response) {
                         if (response == "") {
                             var sparqlQuery2 = "SELECT ?amount WHERE {\n" +
-                                "    ?value wdt:P31 wd:"+vm.classValue+".\n" +
-                                filterString +
-                                "    ?value (p:"+vm.currentFilter.value+"/psv:"+vm.currentFilter.value+") ?v.\n" +
-                                "    ?v wikibase:quantityAmount ?amount.\n" +
-                                filterRanges +
-                                filterQuantities+
-                                "}\n" +
-                                "ORDER BY ?amount";
+                            "    ?item wdt:P31 wd:"+vm.classValue+".\n" +
+                            filterString +
+                            "    ?item (p:"+vm.currentFilter.value+"/psv:"+vm.currentFilter.value+") ?v.\n" +
+                            "    ?v wikibase:quantityAmount ?amount.\n" +
+                            filterRanges +
+                            filterQuantities+
+                            "}\n" +
+                            "ORDER BY ?amount";
                             const fullUr = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery2);
                             axios.get(fullUr)
-                                .then(res => (res.data['results']['bindings'].length ? (vm.itemsType = 'Quantity', vm.items = vm.generateFilterValuesFromNumbers(res.data['results']['bindings'])) : vm.itemsType = 'Still Empty'))
+                            .then(res => (res.data['results']['bindings'].length ? (vm.itemsType = 'Quantity', vm.items = vm.generateFilterValuesFromNumbers(res.data['results']['bindings'])) : vm.itemsType = 'Still Empty'))
+                            .catch(error => {
+                                vm.itemsType = 'Error'
+                            })
+                        }
+                        else {
+                            var unitQuery = "SELECT ?unitLabel WHERE {\n" +
+                                "    wd:Q86896 (p:P2067/psn:P2067) ?v.\n" +
+                                "    ?v wikibase:quantityAmount ?amount;\n" +
+                                "       wikibase:quantityUnit ?unit.\n" +
+                                "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }\n" +
+                                "}";
+                            const url = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(unitQuery);
+                            axios.get(url)
+                                .then(res => (vm.itemsType = 'Quantity', vm.items = vm.generateFilterValuesFromNumbers(response.data['results']['bindings'], res.data['results']['bindings'][0].unitLabel.value)))
                                 .catch(error => {
                                     vm.itemsType = 'Error'
                                 })
-                        }
-                        else {
-                            this.itemsType = 'Quantity';
-                            this.items = this.generateFilterValuesFromNumbers(response.data['results']['bindings'])
+                            
                         }
                     }
                 )
@@ -805,9 +812,9 @@ filtervalues = Vue.component('filter-values', {
         }
         else {
             var sparqlQuery = "SELECT ?value ?valueLabel (COUNT(?value) AS ?count) WHERE {\n" +
-                "  ?v wdt:P31 wd:" + this.classValue + ".\n" +
+                "  ?item wdt:P31 wd:" + this.classValue + ".\n" +
+                " ?item wdt:" + this.currentFilter.value + " ?value.\n" +
                 filterString +
-                " ?v wdt:" + this.currentFilter.value + " ?value.\n" +
                 "  ?value rdfs:label ?valueLabel.\n" +
                 filterRanges +
                 filterQuantities +
@@ -815,7 +822,6 @@ filtervalues = Vue.component('filter-values', {
                 "}\n" +
                 "GROUP BY ?value ?valueLabel\n" +
                 "ORDER BY DESC(?count)";
-            console.log(sparqlQuery);
             const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
             axios.get(fullUrl)
                 .then(response => (response.data['results']['bindings'].length ? (this.itemsType = 'Other', this.items = [...response.data['results']['bindings']]) : this.itemsType = 'Empty'))
