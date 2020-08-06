@@ -1,5 +1,6 @@
 var queryString = window.location.search;
 var urlParams = new URLSearchParams(queryString);
+Vue.config.devtools = true;
 (function (history) {
     var pushState = history.pushState;
     history.pushState = function (state) {
@@ -9,9 +10,46 @@ var urlParams = new URLSearchParams(queryString);
         return pushState.apply(history, arguments);
     }
 })(window.history);
-Vue.config.devtools = true;
+var gBucketsPerFilter = 10;
+
+function numberWithCommas(x) {
+    var parts = x.toString().split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return parts.join(".");
+}
+function NumberRange(lowNumber, highNumber) {
+    this.lowNumber = lowNumber;
+    this.highNumber = highNumber;
+}
+NumberRange.fromString = function (filterText) {
+    var numberRange = new NumberRange();
+    filterText = String(filterText);
+    var numbers = filterText.split(' - ');
+    if (numbers.length == 2) {
+        numberRange.lowNumber = parseFloat(numbers[0]);
+        numberRange.highNumber = parseFloat(numbers[1]);
+    } else {
+        numberRange.lowNumber = parseFloat(filterText);
+        numberRange.highNumber = null;
+    }
+    return numberRange;
+}
+NumberRange.prototype.toString = function () {
+    if (this.highNumber == null) {
+        return this.lowNumber;
+    } else {
+        return this.lowNumber + " - " + this.highNumber;
+    }
+}
+NumberRange.prototype.toDisplayString = function () {
+    if (this.highNumber == null) {
+        return numberWithCommas(this.lowNumber);
+    } else {
+        return numberWithCommas(this.lowNumber) + " - " + numberWithCommas(this.highNumber);
+    }
+}
 classfilter = Vue.component('class-filter', {
-    props: ['classValue', 'appliedFilters', 'classLabel'],
+    props: ['classValue', 'classLabel'],
     template: `
     <div>
         <div class="classSearchSection">
@@ -38,7 +76,7 @@ classfilter = Vue.component('class-filter', {
 })
 
 viewallitems = Vue.component('view-all-items', {
-    props: ['classValue', 'classLabel', 'appliedFilters', 'totalValues', 'appliedRanges'],
+    props: ['classValue', 'classLabel', 'appliedFilters', 'totalValues', 'appliedRanges','appliedQuantities'],
     data() {
         return {
             items: [],
@@ -52,6 +90,7 @@ viewallitems = Vue.component('view-all-items', {
             <p><b>Class</b>: {{ classLabel }} </p>
             <p v-for="filter in appliedFilters"><b>{{filter.filterValueLabel}}</b>: {{ filter.valueLabel }} (<a @click="removeFilter(filter.filterValue)">X</a>)</p>
             <p v-for="range in appliedRanges"><b>{{range.filterValueLabel}}</b>: {{ range.valueLabel }} (<a @click="removeRange(range)">X</a>)</p>
+            <p v-for="quantity in appliedQuantities"><b>{{quantity.filterValueLabel}}</b>: {{ quantity.valueLabel }} (<a @click="removeQuantity(quantity)">X</a>)</p>
         </div>
         <div class="content" id="viewallitems">
             <div class="classOptionsSection">
@@ -83,6 +122,9 @@ viewallitems = Vue.component('view-all-items', {
         },
         removeRange(range) {
             this.$emit("remove-range", range, 'view-all-items');
+        },
+        removeQuantity(quantity) {
+            this.$emit("remove-quantity", quantity, 'view-all-items');
         }
     },
     mounted() {
@@ -110,27 +152,19 @@ viewallitems = Vue.component('view-all-items', {
                 "  ?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
                 "  FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?time" + i + " && ?time" + i + " < '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n"
         }
-
-        // Count the number of results
-        // var countQuery = "\n" +
-        // "SELECT (COUNT(?value) AS ?c) WHERE {\n" +
-        // "  ?value wdt:P31 wd:"+this.classValue+".\n" +
-        // filterString +
-        // filterRanges+
-        // "}";
-        // const countUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(countQuery);
-        // axios.get(countUrl)
-        //     .then(response => this.itemsCount = response.data['results']['bindings'][0].c.value)
-        //     .catch(error => {
-        //         this.items.push({ value: "Error" })
-        //     })
-
+        var filterQuantities = "";
+        for (let i = 0; i < this.appliedQuantities.length; i++) {
+            filterQuantities += "?value (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
+                "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
+        }
         // Fetch results
         var sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
             "  ?value wdt:P31 wd:" + this.classValue + ".  \n" +
             filterString +
             "  ?value rdfs:label ?valueLabel.\n" +
             filterRanges +
+            filterQuantities+
             "  FILTER((LANG(?valueLabel)) = \"en\")\n" +
             "}";
         const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
@@ -143,7 +177,7 @@ viewallitems = Vue.component('view-all-items', {
 })
 
 filtersview = Vue.component('filters-view', {
-    props: ['classValue', 'classLabel', 'appliedFilters', 'totalValues', 'appliedRanges'],
+    props: ['classValue', 'classLabel', 'appliedFilters', 'totalValues', 'appliedRanges', 'appliedQuantities'],
     data() {
         return { filters: [] }
     },
@@ -203,7 +237,7 @@ filtersview = Vue.component('filters-view', {
 })
 
 filtervalues = Vue.component('filter-values', {
-    props: ['classValue', 'classLabel', 'currentFilter', 'appliedFilters', 'totalValues', 'appliedRanges'],
+    props: ['classValue', 'classLabel', 'currentFilter', 'appliedFilters', 'totalValues', 'appliedRanges', 'appliedQuantities'],
     data() {
         return {
             items: [],
@@ -220,7 +254,8 @@ filtervalues = Vue.component('filter-values', {
             <p v-if="!appliedFilters.length">No filters</p>
             <p v-for="filter in appliedFilters"><b>{{filter.filterValueLabel}}</b>: {{ filter.valueLabel }} (<a @click="removeFilter(filter.filterValue)">X</a>)</p>
             <p v-for="range in appliedRanges"><b>{{range.filterValueLabel}}</b>: {{ range.valueLabel }} (<a @click="removeRange(range)">X</a>)</p>
-        </div>
+            <p v-for="quantity in appliedQuantities"><b>{{quantity.filterValueLabel}}</b>: {{ quantity.valueLabel }} (<a @click="removeQuantity(quantity)">X</a>)</p>
+            </div>
         <div class="content">
             <img v-if="itemsType==''" src='loading.gif'>
                 <p v-else-if="itemsType=='Empty'">There are no values for the filter <b>{{currentFilter.valueLabel}}</b>.</p>
@@ -248,6 +283,20 @@ filtervalues = Vue.component('filter-values', {
                         </li>
                     </ul>
                 </div>
+                <div v-else-if="itemsType=='Quantity'">
+                    <p>There are <b>{{ totalValues }}</b> items that match this description.</p>
+                    <p> Select a value for <b>{{currentFilter.valueLabel}}</b>:</p>
+                    <ul v-if="displayCount == 1">
+                        <li v-for="item in items">
+                            <a @click="applyQuantityRange(item)">{{item.bucketName}} </a> ({{item.numValues}} results)
+                        </li>
+                    </ul>
+                    <ul v-if="displayCount == 0">
+                        <li v-for="item in items">
+                            <a @click="applyQuantityRange(item)">{{item.bucketName}} </a>
+                        </li>
+                    </ul>
+                </div>
         </div>
     </div>`,
     methods: {
@@ -260,11 +309,17 @@ filtervalues = Vue.component('filter-values', {
         applyRange(range) {
             this.$emit('apply-range', range)
         },
+        applyQuantityRange(range) {
+            this.$emit('apply-quantity', range)
+        },
         removeFilter(value) {
             this.$emit("remove-filter", value, 'filter-values');
         },
         removeRange(range) {
             this.$emit("remove-range", range, 'filter-values');
+        },
+        removeQuantity(quantity) {
+            this.$emit("remove-quantity", quantity, 'filter-values');
         },
         monthNumberToString(monthNum) {
             if (monthNum == 1) {
@@ -533,34 +588,217 @@ filtervalues = Vue.component('filter-values', {
             }
             this.displayCount = val;
             return propertyValues;
-        }
+        },
+        getNearestNiceNumber(num, previousNum, nextNum) {
+            if (previousNum == null) {
+                var smallestDifference = nextNum - num;
+            } else if (nextNum == null) {
+                var smallestDifference = num - previousNum;
+            } else {
+                var smallestDifference = Math.min(num - previousNum, nextNum - num);
+            }
 
+            var base10LogOfDifference = Math.log(smallestDifference) / Math.LN10;
+            var significantFigureOfDifference = Math.floor(base10LogOfDifference);
+
+            var powerOf10InCorrectPlace = Math.pow(10, Math.floor(base10LogOfDifference));
+            var significantDigitsOnly = Math.round(num / powerOf10InCorrectPlace);
+            var niceNumber = significantDigitsOnly * powerOf10InCorrectPlace;
+
+            // Special handling if it's the first or last number in the series -
+            // we have to make sure that the "nice" equivalent is on the right
+            // "side" of the number.
+
+            // That's especially true for the last number -
+            // it has to be greater, not just equal to, because of the way
+            // number filtering works.
+            // ...or does it??
+            if (previousNum == null && niceNumber > num) {
+                niceNumber -= powerOf10InCorrectPlace;
+            }
+            if (nextNum == null && niceNumber < num) {
+                niceNumber += powerOf10InCorrectPlace;
+            }
+
+            // Now, we have to turn it into a string, so that the resulting
+            // number doesn't end with something like ".000000001" due to
+            // floating-point arithmetic.
+            var numDecimalPlaces = Math.max(0, 0 - significantFigureOfDifference);
+            return niceNumber.toFixed(numDecimalPlaces);
+        },
+        generateIndividualFilterValuesFromNumbers(uniqueValues) {
+            // Unfortunately, object keys aren't necessarily cycled through
+            // in the correct order - put them in an array, so that they can
+            // be sorted.
+            var uniqueValuesArray = [];
+            for (uniqueValue in uniqueValues) {
+                uniqueValuesArray.push(uniqueValue);
+            }
+
+            // Sort numerically, not alphabetically.
+            uniqueValuesArray.sort(function (a, b) { return a - b; });
+
+            var propertyValues = [];
+            for (i = 0; i < uniqueValuesArray.length; i++) {
+                var uniqueValue = uniqueValuesArray[i];
+                var curBucket = {};
+                curBucket['bucketName'] = uniqueValue;
+                curBucket['numValues'] = uniqueValues[uniqueValue];
+                curBucket['bucketUL'] = uniqueValue;
+                curBucket['bucketLL'] = uniqueValue;
+                propertyValues.push(curBucket);
+            }
+            return propertyValues;
+        },
+        generateFilterValuesFromNumbers(numberArray) {
+            var numNumbers = numberArray.length;
+            // First, find the number of unique values - if it's the value of
+            // gBucketsPerFilter, or fewer, just display each one as its own
+            // bucket.
+            var numUniqueValues = 0;
+            var uniqueValues = {};
+            for (i = 0; i < numNumbers; i++) {
+                var curNumber = Number(numberArray[i].amount.value);
+                if (!uniqueValues.hasOwnProperty(curNumber)) {
+                    uniqueValues[curNumber] = 1;
+                    numUniqueValues++;
+                    if (numUniqueValues > gBucketsPerFilter) continue;
+                } else {
+                    // We do this now to save time on the next step,
+                    // if we're creating individual filter values.
+                    uniqueValues[curNumber]++;
+                }
+            }
+            if (numUniqueValues <= gBucketsPerFilter) {
+                return this.generateIndividualFilterValuesFromNumbers(uniqueValues);
+            }
+            var propertyValues = [];
+            var separatorValue = Number(numberArray[0].amount.value);
+            // Make sure there are at least, on average, five numbers per bucket.
+            // HACK - add 3 to the number so that we don't end up with just one
+            // bucket ( 7 + 3 / 5 = 2).
+            var numBuckets = Math.min(gBucketsPerFilter, Math.floor((numNumbers + 3) / 5));
+            var bucketSeparators = [];
+            bucketSeparators.push(Number(numberArray[0].amount.value));
+            for (i = 1; i < numBuckets; i++) {
+                separatorIndex = Math.floor(numNumbers * i / numBuckets) - 1;
+                previousSeparatorValue = separatorValue;
+                separatorValue = Number(numberArray[separatorIndex].amount.value);
+                if (separatorValue == previousSeparatorValue) {
+                    continue;
+                }
+                bucketSeparators.push(separatorValue);
+            }
+            bucketSeparators.push(Math.ceil(Number(numberArray[numberArray.length - 1].amount.value)));
+            bucketSeparators.sort(function (a, b) { return a-b });
+            // Get the closest "nice" (few significant digits) number for each of
+            // the bucket separators, with the number of significant digits
+            // required based on their proximity to their neighbors.
+            // The first and last separators need special handling.
+            bucketSeparators[0] = this.getNearestNiceNumber(bucketSeparators[0], null, bucketSeparators[1]);
+            for (i = 1; i < bucketSeparators.length - 1; i++) {
+                bucketSeparators[i] = this.getNearestNiceNumber(bucketSeparators[i], bucketSeparators[i - 1], bucketSeparators[i + 1]);
+            }
+            bucketSeparators[bucketSeparators.length - 1] = this.getNearestNiceNumber(bucketSeparators[bucketSeparators.length - 1], bucketSeparators[bucketSeparators.length - 2], null);
+            var oldSeparatorValue = bucketSeparators[0];
+            var separatorValue;
+            for (i = 1; i < bucketSeparators.length; i++) {
+                separatorValue = bucketSeparators[i];
+                var curBucket = {};
+                curBucket['numValues'] = 0;
+                var curFilter = new NumberRange(oldSeparatorValue, separatorValue);
+                curBucket['bucketName'] = curFilter.toString();
+                curBucket['bucketLL'] = curFilter.lowNumber;
+                curBucket['bucketUL'] = curFilter.highNumber;
+                propertyValues.push(curBucket);
+                oldSeparatorValue = separatorValue;
+            }
+            var curSeparator = 0;
+            for (i = 0; i < numberArray.length; i++) {
+                if (curSeparator < propertyValues.length - 1) {
+                    var curNumber = Number(numberArray[i].amount.value);
+                    while (curNumber >= bucketSeparators[curSeparator + 1]) {
+                        curSeparator++;
+                    }
+                }
+                propertyValues[curSeparator]['numValues']++;
+            }
+            return propertyValues;
+        }
     },
     mounted() {
         var filterString = "";
         for (let i = 0; i < this.appliedFilters.length; i++) {
-            filterString += "?v wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n";
+            filterString += "?value wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n";
         }
         var filterRanges = "";
         for (let i = 0; i < this.appliedRanges.length; i++) {
-            filterRanges += "?v (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
-                "  ?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
+            filterRanges += "?value wdt:" + this.appliedRanges[i].filterValue + " ?time" + i + ".\n" +
                 "  FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?time" + i + " && ?time" + i + " < '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n"
         }
+        var filterQuantities = "";
+        for (let i = 0; i < this.appliedQuantities.length; i++) {
+            filterQuantities += "?v (p:"+this.appliedQuantities[i].filterValue+"/psv:"+this.appliedQuantities[i].filterValue+") ?amount"+i+".\n" +
+                "  ?amount"+i+" wikibase:quantityAmount ?amountValue"+i+".\n" +
+                "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue"+i+" && ?amountValue"+i+" >" + this.appliedQuantities[i].valueLL+")\n"
+        }
+
         if (this.currentFilter.property == "Time") {
             var sparqlQuery = "SELECT ?time WHERE {\n" +
-                "  ?v wdt:P31 wd:" + this.classValue + ".\n" +
+                "?value wdt:P31 wd:"+this.classValue+".\n" +
                 filterString +
-                "   ?v  (p:" + this.currentFilter.value + "/psv:" + this.currentFilter.value + ") ?timenode.\n" +
-                "  ?v rdfs:label ?vLabel.\n" +
+                "?value wdt:"+this.currentFilter.value+" ?time.\n" +
                 filterRanges +
-                "  ?timenode wikibase:timeValue ?time.\n" +
-                "  FILTER((LANG(?vLabel)) = \"en\").\n" +
+                filterQuantities +
                 "}\n" +
-                "ORDER BY ?time";
+                "ORDER by ?time";
+                console.log(sparqlQuery);
             const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
             axios.get(fullUrl)
                 .then(response => (response.data['results']['bindings'].length ? (this.itemsType = 'Time', this.items = this.generateDatePropertyValues(response.data['results']['bindings'], this.currentFilter)) : this.itemsType = 'Empty'))
+                .catch(error => {
+                    this.itemsType = 'Error'
+                })
+        }
+        else if (this.currentFilter.property == "Quantity") {
+            var sparqlQuery = "SELECT ?amount WHERE {\n" +
+                "    ?value wdt:P31 wd:"+this.classValue+".\n" +
+                filterString +
+                "    ?value (p:"+this.currentFilter.value+"/psn:"+this.currentFilter.value+") ?v.\n" +
+                "    ?v wikibase:quantityAmount ?amount.\n" +
+                filterRanges +
+                filterQuantities+
+                "}\n" +
+                "ORDER BY ?amount";
+            const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
+            let vm = this;
+            axios.get(fullUrl)
+                .then(response => (response.data['results']['bindings'].length>10 ? (this.itemsType = 'Quantity', this.items = this.generateFilterValuesFromNumbers(response.data['results']['bindings'])) : this.itemsType = ''))
+                .then(
+                    function (response) {
+                        if (response == "") {
+                            var sparqlQuery2 = "SELECT ?amount WHERE {\n" +
+                                "    ?value wdt:P31 wd:"+vm.classValue+".\n" +
+                                filterString +
+                                "    ?value (p:"+vm.currentFilter.value+"/psv:"+vm.currentFilter.value+") ?v.\n" +
+                                "    ?v wikibase:quantityAmount ?amount.\n" +
+                                filterRanges +
+                                filterQuantities+
+                                "}\n" +
+                                "ORDER BY ?amount";
+                            const fullUr = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery2);
+                            axios.get(fullUr)
+                                .then(res => (res.data['results']['bindings'].length ? (vm.itemsType = 'Quantity', vm.items = vm.generateFilterValuesFromNumbers(res.data['results']['bindings'])) : vm.itemsType = 'Still Empty'))
+                                .catch(error => {
+                                    vm.itemsType = 'Error'
+                                })
+                        }
+                        else {
+                            this.itemsType = 'Quantity';
+                            this.items = this.generateFilterValuesFromNumbers(response.data['results']['bindings'])
+                        }
+                    }
+                )
                 .catch(error => {
                     this.itemsType = 'Error'
                 })
@@ -572,10 +810,12 @@ filtervalues = Vue.component('filter-values', {
                 " ?v wdt:" + this.currentFilter.value + " ?value.\n" +
                 "  ?value rdfs:label ?valueLabel.\n" +
                 filterRanges +
+                filterQuantities +
                 "  FILTER(LANG(?valueLabel) = 'en').\n" +
                 "}\n" +
                 "GROUP BY ?value ?valueLabel\n" +
                 "ORDER BY DESC(?count)";
+            console.log(sparqlQuery);
             const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
             axios.get(fullUrl)
                 .then(response => (response.data['results']['bindings'].length ? (this.itemsType = 'Other', this.items = [...response.data['results']['bindings']]) : this.itemsType = 'Empty'))
@@ -587,7 +827,7 @@ filtervalues = Vue.component('filter-values', {
 })
 
 subclass = Vue.component('subclass-view', {
-    props: ['classValue', 'classLabel', 'appliedFilters', 'appliedRanges'],
+    props: ['classValue', 'classLabel', 'appliedFilters', 'appliedRanges', 'appliedQuantities'],
     data() {
         return { items: [] }
     },
@@ -644,7 +884,7 @@ subclass = Vue.component('subclass-view', {
 })
 
 superclass = Vue.component('superclass-view', {
-    props: ['classValue', 'classLabel', 'appliedFilters', 'appliedRanges'],
+    props: ['classValue', 'classLabel', 'appliedFilters', 'appliedRanges', 'appliedQuantities'],
     data() {
         return { items: [] }
     },
@@ -711,6 +951,7 @@ var app = new Vue({
         currentFilterPropertyType: '',
         appFilters: [],
         appRanges: [],
+        appQuantities: [],
         getFiltersFromURL: 1,
         allItemscomponentKey: 0,
         filterscomponentKey: 0,
@@ -778,7 +1019,7 @@ var app = new Vue({
                     filterValueLabel: this.currentFilter.valueLabel,
                     valueLabel: range.bucketName,
                     valueLL: range.bucketLL,
-                    valueUL: range.bucketUL
+                    valRangesueUL: range.bucketUL
                 }
             }
             else {
@@ -794,6 +1035,30 @@ var app = new Vue({
             urlParams.set("range[" + this.currentFilter.value + "]", range.bucketLL + "|" + range.bucketUL)
             this.updatePage('view-all-items')
         },
+        applyQuantityRange: function (range) {
+            const i = this.appQuantities.findIndex(_item => _item.filterValue == this.currentFilter.value);
+            if (i > -1) {
+                this.appQuantities[i] = {
+                    filterValue: this.currentFilter.value,
+                    filterValueLabel: this.currentFilter.valueLabel,
+                    valueLabel: range.bucketName,
+                    valueLL: range.bucketLL,
+                    valueUL: range.bucketUL
+                }
+            }
+            else {
+                this.appQuantities.push({
+                    filterValue: this.currentFilter.value,
+                    filterValueLabel: this.currentFilter.valueLabel,
+                    valueLabel: range.bucketName,
+                    valueLL: range.bucketLL,
+                    valueUL: range.bucketUL
+                });
+            }
+
+            urlParams.set("quantity[" + this.currentFilter.value + "]", range.bucketLL + "|" + range.bucketUL)
+            this.updatePage('view-all-items')
+        },
         forceAllItemsRerender() {
             this.allItemscomponentKey += 1;
         },
@@ -801,7 +1066,7 @@ var app = new Vue({
             this.filterscomponentKey += 1;
         },
         removeFilter: function (value, page) {
-            index = this.appFilters.findIndex(filter => fLLilter.filterValue == value);
+            index = this.appFilters.findIndex(filter => filter.filterValue == value);
             this.appFilters.splice(index, 1)
             urlParams.delete("filter[" + value + "]")
             this.updatePage(page)
@@ -813,6 +1078,15 @@ var app = new Vue({
             index = this.appRanges.findIndex(filter => filter.filterValue == range.filterValue);
             this.appRanges.splice(index, 1)
             urlParams.delete("range[" + range.filterValue + "]")
+            this.updatePage(page)
+            this.getFiltersFromURL = 0
+            this.forceAllItemsRerender()
+            this.forceFiltersRerender()
+        },
+        removeQuantity: function (quantity, page) {
+            index = this.appQuantities.findIndex(filter => filter.filterValue == quantity.filterValue);
+            this.appQuantities.splice(index, 1)
+            urlParams.delete("quantity[" + quantity.filterValue + "]")
             this.updatePage(page)
             this.getFiltersFromURL = 0
             this.forceAllItemsRerender()
@@ -901,6 +1175,24 @@ var app = new Vue({
                 }
             }
             return this.appRanges
+        },
+        appliedQuantities: function () {
+            if (this.appQuantities.length == 0 && this.getFiltersFromURL == 1) {
+                url = decodeURI(urlParams);
+                var res = url.match(/quantity\[P\d+\]/g);
+                if (res != null) {
+                    for (var i = 0; i < res.length; i++) {
+                        this.appQuantities.push({
+                            filterValue: res[i].split("[")[1].slice(0, -1),
+                            filterValueLabel: res[i].split("[")[1].slice(0, -1),
+                            valueLL: urlParams.get(res[i]).split("|")[0].trim(),
+                            valueUL: urlParams.get(res[i]).split("|")[1].trim(),
+                            valueLabel: urlParams.get(res[i]).split("|")[0].trim() + " - " + urlParams.get(res[i]).split("|")[1].trim()
+                        })
+                    }
+                }
+            }
+            return this.appQuantities
         }
     }
 })

@@ -36,13 +36,15 @@
             @change-page="updatePage"
             @remove-filter="removeFilter"
             @remove-range="removeRange"
+            @remove-quantity="removeQuantity"
             v-if="view =='view-all-items'"
             :total-values="totalValues"
             :class-label="classLabel"
             :class-value="classValue"
             :key="allItemscomponentKey"
             :applied-filters="appliedFilters"
-            :applied-ranges="appliedRanges">
+            :applied-ranges="appliedRanges"
+            :applied-quantities="appliedQuantities">
         </view-all-items>
 
         <filters-view 
@@ -53,15 +55,18 @@
             :class-label="classLabel"
             :class-value="classValue"
             :applied-filters="appliedFilters"
-            :applied-ranges="appliedRanges">
+            :applied-ranges="appliedRanges"
+            :applied-quantities="appliedQuantities">
         </filters-view>
 
         <filter-values 
             @change-page="updatePage"
             @apply-filter="applyFilter"
             @apply-range="applyRange" 
+            @apply-quantity="applyQuantityRange" 
             @remove-filter="removeFilter"
             @remove-range="removeRange"
+            @remove-quantity="removeQuantity"            
             v-if="view =='filter-values'" 
             :key="filterscomponentKey"
             :total-values="totalValues"
@@ -69,7 +74,8 @@
             :class-value="classValue"
             :current-Filter="currentFilter"
             :applied-filters="appliedFilters"
-            :applied-ranges="appliedRanges">
+            :applied-ranges="appliedRanges"
+            :applied-quantities="appliedQuantities">
         </filter-values>
 
         <subclass-view
@@ -80,7 +86,8 @@
             :class-value="classValue"
             :current-Filter="currentFilter" 
             :applied-filters="appliedFilters"
-            :applied-ranges="appliedRanges">
+            :applied-ranges="appliedRanges"
+            :applied-quantities="appliedQuantities">
         </subclass-view>
 
         <superclass-view
@@ -91,7 +98,8 @@
             :class-value="classValue"
             :current-Filter="currentFilter" 
             :applied-filters="appliedFilters"
-            :applied-ranges="appliedRanges">
+            :applied-ranges="appliedRanges"
+            :applied-quantities="appliedQuantities">
         </superclass-view>
         
     </div>
