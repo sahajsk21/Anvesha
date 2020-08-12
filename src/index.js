@@ -52,14 +52,14 @@ classfilter = Vue.component('class-filter', {
     props: ['classValue', 'classLabel'],
     data() {
         return {
-            clsValue: this.classValue,
+            clsValue: '',
         }
     },
     template: `
     <div>
         <div class="classSearchSection">
-            <h3>Class: {{classLabel}}</h3>
-            <input v-model="clsValue" @keyup.enter="submit(clsValue,classLabel)" class="classSearch" type="text" style="margin-bottom: 15px;">
+            <h3>Class:</h3>
+            <input v-model="clsValue" @keyup.enter="submit(clsValue,'')" class="classSearch" type="text" style="margin-bottom: 15px;">
         </div>
         <a @click="submit(clsValue,classLabel)">Browse this class</a>
         <p style="margin-top:20px">Or, browse any of the following classes:</p>
@@ -101,7 +101,7 @@ results = Vue.component('items-results',{
     },
     template:`
     <div>
-    <p>There are <b>{{ itemsCount }}</b> items that match this description.</p>
+    <p>There are <b>{{ itemsCount<1000000?itemsCount:"1000000+" }}</b> items that match this description.</p>
         <img v-if="!items.length" src='loading.gif'>
         <p v-else-if="items[0].value=='Empty'">No items match this description.</p>
         <p v-else-if="items[0].value=='Error'">The attempt to display a list of items took too long; please consider adding more filters.</p>
@@ -148,7 +148,7 @@ results = Vue.component('items-results',{
             filterQuantities +
             "  FILTER((LANG(?valueLabel)) = \"en\")\n" +
             "} \n" +
-            "ORDER BY ?valueLabel\n" +
+            (this.itemsCount>50000?"":"ORDER BY ?valueLabel\n")+
             "LIMIT 200 OFFSET " + ((this.currentPage - 1) * 200);
         fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
         axios.get(fullUrl)
@@ -189,7 +189,9 @@ viewallitems = Vue.component('view-all-items', {
                 <a class="classOptions" @click="changeView('subclass-view')">More specific class</a>
                 <a class="classOptions" @click="changeView('class-filter')" style="margin-bottom:20px">Change to a new class</a>
             </div>
-            <items-results
+            <img v-if="itemsCount==''" src='loading.gif'>
+
+            <items-results v-if="itemsCount!=''"
                 :total-values="totalValues"
                 :class-label="classLabel"
                 :class-value="classValue"
@@ -202,7 +204,7 @@ viewallitems = Vue.component('view-all-items', {
             </items-results>
             <div v-if="itemsCount!=''" style="text-align: center">
                 <a @click="currentPage>1?currentPage--:''">&lt;</a>
-                <input v-model="currentPage" type="text" style="margin-bottom: 15px;width: 48px;text-align: center"> / {{Math.ceil(itemsCount/200)}}
+                <input v-model="currentPage" type="text" style="margin-bottom: 15px;width: 48px;text-align: center"> {{itemsCount<1000000?" / " + Math.ceil(itemsCount/200):''}}
                 <a @click="currentPage<itemsCount/200?currentPage++:''">&gt;</a>
             </div>
         </div>
@@ -236,7 +238,7 @@ viewallitems = Vue.component('view-all-items', {
             "}";
         var fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
         axios.get(fullUrl)
-            .then(response => (response.data['results']['bindings'].length ? (this.filtersCount = response.data['results']['bindings'].length,this.filters = [...response.data['results']['bindings']]) : this.filters.push({ value: "Empty", valueLabel: "No data" })))
+            .then(response => (response.data['results']['bindings'] ? (this.filtersCount = response.data['results']['bindings'].length,this.filters = [...response.data['results']['bindings']]) : this.filters.push({ value: "Empty", valueLabel: "No data" })))
             .catch(error => {
                 this.items.push({ value: "Error" })
             })
@@ -265,7 +267,6 @@ viewallitems = Vue.component('view-all-items', {
 
             }
         }
-
         // Fetch number of items
         sparqlQuery = "SELECT (COUNT(?value) AS ?count) WHERE {\n" +
             "  ?value wdt:P31 wd:" + this.classValue + ".  \n" +
@@ -279,9 +280,9 @@ viewallitems = Vue.component('view-all-items', {
         axios.get(fullUrl)
             .then(response => this.itemsCount = response.data['results']['bindings'][0].count.value)
             .catch(error => {
-                this.items.push({ value: "Error" })
+                this.itemsCount =1000000
             })
-
+            
     }
 })
 
@@ -674,7 +675,6 @@ filtervalues = Vue.component('filter-values', {
                     propertyValues[index].numValues += 1
                 }
             } else if (dayDifference > 1) {
-
                 // Split into days.
                 // We can't just do "curDate = earliestDate" because that
                 // won't make a copy.
@@ -687,7 +687,7 @@ filtervalues = Vue.component('filter-values', {
                         bucketLL: curDate.getFullYear() + "-" + (curDate.getMonth() + 1) + "-" + curDate.getDate(),
                         bucketUL: curDate.getFullYear() + "-" + (curDate.getMonth() + 1) + "-" + (curDate.getDate() + 1),
                         numValues: 0
-
+                        
                     });
                     curDate.setDate(curDate.getDate() + 1);
                 }
@@ -889,16 +889,17 @@ filtervalues = Vue.component('filter-values', {
             axios.get(fullUrl)
                 .then(response => (response.data['results']['bindings'].length ? (this.itemsType = 'Time', this.items = this.generateDatePropertyValues(response.data['results']['bindings'], this.currentFilter)) : this.itemsType = 'Empty'))
                 .catch(error => {
-                    var sparqlQuery = "SELECT ?time WHERE {\n" +
+                    var sparqlQuery = "SELECT ?time WHERE{SELECT ?time WHERE {\n" +
+                        "  hint:Query hint:optimizer \"None\".\n" +
                         "?item wdt:P31 wd:"+vm.classValue+".\n" +
-                        "?item wdt:P580 ?time.\n" +
+                        "?item wdt:"+vm.currentFilter.value+" ?time.\n" +
                         "}\n" +
-                        "LIMIT 200";
+                        "LIMIT 200\n" +
+                        "}\n" +
+                        "ORDER BY ?time";
                     const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
                     axios.get(fullUrl)
-                        .then(res => (res.data['results']['bindings'].length ? (vm.itemsType = 'TimeFail', vm.items = vm.generateDatePropertyValues(res.data['results']['bindings'].sort(function (a, b) {
-                                    return new Date(a.time.value) - new Date(b.time.value);
-                                }), vm.currentFilter)) : vm.itemsType = 'Empty')
+                        .then(res => (res.data['results']['bindings'].length ? (vm.itemsType = 'TimeFail', vm.items = vm.generateDatePropertyValues(res.data['results']['bindings'], vm.currentFilter)) : vm.itemsType = 'Empty')
                             )
                         .catch(error=>{
                             vm.itemsType = 'Error'
@@ -932,14 +933,14 @@ filtervalues = Vue.component('filter-values', {
                             "ORDER BY ?amount";
                             const fullUr = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery2);
                             axios.get(fullUr)
-                            .then(res => (res.data['results']['bindings'].length ? (vm.itemsType = 'Quantity', vm.items = vm.generateFilterValuesFromNumbers(res.data['results']['bindings'])) : vm.itemsType = 'Still Empty'))
+                            .then(res => (res.data['results']['bindings'].length ? (vm.itemsType = 'Quantity', vm.items = vm.generateFilterValuesFromNumbers(res.data['results']['bindings'])) : vm.itemsType = 'Empty'))
                             .catch(error => {
                                 sparqlQuery = "SELECT ?amount WHERE\n" +
                                 "{\n" +
                                 "  SELECT ?amount WHERE {\n" +
                                 "    hint:Query hint:optimizer \"None\".\n" +
-                                "    ?item wdt:P31 wd:Q5398426.\n" +
-                                "    ?item (p:P2437/psv:P2437) ?v.\n" +
+                                "    ?item wdt:P31 wd:"+vm.classValue+".\n" +
+                                    "    ?item (p:" + vm.currentFilter.value + "/psv:" + vm.currentFilter.value+") ?v.\n" +
                                 "    ?v wikibase:quantityAmount ?amount.\n" +
                                 "}\n" +
                                 "LIMIT 200\n" +
@@ -947,7 +948,7 @@ filtervalues = Vue.component('filter-values', {
                                 "ORDER BY ?amount";
                                 const fullUr = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
                                 axios.get(fullUr)
-                                    .then(r => (r.data['results']['bindings'].length ? (vm.itemsType = 'Quantity', vm.items = vm.generateFilterValuesFromNumbers(r.data['results']['bindings']),vm.displayCount=0) : vm.itemsType = 'Still Empty'))
+                                    .then(r => (r.data['results']['bindings'].length ? (vm.itemsType = 'Quantity', vm.items = vm.generateFilterValuesFromNumbers(r.data['results']['bindings']),vm.displayCount=0) : vm.itemsType = 'Empty'))
                             })
                         }
                         else {
@@ -1002,7 +1003,7 @@ filtervalues = Vue.component('filter-values', {
             axios.get(fullUrl)
                 .then(response => (response.data['results']['bindings'].length ? (this.itemsType="Item",this.items = [...response.data['results']['bindings']]) : this.itemsType = ''))
                 .catch(error => {
-                    var sparqlQuery = "SELECT DISTINCT ?value ?valueLabel WHERE {\n" +
+                    var sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
                         "  hint:Query hint:optimizer \"None\".\n" +
                         "  ?item wdt:P31 wd:"+vm.classValue+".\n" +
                         " ?item wdt:"+vm.currentFilter.value+" ?value.\n" +
@@ -1013,6 +1014,21 @@ filtervalues = Vue.component('filter-values', {
                         "  FILTER(LANG(?valueLabel) = 'en').\n" +
                         "}\n" +
                         "LIMIT 25";
+                    sparqlQuery = "SELECT DISTINCT ?value ?valueLabel\n" +
+                        "{\n" +
+                        "  SELECT ?value ?valueLabel WHERE {\n" +
+                        "  hint:Query hint:optimizer \"None\".\n" +
+                        "  ?item wdt:P31 wd:"+vm.classValue+".\n" +
+                        " ?item wdt:"+vm.currentFilter.value+" ?value.\n" +
+                        filterString +
+                        "  ?value rdfs:label ?valueLabel.\n" +
+                        filterRanges +
+                        filterQuantities +
+                        "  FILTER(LANG(?valueLabel) = 'en').\n" +
+                        "}\n" +
+                        "LIMIT 300\n" +
+                        "}\n" +
+                        "ORDER BY ?valueLabel";
                     const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
                     axios.get(fullUrl)
                         .then(res => (vm.itemsType = "ItemFail",vm.items = [...res.data['results']['bindings']].slice(0).sort(
@@ -1082,13 +1098,15 @@ subclass = Vue.component('subclass-view', {
             .then(response => (response.data['results']['bindings'].length ? this.items = [...response.data['results']['bindings']] : this.items.push({ value: "Empty", valueLabel: "No data" })))
             .catch(error => {
                 sparqlQuery = "SELECT DISTINCT ?value ?valueLabel WHERE {\n" +
-                    "  ?v wdt:P31 ?value.\n" +
-                    "  ?value wdt:P279 wd:"+vm.classValue+".\n" +
-                    "  ?value rdfs:label ?valueLabel.\n" +
-                    "  \n" +
-                    "  FILTER((LANG(?valueLabel)) = \"en\")\n" +
+                    "  SELECT ?value ?valueLabel WHERE {\n" +
+                    "    ?v wdt:P31 ?value.\n" +
+                    "    ?value wdt:P279 wd:"+vm.classValue+";\n" +
+                    "      rdfs:label ?valueLabel.\n" +
+                    "    FILTER((LANG(?valueLabel)) = \"en\")\n" +
+                    "  }\n" +
+                    "  LIMIT 200\n" +
                     "}\n" +
-                    "LIMIT 200";
+                    "ORDER BY ?valueLabel";
                 const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
                 axios.get(fullUrl)
                     .then(response => (response.data['results']['bindings'].length ? (vm.items = [...response.data['results']['bindings']], vm.displayCount = 1) : vm.items.push({ value: "Empty", valueLabel: "No data" })))
@@ -1150,13 +1168,17 @@ superclass = Vue.component('superclass-view', {
         axios.get(fullUrl)
             .then(response => (response.data['results']['bindings'].length ? this.items = [...response.data['results']['bindings']] : this.items.push({ value: "Empty", valueLabel: "No data" })))
             .catch(error=>{
-                sparqlQuery = "SELECT DISTINCT ?value ?valueLabel WHERE {\n" +
+                sparqlQuery = "SELECT DISTINCT ?value ?valueLabel WHERE\n" +
+                    "{SELECT ?value ?valueLabel WHERE {\n" +
                     "  ?v wdt:P31 ?value.\n" +
                     "  wd:"+vm.classValue+" wdt:P279 ?value.\n" +
                     "  ?value rdfs:label ?valueLabel.  \n" +
                     "  FILTER((LANG(?valueLabel)) = \"en\")\n" +
                     "}\n" +
-                    "LIMIT 200";
+                    "LIMIT 200\n" +
+                    "}\n"+
+                    "ORDER BY ?valueLabel";
+
                 const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
                 axios.get(fullUrl)
                     .then(response => (response.data['results']['bindings'].length ? (vm.items = [...response.data['results']['bindings']], vm.displayCount=1) : vm.items.push({ value: "Empty", valueLabel: "No data" })))

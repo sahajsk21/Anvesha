@@ -1,3 +1,6 @@
+a:not([href]):not([class]) {
+  color:#007bff;
+}
 a{
   cursor: pointer;
 }
