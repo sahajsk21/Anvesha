@@ -29,6 +29,7 @@
             @class-label="updateClassValue"
             v-if="view == 'class-filter'"
             :class-value="classValue"
+            :key="allItemscomponentKey"
             :class-label="classLabel">
         </class-filter>
 
@@ -55,6 +56,7 @@
             :total-values="totalValues"
             :class-label="classLabel"
             :class-value="classValue"
+            :key="allItemscomponentKey"
             :applied-filters="appliedFilters"
             :applied-ranges="appliedRanges"
             :applied-quantities="appliedQuantities">
@@ -85,6 +87,7 @@
             v-if="view =='subclass-view'" 
             :class-label="classLabel"
             :class-value="classValue"
+            :key="allItemscomponentKey"
             :current-Filter="currentFilter" 
             :applied-filters="appliedFilters"
             :applied-ranges="appliedRanges"
@@ -98,6 +101,7 @@
             :class-label="classLabel"
             :class-value="classValue"
             :current-Filter="currentFilter" 
+            :key="allItemscomponentKey"
             :applied-filters="appliedFilters"
             :applied-ranges="appliedRanges"
             :applied-quantities="appliedQuantities">
