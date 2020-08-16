@@ -120,12 +120,13 @@ results = Vue.component('items-results',{
         for (let i = 0; i < this.appliedFilters.length; i++) {
             filterString += "?value wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n";
         }
-        var filterRanges = "";
+        var filterRanges = "", maxString = "";
         for (let i = 0; i < this.appliedRanges.length; i++) {
             filterRanges += "?value (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
                 "  ?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
                 "  FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?time" + i + " && ?time" + i + " < '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n"
-        }
+            maxString += "(MAX(?time" + i + ") AS ?tim" + i + ") ";
+            }
         var filterQuantities = "";
         for (let i = 0; i < this.appliedQuantities.length; i++) {
             if (this.appliedQuantities[i].unit == "") {
@@ -137,20 +138,36 @@ results = Vue.component('items-results',{
                 filterQuantities += "?value (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
                     "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
                     "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
-
             }
+            maxString += "(MAX(?amountValue"+i+") AS ?qua"+i+") ";
         }
         // Fetch results
+        // sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
+        //     "  ?value wdt:P31 wd:" + this.classValue + ".  \n" +
+        //     filterString +
+        //     "  ?value rdfs:label ?valueLabel.\n" +
+        //     filterRanges +
+        //     filterQuantities +
+        //     "  FILTER((LANG(?valueLabel)) = \"en\")\n" +
+        //     "} \n" +
+        //     (this.itemsCount>50000?"":"ORDER BY ?valueLabel\n")+
+        //     "LIMIT 200 OFFSET " + ((this.currentPage - 1) * 200);
         sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
-            "  ?value wdt:P31 wd:" + this.classValue + ".  \n" +
+            "  {\n" +
+            "    SELECT ?value ?valueLabel "+maxString+" WHERE {\n" +
+            "      ?value wdt:P31 wd:"+this.classValue+".  \n" +
             filterString +
-            "  ?value rdfs:label ?valueLabel.\n" +
+            "      ?value rdfs:label ?valueLabel.\n" +
             filterRanges +
             filterQuantities +
-            "  FILTER((LANG(?valueLabel)) = \"en\")\n" +
-            "} \n" +
-            (this.itemsCount>50000?"":"ORDER BY ?valueLabel\n")+
-            "LIMIT 200 OFFSET " + ((this.currentPage - 1) * 200);
+            "      FILTER((LANG(?valueLabel)) = \"en\")\n" +
+            "  } \n" +
+            (maxString == "" ? "" : "GROUP BY ?value ?valueLabel\n") +
+            "    " +
+            "LIMIT 200 OFFSET " + ((this.currentPage - 1) * 200)+
+            "  }\n" +
+            "}\n" +
+            (this.itemsCount > 50000 ? "" : "ORDER BY ?valueLabel\n");
         fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
         axios.get(fullUrl)
             .then(response => response.data['results']['bindings'].length ? this.items = [...response.data['results']['bindings']] : this.items.push({ value: "Empty" }))
@@ -188,7 +205,7 @@ viewallitems = Vue.component('view-all-items', {
                 <p v-else><a class="classOptions" @click="changeView('filters-view')">Add a filter</a></p>
                 <a class="classOptions" @click="changeView('superclass-view')">More general class</a>
                 <a class="classOptions" @click="changeView('subclass-view')">More specific class</a>
-                <a class="classOptions" @click="changeView('class-filter')" style="margin-bottom:20px">Change to a new class</a>
+                <!--<a class="classOptions" @click="changeView('class-filter')" style="margin-bottom:20px">Change to a new class</a>-->
             </div>
             <img v-if="itemsCount==''" src='loading.gif'>
 
@@ -236,7 +253,8 @@ viewallitems = Vue.component('view-all-items', {
             "  ?value wikibase:propertyType ?property.\n" +
             "  FILTER (?property in (wikibase:Time, wikibase:Quantity, wikibase:WikibaseItem))  \n" +
             "  FILTER((LANG(?valueLabel)) = \"en\")\n" +
-            "}";
+            "}" +
+            "ORDER BY ?valueLabel";
         var fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
         axios.get(fullUrl)
             .then(response => (response.data['results']['bindings'] ? (this.filtersCount = response.data['results']['bindings'].length,this.filters = [...response.data['results']['bindings']]) : this.filters.push({ value: "Empty", valueLabel: "No data" })))
@@ -269,7 +287,7 @@ viewallitems = Vue.component('view-all-items', {
             }
         }
         // Fetch number of items
-        sparqlQuery = "SELECT (COUNT(?value) AS ?count) WHERE {\n" +
+        sparqlQuery = "SELECT (COUNT(DISTINCT ?value) AS ?count) WHERE {\n" +
             "  ?value wdt:P31 wd:" + this.classValue + ".  \n" +
             filterString +
             "  ?value rdfs:label ?valueLabel.\n" +
@@ -332,7 +350,8 @@ filtersview = Vue.component('filters-view', {
             "  ?value wikibase:propertyType ?property.\n" +
             "  FILTER (?property in (wikibase:Time, wikibase:Quantity, wikibase:WikibaseItem))  \n" +
             "  FILTER((LANG(?valueLabel)) = \"en\")\n" +
-            "}";
+            "}" +
+            "ORDER BY ?valueLabel";
         const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
         axios.get(fullUrl)
             .then(response => (response.data['results']['bindings'].length ? this.filters = [...response.data['results']['bindings']] : this.filters.push({ value: "Empty", valueLabel: "No data" })))
@@ -368,7 +387,7 @@ filtervalues = Vue.component('filter-values', {
             <p v-else-if="itemsType=='Error'">The attempt to display a list of items took too long; please consider adding more filters.</p>
             <div v-else-if="itemsType=='Item'">
                 <p>There are <b>{{ totalValues }}</b> items that match this description.</p>
-                <p> Select a value for <b>{{currentFilter.valueLabel}}</b>:</p>
+                <p> Select {{ appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) !=-1?"an additional value":"a value"}} for <b>{{currentFilter.valueLabel}}</b>: </p>
                 <ul>
                     <li v-for="(item,index) in items" v-if="index != appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) ">
                         <a @click="applyFilter(item)">{{item.valueLabel.value}}</a> ({{item.count.value}} results)
@@ -388,7 +407,7 @@ filtervalues = Vue.component('filter-values', {
                 <p>There are <b>{{ totalValues }}</b> items that match this description.</p>
                 <p> Select a value for <b>{{currentFilter.valueLabel}}</b>:</p>
                 <ul v-if="displayCount == 1">
-                    <li v-for="item in items">
+                    <li v-for="item in items" v-if="item.numValues>0">
                         <a @click="applyRange(item)">{{item.bucketName}} </a> ({{item.numValues}} results)
                     </li>
                 </ul>
@@ -412,7 +431,7 @@ filtervalues = Vue.component('filter-values', {
                 <p v-if="displayCount == 0"><i>(Getting a complete set of values for this filter took too long; instead, here is a possibly incomplete set.)</i></p>
                 <p> Select a value for <b>{{currentFilter.valueLabel}}</b>:</p>
                 <ul v-if="displayCount == 1">
-                    <li v-for="item in items">
+                    <li v-for="item in items" v-if="item.numValues>0">
                         <a @click="applyQuantityRange(item)">{{item.bucketName}} {{item.unit}} </a> ({{item.numValues}} results)
                     </li>
                 </ul>
@@ -509,6 +528,12 @@ filtervalues = Vue.component('filter-values', {
             }
             return date
         },
+        yearToBCFormat(year){
+            if(Number(year)<0){
+                return (Number(year)*-1) +" BC"
+            }
+            return year
+        },
         generateDatePropertyValues(dateArray, range) {
             var len = dateArray.length,
             start = 0,
@@ -549,7 +574,7 @@ filtervalues = Vue.component('filter-values', {
                 var curYear = iniYear = Math.floor(earliestYear / 100) * 100;
                 while (curYear <= latestYear) {
                     propertyValues.push({
-                        bucketName: curYear + " - " + (curYear + 99),
+                        bucketName: this.yearToBCFormat(curYear) + " - " + this.yearToBCFormat(curYear + 99),
                         bucketLL: curYear + '-01-01',
                         bucketUL: (curYear + 100) + '-01-01',
                         numValues: 0
@@ -567,7 +592,7 @@ filtervalues = Vue.component('filter-values', {
                 var curYear = iniYear = Math.floor(earliestYear / 50) * 50;
                 while (curYear <= latestYear) {
                     propertyValues.push({
-                        bucketName: curYear + " - " + (curYear + 49),
+                        bucketName: this.yearToBCFormat(curYear) + " - " + this.yearToBCFormat(curYear + 49),
                         bucketLL: curYear + '-01-01',
                         bucketUL: (curYear + 49) + '-12-31',
                         numValues: 0
@@ -585,7 +610,7 @@ filtervalues = Vue.component('filter-values', {
                 var curYear = iniYear = Math.floor(earliestYear / 10) * 10;
                 while (curYear <= latestYear) {
                     propertyValues.push({
-                        bucketName: curYear + " - " + (curYear + 9),
+                        bucketName: this.yearToBCFormat(curYear) + " - " + this.yearToBCFormat(curYear + 9),
                         bucketLL: curYear + '-01-01',
                         bucketUL: (curYear + 9) + '-12-31',
                         numValues: 0
@@ -603,7 +628,7 @@ filtervalues = Vue.component('filter-values', {
                 var curYear = iniYear = Math.floor(earliestYear / 5) * 5;
                 while (curYear <= latestYear) {
                     propertyValues.push({
-                        bucketName: curYear + " - " + (curYear + 4),
+                        bucketName: this.yearToBCFormat(curYear) + " - " + this.yearToBCFormat(curYear + 4),
                         bucketLL: curYear + '-01-01',
                         bucketUL: (curYear + 4) + '-12-31',
                         numValues: 0
@@ -621,7 +646,7 @@ filtervalues = Vue.component('filter-values', {
                 var curYear = iniYear = earliestYear;
                 while (curYear <= latestYear) {
                     propertyValues.push({
-                        bucketName: curYear,
+                        bucketName: this.yearToBCFormat(curYear),
                         bucketLL: curYear + '-01-01',
                         bucketUL: curYear + '-12-31',
                         numValues: 0
@@ -645,7 +670,7 @@ filtervalues = Vue.component('filter-values', {
                 // propertyValues.push(curYear);
                 while (curYear < latestYear || (curYear == latestYear && curMonth <= latestMonth)) {
                     propertyValues.push({
-                        bucketName: this.monthNumberToString(curMonth) + " " + curYear,
+                        bucketName: this.monthNumberToString(curMonth) + " " + this.yearToBCFormat(curYear),
                         bucketLL: curYear + "-" + curMonth + "-01",
                         bucketUL: curYear + "-" + curMonth + "-30",
                         numValues: 0
@@ -944,6 +969,9 @@ filtervalues = Vue.component('filter-values', {
                                 const fullUr = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
                                 axios.get(fullUr)
                                     .then(r => (r.data['results']['bindings'].length ? (vm.itemsType = 'Quantity', vm.items = vm.generateFilterValuesFromNumbers(r.data['results']['bindings']),vm.displayCount=0) : vm.itemsType = 'Empty'))
+                                    .catch(error => {
+                                        vm.itemsType = 'Error'
+                                    })
                             })
                         }
                         else {
@@ -956,7 +984,7 @@ filtervalues = Vue.component('filter-values', {
                                 "}";
                             const url = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(unitQuery);
                             axios.get(url)
-                                .then(res => (vm.itemsType = 'Quantity', vm.items = vm.generateFilterValuesFromNumbers(response.data['results']['bindings'], res.data['results']['bindings'][0].unitLabel.value)))
+                                .then(res => response.data['results']['bindings'].length ? (vm.itemsType = 'Quantity', vm.items = vm.generateFilterValuesFromNumbers(response.data['results']['bindings'], res.data['results']['bindings'][0].unitLabel.value)) : vm.itemsType = 'Empty')
                                 .catch(error => {
                                     vm.itemsType = 'Error'
                                 })
@@ -979,6 +1007,9 @@ filtervalues = Vue.component('filter-values', {
                     const url = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
                     axios.get(url)
                         .then(res => (vm.itemsType = 'Quantity', vm.items = vm.generateFilterValuesFromNumbers(res.data['results']['bindings']), vm.displayCount=0))
+                        .catch(error => {
+                            vm.itemsType = 'Error'
+                        })
                 })
         }
         else {
@@ -996,7 +1027,7 @@ filtervalues = Vue.component('filter-values', {
                 "ORDER BY DESC(?count)";
             const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
             axios.get(fullUrl)
-                .then(response => (response.data['results']['bindings'].length ? (this.itemsType="Item",this.items = [...response.data['results']['bindings']]) : this.itemsType = ''))
+                .then(response => (response.data['results']['bindings'].length ? (this.itemsType="Item",this.items = [...response.data['results']['bindings']]) : this.itemsType = 'Empty'))
                 .catch(error => {
                     var sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
                         "  hint:Query hint:optimizer \"None\".\n" +
@@ -1033,6 +1064,9 @@ filtervalues = Vue.component('filter-values', {
                                 return x < y ? -1 : x > y ? 1 : 0;
                             }
                         )))
+                        .catch(error => {
+                            vm.itemsType = 'Error'
+                        })
 
                 })
         }
@@ -1105,7 +1139,9 @@ subclass = Vue.component('subclass-view', {
                 const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
                 axios.get(fullUrl)
                     .then(response => (response.data['results']['bindings'].length ? (vm.items = [...response.data['results']['bindings']], vm.displayCount = 1) : vm.items.push({ value: "Empty", valueLabel: "No data" })))
-
+                    .catch(error => {
+                        vm.itemsType = 'Error'
+                    })
             })
     }
 })
@@ -1177,7 +1213,9 @@ superclass = Vue.component('superclass-view', {
                 const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
                 axios.get(fullUrl)
                     .then(response => (response.data['results']['bindings'].length ? (vm.items = [...response.data['results']['bindings']], vm.displayCount=1) : vm.items.push({ value: "Empty", valueLabel: "No data" })))
-
+                    .catch(error => {
+                        vm.itemsType = 'Error'
+                    })
             })
         }
 })
@@ -1306,7 +1344,7 @@ var app = new Vue({
                 });
             }
 
-            urlParams.set("quantity[" + this.currentFilter.value + "]", range.bucketLL + "|" + range.bucketUL)
+            urlParams.set("quantity[" + this.currentFilter.value + "]", range.bucketLL + "|" + range.bucketUL+ "|" + range.unit)
             this.updatePage('view-all-items')
         },
         forceAllItemsRerender() {
@@ -1421,7 +1459,7 @@ var app = new Vue({
                             for (let i = 0; i < response.data['results']['bindings'].length; i++) {
                                 index = this.appFilters.findIndex(filter => filter.filterValue == response.data['results']['bindings'][i].prop.value.split("/").slice(-1)[0]);
                                 if (index != -1){
-                                    this.appFilters[i].filterValueLabel = response.data['results']['bindings'][i].propLabel.value
+                                    this.appFilters[index].filterValueLabel = response.data['results']['bindings'][i].propLabel.value
                                 }
                             }
                         })
@@ -1437,7 +1475,7 @@ var app = new Vue({
                             for (let i = 0; i < response.data['results']['bindings'].length; i++) {
                                 index = this.appFilters.findIndex(filter => filter.value == response.data['results']['bindings'][i].value.value.split("/").slice(-1)[0]);
                                 if (index != -1) {
-                                    this.appFilters[i].valueLabel = response.data['results']['bindings'][i].label.value
+                                    this.appFilters[index].valueLabel = response.data['results']['bindings'][i].label.value
                                 }
                             }
                         })
@@ -1473,7 +1511,7 @@ var app = new Vue({
                             for (let i = 0; i < response.data['results']['bindings'].length; i++) {
                                 index = this.appRanges.findIndex(filter => filter.filterValue == response.data['results']['bindings'][i].prop.value.split("/").slice(-1)[0]);
                                 if (index != -1) {
-                                    this.appRanges[i].filterValueLabel = response.data['results']['bindings'][i].propLabel.value
+                                    this.appRanges[index].filterValueLabel = response.data['results']['bindings'][i].propLabel.value
                                 }
                             }
                         })
@@ -1494,7 +1532,7 @@ var app = new Vue({
                             valueLL: urlParams.get(res[i]).split("|")[0].trim(),
                             valueUL: urlParams.get(res[i]).split("|")[1].trim(),
                             valueLabel: urlParams.get(res[i]).split("|")[0].trim() + " - " + urlParams.get(res[i]).split("|")[1].trim(),
-                            unit:''
+                            unit: urlParams.get(res[i]).split("|")[2].trim()
                         })
                         filters += " wdt:" + res[i].split("[")[1].slice(0, -1)
                     }
@@ -1510,7 +1548,7 @@ var app = new Vue({
                             for (let i = 0; i < response.data['results']['bindings'].length; i++) {
                                 index = this.appQuantities.findIndex(filter => filter.filterValue == response.data['results']['bindings'][i].prop.value.split("/").slice(-1)[0]);
                                 if (index != -1) {
-                                    this.appQuantities[i].filterValueLabel = response.data['results']['bindings'][i].propLabel.value
+                                    this.appQuantities[index].filterValueLabel = response.data['results']['bindings'][i].propLabel.value
                                 }
                             }
                         })

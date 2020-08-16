@@ -8,18 +8,15 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.2/axios.min.js"></script>
-    <title>WikiData Browser</title>
+    <title>Wikidata Browser</title>
 </head>
 
 <body>
     <nav class="navbar navbar-default">
         <div class="container-fluid">
             <div class="navbar-header">
-                <a class="navbar-brand" href="#">WikiData Browser</a>
+                <a class="navbar-brand" href=".">Wikidata Browser</a>
             </div>
-            <ul class="nav navbar-nav">
-                <li class="active"><a href="#">Home</a></li>
-            </ul>
         </div>
     </nav>
     <div class="container" id="app">
@@ -29,7 +26,6 @@
             @class-label="updateClassValue"
             v-if="view == 'class-filter'"
             :class-value="classValue"
-            :key="allItemscomponentKey"
             :class-label="classLabel">
         </class-filter>
 
@@ -56,7 +52,6 @@
             :total-values="totalValues"
             :class-label="classLabel"
             :class-value="classValue"
-            :key="allItemscomponentKey"
             :applied-filters="appliedFilters"
             :applied-ranges="appliedRanges"
             :applied-quantities="appliedQuantities">
@@ -87,7 +82,6 @@
             v-if="view =='subclass-view'" 
             :class-label="classLabel"
             :class-value="classValue"
-            :key="allItemscomponentKey"
             :current-Filter="currentFilter" 
             :applied-filters="appliedFilters"
             :applied-ranges="appliedRanges"
@@ -101,7 +95,6 @@
             :class-label="classLabel"
             :class-value="classValue"
             :current-Filter="currentFilter" 
-            :key="allItemscomponentKey"
             :applied-filters="appliedFilters"
             :applied-ranges="appliedRanges"
             :applied-quantities="appliedQuantities">
