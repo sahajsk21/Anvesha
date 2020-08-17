@@ -42,13 +42,6 @@ NumberRange.prototype.toString = function () {
         return numberWithCommas(this.lowNumber) + " - " + numberWithCommas(this.highNumber);
     }
 }
-// NumberRange.prototype.toDisplayString = function () {
-//     if (this.highNumber == null) {
-//         return numberWithCommas(this.lowNumber);
-//     } else {
-//         return numberWithCommas(this.lowNumber) + " - " + numberWithCommas(this.highNumber);
-//     }
-// }
 classfilter = Vue.component('class-filter', {
     props: ['classValue', 'classLabel'],
     data() {
@@ -142,16 +135,6 @@ results = Vue.component('items-results',{
             maxString += "(MAX(?amountValue"+i+") AS ?qua"+i+") ";
         }
         // Fetch results
-        // sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
-        //     "  ?value wdt:P31 wd:" + this.classValue + ".  \n" +
-        //     filterString +
-        //     "  ?value rdfs:label ?valueLabel.\n" +
-        //     filterRanges +
-        //     filterQuantities +
-        //     "  FILTER((LANG(?valueLabel)) = \"en\")\n" +
-        //     "} \n" +
-        //     (this.itemsCount>50000?"":"ORDER BY ?valueLabel\n")+
-        //     "LIMIT 200 OFFSET " + ((this.currentPage - 1) * 200);
         sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
             "  {\n" +
             "    SELECT ?value ?valueLabel "+maxString+" WHERE {\n" +
@@ -295,6 +278,7 @@ viewallitems = Vue.component('view-all-items', {
             filterQuantities +
             "  FILTER((LANG(?valueLabel)) = \"en\")\n" +
             "}";
+        console.log(sparqlQuery);
         fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
         axios.get(fullUrl)
             .then(response => this.itemsCount = response.data['results']['bindings'][0].count.value)
@@ -368,7 +352,8 @@ filtervalues = Vue.component('filter-values', {
             items: [],
             itemsType: '',
             fullPropertyValues: [],
-            displayCount: 1
+            displayCount: 1,
+            currentPage:1
         }
     },
     template: `
@@ -384,12 +369,12 @@ filtervalues = Vue.component('filter-values', {
         <div class="content">
             <div v-if="itemsType==''"><p>Getting values for filter <b>{{currentFilter.valueLabel}}</b> ...</p><img src='loading.gif'></div>
             <p v-else-if="itemsType=='Empty'">There are no values for the filter <b>{{currentFilter.valueLabel}}</b>.</p>
-            <p v-else-if="itemsType=='Error'">The attempt to display a list of items took too long; please consider adding more filters.</p>
+            <p v-else-if="itemsType=='Error'">Trying to get values for the filter X took too long. <a>Go back</a>.</p>
             <div v-else-if="itemsType=='Item'">
                 <p>There are <b>{{ totalValues }}</b> items that match this description.</p>
                 <p> Select {{ appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) !=-1?"an additional value":"a value"}} for <b>{{currentFilter.valueLabel}}</b>: </p>
                 <ul>
-                    <li v-for="(item,index) in items" v-if="index != appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) ">
+                    <li v-for="(item,index) in items" v-if="index != appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) && index < currentPage*25 && index >= (currentPage-1)*25">
                         <a @click="applyFilter(item)">{{item.valueLabel.value}}</a> ({{item.count.value}} results)
                     </li>
                 </ul>
@@ -440,6 +425,11 @@ filtervalues = Vue.component('filter-values', {
                         <a @click="applyQuantityRange(item)">{{item.bucketName}} </a>
                     </li>
                 </ul>
+            </div>
+            <div v-if="items.length>25" style="text-align: center">
+                <a @click="currentPage>1?currentPage--:''">&lt;</a>
+                <input v-model="currentPage" type="text" style="margin-bottom: 15px;width: 48px;text-align: center"> {{items.length<1000000?" / " + Math.ceil(items.length/25):''}}
+                <a @click="currentPage<items.length/25?currentPage++:''">&gt;</a>
             </div>
         </div>
     </div>`,
@@ -1014,7 +1004,6 @@ filtervalues = Vue.component('filter-values', {
         }
         else {
             var sparqlQuery = "SELECT ?value ?valueLabel (COUNT(?value) AS ?count) WHERE {\n" +
-                "  hint:Query hint:optimizer \"None\".\n" +
                 "  ?item wdt:P31 wd:" + this.classValue + ".\n" +
                 " ?item wdt:" + this.currentFilter.value + " ?value.\n" +
                 filterString +
@@ -1029,21 +1018,9 @@ filtervalues = Vue.component('filter-values', {
             axios.get(fullUrl)
                 .then(response => (response.data['results']['bindings'].length ? (this.itemsType="Item",this.items = [...response.data['results']['bindings']]) : this.itemsType = 'Empty'))
                 .catch(error => {
-                    var sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
-                        "  hint:Query hint:optimizer \"None\".\n" +
-                        "  ?item wdt:P31 wd:"+vm.classValue+".\n" +
-                        " ?item wdt:"+vm.currentFilter.value+" ?value.\n" +
-                        filterString +
-                        "  ?value rdfs:label ?valueLabel.\n" +
-                        filterRanges +
-                        filterQuantities +
-                        "  FILTER(LANG(?valueLabel) = 'en').\n" +
-                        "}\n" +
-                        "LIMIT 25";
-                    sparqlQuery = "SELECT DISTINCT ?value ?valueLabel\n" +
+                    var sparqlQuery = "SELECT DISTINCT ?value ?valueLabel\n" +
                         "{\n" +
                         "  SELECT ?value ?valueLabel WHERE {\n" +
-                        "  hint:Query hint:optimizer \"None\".\n" +
                         "  ?item wdt:P31 wd:"+vm.classValue+".\n" +
                         " ?item wdt:"+vm.currentFilter.value+" ?value.\n" +
                         filterString +
