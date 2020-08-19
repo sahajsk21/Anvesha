@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="css/index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.2/axios.min.js"></script>
     <title>Wikidata Browser</title>
 </head>
@@ -48,7 +48,7 @@
         <filters-view 
             @change-page="updatePage"
             @update-filter="updateFilter"
-            v-if="view =='filters-view'"
+            v-if="view =='filters'"
             :total-values="totalValues"
             :class-label="classLabel"
             :class-value="classValue"
@@ -70,7 +70,7 @@
             :total-values="totalValues"
             :class-label="classLabel"
             :class-value="classValue"
-            :current-Filter="currentFilter"
+            :current-filter="currentFilter"
             :applied-filters="appliedFilters"
             :applied-ranges="appliedRanges"
             :applied-quantities="appliedQuantities">
@@ -79,10 +79,9 @@
         <subclass-view
             @change-page="updatePage"
             @update-class="updateClassValue"
-            v-if="view =='subclass-view'" 
+            v-if="view =='subclass'" 
             :class-label="classLabel"
             :class-value="classValue"
-            :current-Filter="currentFilter" 
             :applied-filters="appliedFilters"
             :applied-ranges="appliedRanges"
             :applied-quantities="appliedQuantities">
@@ -91,10 +90,9 @@
         <superclass-view
             @change-page="updatePage"
             @update-class="updateClassValue"
-            v-if="view =='superclass-view'" 
+            v-if="view =='superclass'" 
             :class-label="classLabel"
             :class-value="classValue"
-            :current-Filter="currentFilter" 
             :applied-filters="appliedFilters"
             :applied-ranges="appliedRanges"
             :applied-quantities="appliedQuantities">
