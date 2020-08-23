@@ -127,7 +127,7 @@ results = Vue.component('items-results', {
     },
     template: `
     <div>
-    <p>There are <b>{{ itemsCount<1000000?itemsCount:"1 million +" }}</b> items that match this description.</p>
+    <p v-if="itemsCount>0">There are <b>{{ itemsCount<1000000?numberWithCommas(itemsCount):"1 million +" }}</b> items that match this description.</p>
         <img v-if="!items.length" src='loading.gif'>
         <p v-else-if="items[0].value=='Empty'">No items match this description.</p>
         <p v-else-if="items[0].value=='Error'">The attempt to display a list of items took too long; please consider adding more filters.</p>
@@ -178,11 +178,11 @@ results = Vue.component('items-results', {
             "      FILTER((LANG(?valueLabel)) = \"en\")\n" +
             "  } \n" +
             (maxString == "" ? "" : "GROUP BY ?value ?valueLabel\n") +
-            "    " +
-            "LIMIT 200 OFFSET " + ((this.currentPage - 1) * 200) +
+            (this.itemsCount < 50000 ? "" : "LIMIT 200 OFFSET " + ((this.currentPage - 1) * 200))+
             "  }\n" +
             "}\n" +
-            (this.itemsCount > 50000 ? "" : "ORDER BY ?valueLabel\n");
+            (this.itemsCount > 50000 ? "" : "ORDER BY ?valueLabel\n")+
+            (this.itemsCount >= 50000 ? "":"LIMIT 200 OFFSET " + ((this.currentPage - 1) * 200));
         fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
         axios.get(fullUrl)
             .then(response => response.data['results']['bindings'].length ? this.items = [...response.data['results']['bindings']] : this.items.push({ value: "Empty" }))
@@ -401,13 +401,14 @@ filtervalues = Vue.component('filter-values', {
         <div class="content">
             <div v-if="itemsType==''"><p>Getting values for filter <b>{{currentFilter.valueLabel}}</b> ...</p><img src='loading.gif'></div>
             <p v-else-if="itemsType=='Empty'">There are no values for the filter <b>{{currentFilter.valueLabel}}</b>.</p>
+            <p v-else-if="itemsType=='Additionalempty'">There are no additional values for the filter <b>{{currentFilter.valueLabel}}</b>.</p>
             <p v-else-if="itemsType=='Error'">Trying to get values for the filter X took too long. <a @click="back()">Go back</a>.</p>
             <div v-else-if="itemsType=='Item'">
                 <p>There are <b>{{ totalValues }}</b> items that match this description.</p>
                 <p> Select {{ appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) !=-1?"an additional value":"a value"}} for <b>{{currentFilter.valueLabel}}</b>: </p>
                 <ul>
-                    <li v-for="(item,index) in items" v-if="index != appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) && index < currentPage*200 && index >= (currentPage-1)*200">
-                        <a @click="applyFilter(item)">{{item.valueLabel.value}}</a> ({{item.count.value}} results)
+                    <li v-for="(item,index) in items" v-if="index < currentPage*200 && index >= (currentPage-1)*200">
+                        <a @click="applyFilter(item)">{{item.valueLabel.value}}</a> ({{numberWithCommas(item.count.value)}} results)
                     </li>
                 </ul>
             </div>
@@ -425,7 +426,7 @@ filtervalues = Vue.component('filter-values', {
                 <p> Select a value for <b>{{currentFilter.valueLabel}}</b>:</p>
                 <ul v-if="displayCount == 1">
                     <li v-for="item in items" v-if="item.numValues>0">
-                        <a @click="applyRange(item)">{{item.bucketName}} </a> ({{item.numValues}} results)
+                        <a @click="applyRange(item)">{{item.bucketName}} </a> ({{numberWithCommas(item.numValues)}} results)
                     </li>
                 </ul>
                 <ul v-if="displayCount == 0">
@@ -449,7 +450,7 @@ filtervalues = Vue.component('filter-values', {
                 <p> Select a value for <b>{{currentFilter.valueLabel}}</b>:</p>
                 <ul v-if="displayCount == 1">
                     <li v-for="item in items" v-if="item.numValues>0">
-                        <a @click="applyQuantityRange(item)">{{item.bucketName}} {{item.unit}} </a> ({{item.numValues}} results)
+                        <a @click="applyQuantityRange(item)">{{item.bucketName}} {{item.unit}} </a> ({{numberWithCommas(item.numValues)}} results)
                     </li>
                 </ul>
                 <ul v-if="displayCount == 0">
@@ -567,7 +568,7 @@ filtervalues = Vue.component('filter-values', {
                 dateArray[i].time.value = this.parseDate(dateArray[i].time.value)
             }
             ll = earliestDate = new Date(dateArray[start].time.value),
-                ul = latestDate = new Date(dateArray[end].time.value);
+            ul = latestDate = new Date(dateArray[end].time.value);
             index = this.appliedRanges.findIndex(filter => filter.filterValue == range.value);
             if (index != -1) {
                 ll = new Date(this.parseDate(this.appliedRanges[index].valueLL));
@@ -581,12 +582,12 @@ filtervalues = Vue.component('filter-values', {
             while (latestDate > ul || latestDate == "Invalid Date") {
                 latestDate = new Date(dateArray[--end].time.value);
             }
-            var earliestYear = earliestDate.getFullYear();
-            var earliestMonth = earliestDate.getMonth() + 1;
-            var earliestDay = earliestDate.getDate();
-            var latestYear = latestDate.getFullYear();
-            var latestMonth = latestDate.getMonth() + 1;
-            var latestDay = latestDate.getDate();
+            var earliestYear = earliestDate.getUTCFullYear();
+            var earliestMonth = earliestDate.getUTCMonth() + 1;
+            var earliestDay = earliestDate.getUTCDate();
+            var latestYear = latestDate.getUTCFullYear();
+            var latestMonth = latestDate.getUTCMonth() + 1;
+            var latestDay = latestDate.getUTCDate();
             var yearDifference = latestYear - earliestYear;
             var monthDifference = (12 * yearDifference) + (latestMonth - earliestMonth);
             var dayDifference = (30 * monthDifference) + (latestDay - earliestDay);
@@ -608,7 +609,7 @@ filtervalues = Vue.component('filter-values', {
                 }
                 for (var i = start; i <= end && val != 0; i++) {
                     date = new Date(dateArray[i].time.value);
-                    year = Number(date.getFullYear());
+                    year = Number(date.getUTCFullYear());
                     index = Math.floor((year - iniYear) / 100);
                     propertyValues[index].numValues += 1
                 }
@@ -626,7 +627,7 @@ filtervalues = Vue.component('filter-values', {
                 }
                 for (var i = start; i <= end && val != 0; i++) {
                     date = new Date(dateArray[i].time.value);
-                    year = Number(date.getFullYear());
+                    year = Number(date.getUTCFullYear());
                     index = Math.floor((year - iniYear) / 50);
                     propertyValues[index].numValues += 1
                 }
@@ -644,7 +645,7 @@ filtervalues = Vue.component('filter-values', {
                 }
                 for (var i = start; i <= end && val != 0; i++) {
                     date = new Date(dateArray[i].time.value);
-                    year = Number(date.getFullYear());
+                    year = Number(date.getUTCFullYear());
                     index = Math.floor((year - iniYear) / 10);
                     propertyValues[index].numValues += 1
                 }
@@ -662,7 +663,7 @@ filtervalues = Vue.component('filter-values', {
                 }
                 for (var i = start; i <= end && val != 0; i++) {
                     date = new Date(dateArray[i].time.value);
-                    year = Number(date.getFullYear());
+                    year = Number(date.getUTCFullYear());
                     index = Math.floor((year - iniYear) / 5);
                     propertyValues[index].numValues += 1
                 }
@@ -680,7 +681,7 @@ filtervalues = Vue.component('filter-values', {
                 }
                 for (var i = start; i <= end && val != 0; i++) {
                     date = new Date(dateArray[i].time.value);
-                    year = Number(date.getFullYear());
+                    year = Number(date.getUTCFullYear());
                     index = Math.floor(year - iniYear);
                     propertyValues[index].numValues += 1
                 }
@@ -711,8 +712,8 @@ filtervalues = Vue.component('filter-values', {
                 }
                 for (var i = start; i <= end && val != 0; i++) {
                     date = new Date(dateArray[i].time.value);
-                    year = date.getFullYear();
-                    month = date.getMonth();
+                    year = date.getUTCFullYear();
+                    month = date.getUTCMonth();
                     index = Math.floor(((year - iniYear) * 12 + month - iniMonth + 1));
                     propertyValues[index].numValues += 1
                 }
@@ -722,20 +723,20 @@ filtervalues = Vue.component('filter-values', {
                 // won't make a copy.
                 var curDate = new Date();
                 curDate.setTime(earliestDate.getTime());
-                iniDay = curDate.getDate()
+                iniDay = curDate.getUTCDate()
                 while (curDate <= latestDate) {
                     propertyValues.push({
-                        bucketName: this.monthNumberToString(curDate.getMonth() + 1) + " " + curDate.getDate() + ", " + curDate.getFullYear(),
-                        bucketLL: curDate.getFullYear() + "-" + (curDate.getMonth() + 1) + "-" + curDate.getDate(),
-                        bucketUL: curDate.getFullYear() + "-" + (curDate.getMonth() + 1) + "-" + (curDate.getDate() + 1),
+                        bucketName: this.monthNumberToString(curDate.getUTCMonth() + 1) + " " + curDate.getUTCDate() + ", " + curDate.getUTCFullYear(),
+                        bucketLL: curDate.getUTCFullYear() + "-" + (curDate.getUTCMonth() + 1) + "-" + curDate.getUTCDate(),
+                        bucketUL: curDate.getUTCFullYear() + "-" + (curDate.getUTCMonth() + 1) + "-" + (curDate.getUTCDate() + 1),
                         numValues: 0
 
                     });
-                    curDate.setDate(curDate.getDate() + 1);
+                    curDate.setDate(curDate.getUTCDate() + 1);
                 }
                 for (var i = start; i <= end && val != 0; i++) {
                     date = new Date(dateArray[i].time.value);
-                    day = Number(date.getDate());
+                    day = Number(date.getUTCDate());
                     index = Math.floor(day - iniDay);
                     propertyValues[index].numValues += 1
                 }
@@ -743,9 +744,9 @@ filtervalues = Vue.component('filter-values', {
                 var curDate = new Date();
                 curDate.setTime(earliestDate.getTime());
                 propertyValues.push({
-                    bucketName: this.monthNumberToString(curDate.getMonth() + 1) + " " + curDate.getDate() + ", " + curDate.getFullYear(),
-                    bucketLL: curDate.getFullYear() + "-" + (curDate.getMonth() + 1) + "-" + curDate.getDate(),
-                    bucketUL: curDate.getFullYear() + "-" + (curDate.getMonth() + 1) + "-" + (curDate.getDate() + 1),
+                    bucketName: this.monthNumberToString(curDate.getUTCMonth() + 1) + " " + curDate.getUTCDate() + ", " + curDate.getUTCFullYear(),
+                    bucketLL: curDate.getUTCFullYear() + "-" + (curDate.getUTCMonth() + 1) + "-" + curDate.getUTCDate(),
+                    bucketUL: curDate.getUTCFullYear() + "-" + (curDate.getUTCMonth() + 1) + "-" + (curDate.getUTCDate() + 1),
                     numValues: len
 
                 });
@@ -806,7 +807,7 @@ filtervalues = Vue.component('filter-values', {
             for (i = 0; i < uniqueValuesArray.length; i++) {
                 var uniqueValue = uniqueValuesArray[i];
                 var curBucket = {};
-                curBucket['bucketName'] = uniqueValue;
+                curBucket['bucketName'] = numberWithCommas(uniqueValue);
                 curBucket['numValues'] = uniqueValues[uniqueValue];
                 curBucket['bucketUL'] = uniqueValue;
                 curBucket['bucketLL'] = uniqueValue;
@@ -1054,13 +1055,36 @@ filtervalues = Vue.component('filter-values', {
                         "}\n" +
                         "GROUP BY ?value ?valueLabel\n" +
                         "ORDER BY DESC(?count)";
-                    const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
-                    axios.get(fullUrl)
-                        .then(response => (response.data['results']['bindings'].length ? (this.itemsType = "Item", this.items = [...response.data['results']['bindings']]) : this.itemsType = 'Empty'))
+                        const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
+                        axios.get(fullUrl)
+                        .then(response => {
+                            if(response.data['results']['bindings'].length){
+                                arr = [...response.data['results']['bindings']]
+                                index = vm.appliedFilters.findIndex(filter => filter.filterValue == vm.currentFilter.value)
+                                if(index !=-1){
+                                    for (let i = 0; i < arr.length; i++) {
+                                        if (arr[i].value.value.split('/').slice(-1)[0] == vm.appliedFilters[index].value){
+                                            arr.splice(i,1)
+                                        }
+                                    }
+                                }
+                                if(arr.length>0){
+                                    this.itemsType = "Item"
+                                    this.items = arr
+                                }
+                                else{
+                                    this.itemsType = "Additionalempty"
+                                }
+                            } 
+                            else{
+                                this.itemsType = 'Empty'
+                            }
+                        })
                         .catch(error => {
                             var sparqlQuery = "SELECT DISTINCT ?value ?valueLabel\n" +
                                 "{\n" +
                                 "  SELECT ?value ?valueLabel WHERE {\n" +
+                                "    hint:Query hint:optimizer \"None\".\n" +
                                 "  ?item wdt:P31 wd:" + vm.classValue + ".\n" +
                                 " ?item wdt:" + vm.currentFilter.value + " ?value.\n" +
                                 filterString +
@@ -1088,7 +1112,6 @@ filtervalues = Vue.component('filter-values', {
                         })
                 }
             })
-
 
     }
 })
@@ -1263,20 +1286,22 @@ var app = new Vue({
         totalValues: ''
     },
     mounted: function () {
-        window.history.pushState({
-            page: this.view,
-            classValue: this.classValue,
-            filters: this.appliedFilters,
-            quantities: this.appliedQuantities,
-            ranges: this.appliedRanges,
-            currentFilterLabel: this.currentFilterLabel,
-            currentFilterValue: urlParams.has('cf') ? urlParams.get('cf') : '',
-            fromURL: 0,
-            allItemscomponentKey: this.allItemscomponentKey,
-            filterscomponentKey: this.filterscomponentKey
-        }, '',
+        if(this.classLabel != ""){
+            window.history.pushState({
+                page: this.view,
+                classValue: this.classValue,
+                filters: this.appliedFilters,
+                quantities: this.appliedQuantities,
+                ranges: this.appliedRanges,
+                currentFilterLabel: this.currentFilterLabel,
+                currentFilterValue: urlParams.has('cf') ? urlParams.get('cf') : '',
+                fromURL: 0,
+                allItemscomponentKey: this.allItemscomponentKey,
+                filterscomponentKey: this.filterscomponentKey
+            }, '',
             window.location.pathname + "?" + urlParams
-        );
+            );
+        }
         window.onpopstate = history.onpushstate = function (e) {
             if (e.state) {
                 app.page = e.state.page
@@ -1525,7 +1550,7 @@ var app = new Vue({
                                 }
                             }
                         })
-
+                        
                     sparqlQuery = "SELECT ?value ?label WHERE {\n" +
                         "  VALUES ?value { " + values + " }\n" +
                         "  ?value rdfs:label ?label.\n" +
@@ -1593,7 +1618,7 @@ var app = new Vue({
                             filterValueLabel: res[i].split("[")[1].slice(0, -1),
                             valueLL: urlParams.get(res[i]).split("|")[0].trim(),
                             valueUL: urlParams.get(res[i]).split("|")[1].trim(),
-                            valueLabel: urlParams.get(res[i]).split("|")[0].trim() + " - " + urlParams.get(res[i]).split("|")[1].trim(),
+                            valueLabel: numberWithCommas(urlParams.get(res[i]).split("|")[0].trim()) + " - " + numberWithCommas(urlParams.get(res[i]).split("|")[1].trim()),
                             unit: urlParams.get(res[i]).split("|")[2].trim()
                         })
                         filters += " wdt:" + res[i].split("[")[1].slice(0, -1)
@@ -1617,6 +1642,24 @@ var app = new Vue({
                 }
             }
             return this.appQuantities
+        }
+    },
+    watch:{
+        classLabel: function(){
+            window.history.pushState({
+                page: this.view,
+                classValue: this.classValue,
+                filters: this.appliedFilters,
+                quantities: this.appliedQuantities,
+                ranges: this.appliedRanges,
+                currentFilterLabel: this.currentFilterLabel,
+                currentFilterValue: urlParams.has('cf') ? urlParams.get('cf') : '',
+                fromURL: 0,
+                allItemscomponentKey: this.allItemscomponentKey,
+                filterscomponentKey: this.filterscomponentKey
+            }, '',
+                window.location.pathname + "?" + urlParams
+            );
         }
     }
 })
