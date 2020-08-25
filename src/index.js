@@ -119,7 +119,7 @@ classfilter = Vue.component('class-filter', {
 })
 
 results = Vue.component('items-results', {
-    props: ['classValue', 'classLabel', 'itemsCount', 'currentPage', 'appliedFilters', 'appliedRanges', 'appliedQuantities'],
+    props: ['classValue', 'classLabel', 'totalValues', 'currentPage', 'appliedFilters', 'appliedRanges', 'appliedQuantities'],
     data() {
         return {
             items: [],
@@ -127,7 +127,7 @@ results = Vue.component('items-results', {
     },
     template: `
     <div>
-    <p v-if="itemsCount>0">There are <b>{{ itemsCount<1000000?numberWithCommas(itemsCount):"1 million +" }}</b> items that match this description.</p>
+    <p v-if="totalValues>0">There are <b>{{ totalValues<1000000?numberWithCommas(totalValues):"1 million +" }}</b> items that match this description.</p>
         <img v-if="!items.length" src='loading.gif'>
         <p v-else-if="items[0].value=='Empty'">No items match this description.</p>
         <p v-else-if="items[0].value=='Error'">The attempt to display a list of items took too long; please consider adding more filters.</p>
@@ -178,11 +178,11 @@ results = Vue.component('items-results', {
             "      FILTER((LANG(?valueLabel)) = \"en\")\n" +
             "  } \n" +
             (maxString == "" ? "" : "GROUP BY ?value ?valueLabel\n") +
-            (this.itemsCount < 50000 ? "" : "LIMIT 200 OFFSET " + ((this.currentPage - 1) * 200))+
+            (this.totalValues < 50000 ? "" : "LIMIT 200 OFFSET " + ((this.currentPage - 1) * 200))+
             "  }\n" +
             "}\n" +
-            (this.itemsCount > 50000 ? "" : "ORDER BY ?valueLabel\n")+
-            (this.itemsCount >= 50000 ? "":"LIMIT 200 OFFSET " + ((this.currentPage - 1) * 200));
+            (this.totalValues > 50000 ? "" : "ORDER BY ?valueLabel\n")+
+            (this.totalValues >= 50000 ? "":"LIMIT 200 OFFSET " + ((this.currentPage - 1) * 200));
         fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
         axios.get(fullUrl)
             .then(response => response.data['results']['bindings'].length ? this.items = [...response.data['results']['bindings']] : this.items.push({ value: "Empty" }))
@@ -199,32 +199,31 @@ viewallitems = Vue.component('view-all-items', {
             filtersCount: -1,
             filters: [],
             itemsCount: '',
-            currentPage: 1
+            currentPage: 1,
+            query:""
         }
     },
     template: `
     <div>
         <div class="header">
-            <p><b>Class</b>: {{ classLabel }} </p>
+            <p style="margin-bottom:0px"><b>Class</b>: {{ classLabel }} </p>
+            <a class="classOptions" @click="changeView('superclass')">More general class </a>
+            <b>&middot;</b>
+            <a class="classOptions" @click="changeView('subclass')">More specific class</a>
             <p v-for="filter in appliedFilters"><b>{{filter.filterValueLabel}}</b>: {{ filter.valueLabel }} (<a @click="removeFilter(filter.filterValue)">X</a>)</p>
             <p v-for="range in appliedRanges"><b>{{range.filterValueLabel}}</b>: {{ range.valueLabel }} (<a @click="removeRange(range)">X</a>)</p>
             <p v-for="quantity in appliedQuantities"><b>{{quantity.filterValueLabel}}</b>: {{ quantity.valueLabel }} {{quantity.unit}}(<a @click="removeQuantity(quantity)">X</a>)</p>
         </div>
         <div class="content" id="viewallitems">
-            <div class="classOptionsSection">
-                <a class="classOptions" @click="changeView('superclass')">More general class</a>
-                <a class="classOptions" @click="changeView('subclass')">More specific class</a>
                 <p v-if="filtersCount==-1"></p>
                 <p v-else-if="filtersCount==0">No filters are defined for this class.</p>
                 <div v-else-if="filtersCount<40" style="margin-bottom:20px">
                 <b>Filter on</b>: <span v-for="filter in filters"><a @click="showFilter(filter)">{{filter.valueLabel.value}}</a> <b v-if="filters[filtersCount-1].valueLabel.value != filter.valueLabel.value">&middot; </b> </span>
                 </div>
                 <p v-else><a class="classOptions" @click="changeView('filters-view')">Add a filter</a></p>
-                <!--<a class="classOptions" @click="changeView('class-filter')" style="margin-bottom:20px">Change to a new class</a>-->
-            </div>
-            <img v-if="itemsCount==''" src='loading.gif'>
+            <p><img v-if="totalValues==''" src='loading.gif'></p>
 
-            <items-results v-if="itemsCount!=''"
+            <items-results v-if="totalValues!=''"
                 :total-values="totalValues"
                 :class-label="classLabel"
                 :class-value="classValue"
@@ -232,14 +231,14 @@ viewallitems = Vue.component('view-all-items', {
                 :applied-ranges="appliedRanges"
                 :applied-quantities="appliedQuantities"
                 :current-page="currentPage"
-                :items-count="itemsCount"
                 :key="currentPage">
             </items-results>
-            <div v-if="itemsCount>200" style="text-align: center">
+            <div v-if="totalValues>200" style="text-align: center">
                 <a @click="currentPage>1?currentPage--:''">&lt;</a>
-                <input v-model="currentPage" type="text" style="margin-bottom: 15px;width: 48px;text-align: center"> {{itemsCount<1000000?" / " + Math.ceil(itemsCount/200):''}}
-                <a @click="currentPage<itemsCount/200?currentPage++:''">&gt;</a>
+                <input v-model="currentPage" type="text" style="margin-bottom: 15px;width: 48px;text-align: center"> {{totalValues<1000000?" / " + Math.ceil(totalValues/200):''}}
+                <a @click="currentPage<totalValues/200?currentPage++:''">&gt;</a>
             </div>
+            <a :href="query">View SPARQL query</a>
         </div>
     </div>`,
     methods: {
@@ -281,11 +280,12 @@ viewallitems = Vue.component('view-all-items', {
         for (let i = 0; i < this.appliedFilters.length; i++) {
             filterString += "?value wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n";
         }
-        var filterRanges = "";
+        var filterRanges = "", maxString = "";
         for (let i = 0; i < this.appliedRanges.length; i++) {
             filterRanges += "?value (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
                 "  ?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
                 "  FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?time" + i + " && ?time" + i + " < '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n"
+            maxString += "(MAX(?time" + i + ") AS ?tim" + i + ") ";
         }
         var filterQuantities = "";
         for (let i = 0; i < this.appliedQuantities.length; i++) {
@@ -298,9 +298,27 @@ viewallitems = Vue.component('view-all-items', {
                 filterQuantities += "?value (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
                     "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
                     "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
-
             }
+            maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
         }
+        sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
+            "  {\n" +
+            "    SELECT ?value ?valueLabel " + maxString + " WHERE {\n" +
+            "      ?value wdt:P31 wd:" + this.classValue + ".  \n" +
+            filterString +
+            "      ?value rdfs:label ?valueLabel.\n" +
+            filterRanges +
+            filterQuantities +
+            "      FILTER((LANG(?valueLabel)) = \"en\")\n" +
+            "  } \n" +
+            (maxString == "" ? "" : "GROUP BY ?value ?valueLabel\n") +
+            (this.totalValues < 50000 ? "" : "LIMIT 200 OFFSET " + ((this.currentPage - 1) * 200)) +
+            "  }\n" +
+            "}\n" +
+            (this.totalValues > 50000 ? "" : "ORDER BY ?valueLabel\n") +
+            (this.totalValues >= 50000 ? "" : "LIMIT 200 OFFSET " + ((this.currentPage - 1) * 200));
+        this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
+
         // Fetch number of items
         sparqlQuery = "SELECT (COUNT(DISTINCT ?value) AS ?count) WHERE {\n" +
             "  ?value wdt:P31 wd:" + this.classValue + ".  \n" +
@@ -312,7 +330,7 @@ viewallitems = Vue.component('view-all-items', {
             "}";
         fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
         axios.get(fullUrl)
-            .then(response => this.itemsCount = response.data['results']['bindings'][0].count.value)
+            .then(response => this.itemsCount = response.data['results']['bindings'][0].count.value,this.$emit('total-values',this.itemsCount))
             .catch(error => {
                 this.itemsCount = 1000000
             })
@@ -340,7 +358,7 @@ filtersview = Vue.component('filters-view', {
             <img v-if="!filters.length" src='loading.gif'>
             <p v-else-if="filters[0].value=='Empty'">No filters available</p>
             <div v-else>
-                <p>There are <b>{{ totalValues }}</b> items that match this description.</p>
+                <p>There are <b>{{ totalValues<1000000?numberWithCommas(totalValues):"1 million +" }}</b> items that match this description.</p>
                 <p><b>Add a filter:</b></p> 
                 <ul>
                     <li v-for="filter in filters">
@@ -385,7 +403,8 @@ filtervalues = Vue.component('filter-values', {
             fullPropertyValues: [],
             displayCount: 1,
             currentPage: 1,
-            filterProperty: ""
+            filterProperty: "",
+            query:""
         }
     },
     template: `
@@ -404,7 +423,7 @@ filtervalues = Vue.component('filter-values', {
             <p v-else-if="itemsType=='Additionalempty'">There are no additional values for the filter <b>{{currentFilter.valueLabel}}</b>.</p>
             <p v-else-if="itemsType=='Error'">Trying to get values for the filter X took too long. <a @click="back()">Go back</a>.</p>
             <div v-else-if="itemsType=='Item'">
-                <p>There are <b>{{ totalValues }}</b> items that match this description.</p>
+                <p v-if="totalValues!=''">There are <b>{{ totalValues<1000000?numberWithCommas(totalValues):"1 million +" }}</b> items that match this description.</p>
                 <p> Select {{ appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) !=-1?"an additional value":"a value"}} for <b>{{currentFilter.valueLabel}}</b>: </p>
                 <ul>
                     <li v-for="(item,index) in items" v-if="index < currentPage*200 && index >= (currentPage-1)*200">
@@ -422,7 +441,7 @@ filtervalues = Vue.component('filter-values', {
                 </ul>
             </div>
             <div v-else-if="itemsType=='Time'">
-                <p>There are <b>{{ totalValues }}</b> items that match this description.</p>
+                <p v-if="totalValues!=''">There are <b>{{ totalValues<1000000?numberWithCommas(totalValues):"1 million +" }}</b> items that match this description.</p>
                 <p> Select a value for <b>{{currentFilter.valueLabel}}</b>:</p>
                 <ul v-if="displayCount == 1">
                     <li v-for="item in items" v-if="item.numValues>0">
@@ -445,7 +464,7 @@ filtervalues = Vue.component('filter-values', {
                 </ul>
             </div>
             <div v-else-if="itemsType=='Quantity'">
-                <p v-if="displayCount == 1">There are <b>{{ totalValues }}</b> items that match this description.</p>
+                <p v-if="displayCount == 1 && totalValues!=''">There are <b>{{ totalValues<1000000?numberWithCommas(totalValues):"1 million +" }}</b> items that match this description.</p>
                 <p v-if="displayCount == 0"><i>(Getting a complete set of values for this filter took too long; instead, here is a possibly incomplete set.)</i></p>
                 <p> Select a value for <b>{{currentFilter.valueLabel}}</b>:</p>
                 <ul v-if="displayCount == 1">
@@ -464,6 +483,7 @@ filtervalues = Vue.component('filter-values', {
                 <input v-model="currentPage" type="text" style="margin-bottom: 15px;width: 48px;text-align: center"> {{items.length<1000000?" / " + Math.ceil(items.length/200):''}}
                 <a @click="currentPage<items.length/200?currentPage++:''">&gt;</a>
             </div>
+            <a :href="query">View SPARQL query</a>
         </div>
     </div>`,
     methods: {
@@ -562,8 +582,8 @@ filtervalues = Vue.component('filter-values', {
         },
         generateDatePropertyValues(dateArray, range) {
             var len = dateArray.length,
-                start = 0,
-                end = len - 1;
+            start = 0,
+            end = len - 1;
             for (let i = start; i <= end; i++) {
                 dateArray[i].time.value = this.parseDate(dateArray[i].time.value)
             }
@@ -571,8 +591,8 @@ filtervalues = Vue.component('filter-values', {
             ul = latestDate = new Date(dateArray[end].time.value);
             index = this.appliedRanges.findIndex(filter => filter.filterValue == range.value);
             if (index != -1) {
-                ll = new Date(this.parseDate(this.appliedRanges[index].valueLL));
-                ul = new Date(this.parseDate(this.appliedRanges[index].valueUL));
+                ll = new Date(this.parseDate(String(this.appliedRanges[index].valueLL)));
+                ul = new Date(this.parseDate(String(this.appliedRanges[index].valueUL)));
             }
             len > 50000 ? val = 0 : val = 1;
             while (earliestDate < ll || earliestDate == "Invalid Date") {
@@ -601,8 +621,8 @@ filtervalues = Vue.component('filter-values', {
                 while (curYear <= latestYear) {
                     propertyValues.push({
                         bucketName: this.yearToBCFormat(curYear) + " - " + this.yearToBCFormat(curYear + 99),
-                        bucketLL: curYear + '-01-01',
-                        bucketUL: (curYear + 100) + '-01-01',
+                        bucketLL: curYear,
+                        bucketUL: (curYear + 99),
                         numValues: 0
                     });
                     curYear += 100;
@@ -619,8 +639,8 @@ filtervalues = Vue.component('filter-values', {
                 while (curYear <= latestYear) {
                     propertyValues.push({
                         bucketName: this.yearToBCFormat(curYear) + " - " + this.yearToBCFormat(curYear + 49),
-                        bucketLL: curYear + '-01-01',
-                        bucketUL: (curYear + 49) + '-12-31',
+                        bucketLL: curYear,
+                        bucketUL: (curYear + 49),
                         numValues: 0
                     });
                     curYear += 50;
@@ -637,8 +657,8 @@ filtervalues = Vue.component('filter-values', {
                 while (curYear <= latestYear) {
                     propertyValues.push({
                         bucketName: this.yearToBCFormat(curYear) + " - " + this.yearToBCFormat(curYear + 9),
-                        bucketLL: curYear + '-01-01',
-                        bucketUL: (curYear + 9) + '-12-31',
+                        bucketLL: curYear,
+                        bucketUL: (curYear + 9),
                         numValues: 0
                     });
                     curYear += 10;
@@ -655,8 +675,8 @@ filtervalues = Vue.component('filter-values', {
                 while (curYear <= latestYear) {
                     propertyValues.push({
                         bucketName: this.yearToBCFormat(curYear) + " - " + this.yearToBCFormat(curYear + 4),
-                        bucketLL: curYear + '-01-01',
-                        bucketUL: (curYear + 4) + '-12-31',
+                        bucketLL: curYear,
+                        bucketUL: (curYear + 4),
                         numValues: 0
                     });
                     curYear += 5;
@@ -686,8 +706,6 @@ filtervalues = Vue.component('filter-values', {
                     propertyValues[index].numValues += 1
                 }
             } else if (monthDifference > 1) {
-
-
                 // Split into months.
                 var curYear = iniYear = earliestYear;
                 var curMonth = iniMonth = earliestMonth;
@@ -933,6 +951,7 @@ filtervalues = Vue.component('filter-values', {
                         filterQuantities +
                         "}\n" +
                         "ORDER by ?time";
+                    this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
                     const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
                     axios.get(fullUrl)
                         .then(response => (response.data['results']['bindings'].length ? (this.itemsType = 'Time', this.items = this.generateDatePropertyValues(response.data['results']['bindings'], this.currentFilter)) : this.itemsType = 'Empty'))
@@ -948,6 +967,7 @@ filtervalues = Vue.component('filter-values', {
                                 "LIMIT 200\n" +
                                 "}\n" +
                                 "ORDER BY ?time";
+                            this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
                             const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
                             axios.get(fullUrl)
                                 .then(res => (res.data['results']['bindings'].length ? (vm.itemsType = 'TimeFail', vm.items = vm.generateDatePropertyValues(res.data['results']['bindings'], vm.currentFilter)) : vm.itemsType = 'Empty')
@@ -967,6 +987,7 @@ filtervalues = Vue.component('filter-values', {
                         filterQuantities +
                         "}\n" +
                         "ORDER BY ?amount";
+                    this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
                     const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
                     axios.get(fullUrl)
                         .then(response => (response.data['results']['bindings'].length ? response : ''))
@@ -982,6 +1003,7 @@ filtervalues = Vue.component('filter-values', {
                                         filterQuantities +
                                         "}\n" +
                                         "ORDER BY ?amount";
+                                    this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery2);
                                     const fullUr = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery2);
                                     axios.get(fullUr)
                                         .then(res => (res.data['results']['bindings'].length ? (vm.itemsType = 'Quantity', vm.items = vm.generateFilterValuesFromNumbers(res.data['results']['bindings'])) : vm.itemsType = 'Empty'))
@@ -1035,6 +1057,7 @@ filtervalues = Vue.component('filter-values', {
                                 "LIMIT 200\n" +
                                 "}\n" +
                                 "ORDER BY ?amount";
+                            this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
                             const url = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
                             axios.get(url)
                                 .then(res => (vm.itemsType = 'Quantity', vm.items = vm.generateFilterValuesFromNumbers(res.data['results']['bindings']), vm.displayCount = 0))
@@ -1045,6 +1068,7 @@ filtervalues = Vue.component('filter-values', {
                 }
                 else {
                     var sparqlQuery = "SELECT ?value ?valueLabel (COUNT(?value) AS ?count) WHERE {\n" +
+                        "  hint:Query hint:optimizer \"None\".\n" +
                         "  ?item wdt:P31 wd:" + this.classValue + ".\n" +
                         " ?item wdt:" + this.currentFilter.value + " ?value.\n" +
                         filterString +
@@ -1055,6 +1079,7 @@ filtervalues = Vue.component('filter-values', {
                         "}\n" +
                         "GROUP BY ?value ?valueLabel\n" +
                         "ORDER BY DESC(?count)";
+                    this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
                         const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
                         axios.get(fullUrl)
                         .then(response => {
@@ -1096,6 +1121,7 @@ filtervalues = Vue.component('filter-values', {
                                 "LIMIT 300\n" +
                                 "}\n" +
                                 "ORDER BY ?valueLabel";
+                            this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
                             const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
                             axios.get(fullUrl)
                                 .then(res => (vm.itemsType = "ItemFail", vm.items = [...res.data['results']['bindings']].slice(0).sort(
@@ -1112,7 +1138,6 @@ filtervalues = Vue.component('filter-values', {
                         })
                 }
             })
-
     }
 })
 
@@ -1283,7 +1308,7 @@ var app = new Vue({
         getFiltersFromURL: 1,
         allItemscomponentKey: 0,
         filterscomponentKey: 0,
-        totalValues: ''
+        total:''
     },
     mounted: function () {
         if(this.classLabel != ""){
@@ -1323,6 +1348,7 @@ var app = new Vue({
                 urlParams.set('view', page)
             }
             this.page = page
+            this.total = ""
             window.history.pushState({
                 page: page,
                 classValue: this.classValue,
@@ -1642,6 +1668,48 @@ var app = new Vue({
                 }
             }
             return this.appQuantities
+        },
+        totalValues: function(){
+            var filterString = "";
+            for (let i = 0; i < this.appliedFilters.length; i++) {
+                filterString += "?value wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n";
+            }
+            var filterRanges = "";
+            for (let i = 0; i < this.appliedRanges.length; i++) {
+                filterRanges += "?value (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
+                    "  ?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
+                    "  FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?time" + i + " && ?time" + i + " < '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n"
+            }
+            var filterQuantities = "";
+            for (let i = 0; i < this.appliedQuantities.length; i++) {
+                if (this.appliedQuantities[i].unit == "") {
+                    filterQuantities += "?value (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                        "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
+                        "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
+                }
+                else {
+                    Values
+                    filterQuantities += "?value (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                        "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
+                        "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
+
+                }
+            }
+            sparqlQuery = "SELECT (COUNT(DISTINCT ?value) AS ?count) WHERE {\n" +
+                "  ?value wdt:P31 wd:" + this.classValue + ".  \n" +
+                filterString +
+                "  ?value rdfs:label ?valueLabel.\n" +
+                filterRanges +
+                filterQuantities +
+                "  FILTER((LANG(?valueLabel)) = \"en\")\n" +
+                "}";
+            fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
+            axios.get(fullUrl)
+                .then(response => this.total = response.data['results']['bindings'][0].count.value)
+                .catch(error => {
+                    this.total = 1000000
+                })
+            return this.total
         }
     },
     watch:{

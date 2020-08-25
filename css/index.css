@@ -1,101 +1,71 @@
+.navbar {
+    position: relative;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    -ms-flex-align: center;
+    align-items: center;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    padding: .5rem 1rem;
+}
+
+.navbar-brand {
+    display: inline-block;
+    padding-top: .3125rem;
+    padding-bottom: .3125rem;
+    margin-right: 1rem;
+    font-size: 1.25rem;
+    line-height: inherit;
+    white-space: nowrap;
+}
+
+body {
+    margin: 16px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    font-weight: 400;
+    font-size: 1em;
+    line-height: 1.5;
+    color: #212529;
+    text-align: left;
+    background-color: #fff;
+}
+
+.container{
+    width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+    max-width: 1140px;
+}
+
 a:not([href]):not([class]) {
-  color:#007bff;
+    color: #007bff;
 }
-a{
-  cursor: pointer;
+
+a {
+    cursor: pointer;
+    color: #007bff;
+    text-decoration: none;
+    background-color: transparent;
 }
-.classSearchSection{
-  margin-bottom: 15px;
+
+a:hover {
+    color: #0056b3;
+    text-decoration: underline;
 }
-.header{
-  margin-bottom: 20px;
+
+.classSearchSection {
+    margin-bottom: 15px;
 }
-.classSearch{
+
+.header {
+    margin-bottom: 20px;
+}
+
+.classSearch {
     width: 100%;
     float: left;
-}
-.classOptions{
-  width: 100%;
-  margin-bottom:5px;
-  float: left;
-  /* text-align: center; */
-}
-.property-search{
-    width: 48%;
-    float: left;
-}
-
-.add-filter{
-    width: 4%;
-    float: left;
-}
-
-.chip {
-  display: inline-block;
-  padding: 0 10px;
-  height: 25px;
-  font-size: 12px;
-  line-height: 25px;
-  border-radius: 12px;
-  background-color: #f1f1f1;
-}
-
-.closebtn {
-  padding-left: 10px;
-  color: #888;
-  font-weight: bold;
-  float: right;
-  font-size: 20px;
-  cursor: pointer;
-}
-
-.closebtn:hover {
-  color: #000;
-}
-.modal {
-    display:    none;
-    position:   fixed;
-    z-index:    1000;
-    top:        0;
-    left:       0;
-    height:     100%;
-    width:      100%;
-    background: rgba( 255, 255, 255, .8 ) 
-                url('http://i.stack.imgur.com/FhHRx.gif') 
-                50% 50% 
-                no-repeat;
-}
-
-/* When the body has the loading class, we turn
-   the scrollbar off with overflow:hidden */
-body.loading .modal {
-    overflow: hidden;   
-}
-
-/* Anytime the body has the loading class, our
-   modal element will be visible */
-body.loading .modal {
-    display: block;
-}
-#dataTable {
-  font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
-  border-collapse: collapse;
-  width: 100%;
-}
-
-#dataTable td, #dataTable th {
-  border: 1px solid #ddd;
-  padding: 8px;
-}
-
-#dataTable tr:nth-child(even){background-color: #f2f2f2;}
-
-#dataTable tr:hover {background-color: #ddd;}
-
-#dataTable th {
-  padding-top: 12px;
-  padding-bottom: 12px;
-  text-align: left;
-  background-color: #4CAF50;
-  color: white;
 }
