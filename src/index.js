@@ -1536,29 +1536,46 @@ var app = new Vue({
             this.updatePage('view-all-items')
         },
         applyRange: function (range) {
-            if (range == 'novalue') {
-                urlParams.set("range[" + this.currentFilter.value + "]", "novalue")
-            }
-            else {
                 const i = this.appRanges.findIndex(_item => _item.filterValue == this.currentFilter.value);
                 if (i > -1) {
-                    this.appRanges[i] = {
-                        filterValue: this.currentFilter.value,
-                        filterValueLabel: this.currentFilter.valueLabel,
-                        valueLabel: range.bucketName,
-                        valueLL: range.bucketLL,
-                        valueUL: range.bucketUL
+                    if (range == 'novalue') {
+                        this.appRanges[i] = {
+                            filterValue: this.currentFilter.value,
+                            filterValueLabel: this.currentFilter.valueLabel,
+                            valueLabel: "No Value",
+                            valueLL: "novalue",
+                            valueUL: "novalue"
+                        }
+                    }
+                    else{
+                        this.appRanges[i] = {
+                            filterValue: this.currentFilter.value,
+                            filterValueLabel: this.currentFilter.valueLabel,
+                            valueLabel: range.bucketName,
+                            valueLL: range.bucketLL,
+                            valueUL: range.bucketUL
+                        }
                     }
                 }
                 else {
-                    this.appRanges.push({
-                        filterValue: this.currentFilter.value,
-                        filterValueLabel: this.currentFilter.valueLabel,
-                        valueLabel: range.bucketName,
-                        valueLL: range.bucketLL,
-                        valueUL: range.bucketUL
-                    });
-                }
+                    if (range == 'novalue') {
+                        this.appRanges.push({
+                            filterValue: this.currentFilter.value,
+                            filterValueLabel: this.currentFilter.valueLabel,
+                            valueLabel: "No Value",
+                            valueLL: "novalue",
+                            valueUL: "novalue"
+                        });
+                    }
+                    else{
+                        this.appRanges.push({
+                            filterValue: this.currentFilter.value,
+                            filterValueLabel: this.currentFilter.valueLabel,
+                            valueLabel: range.bucketName,
+                            valueLL: range.bucketLL,
+                            valueUL: range.bucketUL
+                        });
+                    }
 
                 if (range.size == 1) urlParams.set("range[" + this.currentFilter.value + "]", (new Date(this.parseDate(range.bucketLL))).getFullYear() + "|" + (new Date(this.parseDate(range.bucketUL))).getFullYear())
                 else if (range.size == 2) urlParams.set("range[" + this.currentFilter.value + "]", (new Date(this.parseDate(range.bucketLL))).getFullYear())
