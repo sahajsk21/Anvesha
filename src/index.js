@@ -140,31 +140,73 @@ results = Vue.component('items-results', {
         </div>
     </div>
     `,
+    methods: {
+        getTimePrecision(earliestDate, latestDate) {
+            var earliestYear = earliestDate.getUTCFullYear();
+            var earliestMonth = earliestDate.getUTCMonth() + 1;
+            var earliestDay = earliestDate.getUTCDate();
+            var latestYear = latestDate.getUTCFullYear();
+            var latestMonth = latestDate.getUTCMonth() + 1;
+            var latestDay = latestDate.getUTCDate();
+            var yearDifference = latestYear - earliestYear;
+            var monthDifference = (12 * yearDifference) + (latestMonth - earliestMonth);
+            var dayDifference = (30 * monthDifference) + (latestDay - earliestDay);
+            if (dayDifference <= 1) return 11
+            else if (monthDifference <= 1) return 10
+            else if (yearDifference <= 1) return 9
+            else if (yearDifference <= 10) return 8
+            else if (yearDifference <= 100) return 7
+            else if (yearDifference <= 1000) return 6
+            else if (yearDifference <= 1e4) return 5
+            else if (yearDifference <= 1e5) return 4
+            else if (yearDifference <= 1e6) return 3
+            else if (yearDifference <= 1e8) return 1
+            return 0
+        }
+    },
     mounted() {
         var filterString = "";
+        var noValueString = "";
         for (let i = 0; i < this.appliedFilters.length; i++) {
-            filterString += "?value wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n";
+            if (this.appliedFilters[i].value == "novalue") {
+                noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedFilters[i].filterValue + " ?no. }).\n"
+            }
+            else {
+                filterString += "?value wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n";
+            }
         }
         var filterRanges = "", maxString = "";
         for (let i = 0; i < this.appliedRanges.length; i++) {
-            filterRanges += "?value (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
-                "  ?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
-                "  FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?time" + i + " && ?time" + i + " < '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n"
-            maxString += "(MAX(?time" + i + ") AS ?tim" + i + ") ";
+            if (this.appliedRanges[i].valueLL == "novalue") {
+                noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedRanges[i].filterValue + " ?no. }).\n"
+            }
+            else {
+                timePrecision = this.getTimePrecision(new Date(this.appliedRanges[i].valueLL), new Date(this.appliedRanges[i].valueUL))
+                filterRanges += "?value (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
+                    "  ?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
+                    "  ?timenode"+i+" wikibase:timePrecision ?timeprecision"+i+".\n" +
+                    "  FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?time" + i + " && ?time" + i + " < '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n" +
+                    "  FILTER(?timeprecision"+i+">=" + timePrecision + ")\n";
+                maxString += "(MAX(?time" + i + ") AS ?tim" + i + ") ";
+            }
         }
         var filterQuantities = "";
         for (let i = 0; i < this.appliedQuantities.length; i++) {
-            if (this.appliedQuantities[i].unit == "") {
+            if (this.appliedQuantities[i].valueLL == "novalue") {
+                noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedQuantities[i].filterValue + " ?no. }).\n"
+            }
+            else if (this.appliedQuantities[i].unit == "") {
                 filterQuantities += "?value (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
                     "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
                     "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
+                maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
             }
             else {
                 filterQuantities += "?value (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
                     "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
                     "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
+                maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
             }
-            maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
         }
         // Fetch results
         sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
@@ -175,14 +217,15 @@ results = Vue.component('items-results', {
             "      ?value rdfs:label ?valueLabel.\n" +
             filterRanges +
             filterQuantities +
+            noValueString +
             "      FILTER((LANG(?valueLabel)) = \"en\")\n" +
             "  } \n" +
             (maxString == "" ? "" : "GROUP BY ?value ?valueLabel\n") +
-            (this.totalValues < 50000 ? "" : "LIMIT 200 OFFSET " + ((this.currentPage - 1) * 200))+
+            (this.totalValues < 50000 ? "" : "LIMIT 200 OFFSET " + ((this.currentPage - 1) * 200)) +
             "  }\n" +
             "}\n" +
-            (this.totalValues > 50000 ? "" : "ORDER BY ?valueLabel\n")+
-            (this.totalValues >= 50000 ? "":"LIMIT 200 OFFSET " + ((this.currentPage - 1) * 200));
+            (this.totalValues > 50000 ? "" : "ORDER BY ?valueLabel\n") +
+            (this.totalValues >= 50000 ? "" : "LIMIT 200 OFFSET " + ((this.currentPage - 1) * 200));
         fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
         axios.get(fullUrl)
             .then(response => response.data['results']['bindings'].length ? this.items = [...response.data['results']['bindings']] : this.items.push({ value: "Empty" }))
@@ -200,7 +243,7 @@ viewallitems = Vue.component('view-all-items', {
             filters: [],
             itemsCount: '',
             currentPage: 1,
-            query:""
+            query: ""
         }
     },
     template: `
@@ -218,7 +261,7 @@ viewallitems = Vue.component('view-all-items', {
                 <p v-if="filtersCount==-1"></p>
                 <p v-else-if="filtersCount==0">No filters are defined for this class.</p>
                 <div v-else-if="filtersCount<40" style="margin-bottom:20px">
-                <b>Filter on</b>: <span v-for="filter in filters"><a @click="showFilter(filter)">{{filter.valueLabel.value}}</a> <b v-if="filters[filtersCount-1].valueLabel.value != filter.valueLabel.value">&middot; </b> </span>
+                    <b>Filter on</b>: <span v-for="filter in filters"><a @click="showFilter(filter)">{{filter.valueLabel.value}}</a> <b v-if="filters[filtersCount-1].valueLabel.value != filter.valueLabel.value">&middot; </b> </span>
                 </div>
                 <p v-else><a class="classOptions" @click="changeView('filters-view')">Add a filter</a></p>
             <p><img v-if="totalValues==''" src='loading.gif'></p>
@@ -257,7 +300,28 @@ viewallitems = Vue.component('view-all-items', {
         showFilter(filter) {
             this.$emit('update-filter', filter)
         },
-
+        getTimePrecision(earliestDate, latestDate) {
+            var earliestYear = earliestDate.getUTCFullYear();
+            var earliestMonth = earliestDate.getUTCMonth() + 1;
+            var earliestDay = earliestDate.getUTCDate();
+            var latestYear = latestDate.getUTCFullYear();
+            var latestMonth = latestDate.getUTCMonth() + 1;
+            var latestDay = latestDate.getUTCDate();
+            var yearDifference = latestYear - earliestYear;
+            var monthDifference = (12 * yearDifference) + (latestMonth - earliestMonth);
+            var dayDifference = (30 * monthDifference) + (latestDay - earliestDay);
+            if (dayDifference <= 1) return 11
+            else if (monthDifference <= 1) return 10
+            else if (yearDifference <= 1) return 9
+            else if (yearDifference <= 10) return 8
+            else if (yearDifference <= 100) return 7
+            else if (yearDifference <= 1000) return 6
+            else if (yearDifference <= 1e4) return 5
+            else if (yearDifference <= 1e5) return 4
+            else if (yearDifference <= 1e6) return 3
+            else if (yearDifference <= 1e8) return 1
+            return 0
+        }
     },
     mounted() {
         // Check available filters
@@ -277,29 +341,47 @@ viewallitems = Vue.component('view-all-items', {
             })
 
         var filterString = "";
+        var noValueString = "";
         for (let i = 0; i < this.appliedFilters.length; i++) {
-            filterString += "?value wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n";
+            if (this.appliedFilters[i].value == "novalue") {
+                noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedFilters[i].filterValue + " ?no. }).\n"
+            }
+            else {
+                filterString += "?value wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n";
+            }
         }
         var filterRanges = "", maxString = "";
         for (let i = 0; i < this.appliedRanges.length; i++) {
-            filterRanges += "?value (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
-                "  ?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
-                "  FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?time" + i + " && ?time" + i + " < '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n"
-            maxString += "(MAX(?time" + i + ") AS ?tim" + i + ") ";
+            if (this.appliedRanges[i].valueLL == "novalue") {
+                noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedRanges[i].filterValue + " ?no. }).\n"
+            }
+            else {
+                timePrecision = this.getTimePrecision(new Date(this.appliedRanges[i].valueLL), new Date(this.appliedRanges[i].valueUL))
+                filterRanges += "?value (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
+                    "  ?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
+                    "  ?timenode"+i+" wikibase:timePrecision ?timeprecision"+i+".\n" +
+                    "  FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?time" + i + " && ?time" + i + " < '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n" +
+                    "  FILTER(?timeprecision"+i+">=" + timePrecision + ")\n";
+                maxString += "(MAX(?time" + i + ") AS ?tim" + i + ") ";
+            }
         }
         var filterQuantities = "";
         for (let i = 0; i < this.appliedQuantities.length; i++) {
-            if (this.appliedQuantities[i].unit == "") {
+            if (this.appliedQuantities[i].valueLL == "novalue") {
+                noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedQuantities[i].filterValue + " ?no. }).\n"
+            }
+            else if (this.appliedQuantities[i].unit == "") {
                 filterQuantities += "?value (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
                     "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
                     "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
+                maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
             }
             else {
                 filterQuantities += "?value (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
                     "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
                     "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
+                maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
             }
-            maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
         }
         sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
             "  {\n" +
@@ -309,6 +391,7 @@ viewallitems = Vue.component('view-all-items', {
             "      ?value rdfs:label ?valueLabel.\n" +
             filterRanges +
             filterQuantities +
+            noValueString +
             "      FILTER((LANG(?valueLabel)) = \"en\")\n" +
             "  } \n" +
             (maxString == "" ? "" : "GROUP BY ?value ?valueLabel\n") +
@@ -318,23 +401,6 @@ viewallitems = Vue.component('view-all-items', {
             (this.totalValues > 50000 ? "" : "ORDER BY ?valueLabel\n") +
             (this.totalValues >= 50000 ? "" : "LIMIT 200 OFFSET " + ((this.currentPage - 1) * 200));
         this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
-
-        // Fetch number of items
-        sparqlQuery = "SELECT (COUNT(DISTINCT ?value) AS ?count) WHERE {\n" +
-            "  ?value wdt:P31 wd:" + this.classValue + ".  \n" +
-            filterString +
-            "  ?value rdfs:label ?valueLabel.\n" +
-            filterRanges +
-            filterQuantities +
-            "  FILTER((LANG(?valueLabel)) = \"en\")\n" +
-            "}";
-        fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
-        axios.get(fullUrl)
-            .then(response => this.itemsCount = response.data['results']['bindings'][0].count.value,this.$emit('total-values',this.itemsCount))
-            .catch(error => {
-                this.itemsCount = 1000000
-            })
-
     }
 })
 
@@ -404,7 +470,7 @@ filtervalues = Vue.component('filter-values', {
             displayCount: 1,
             currentPage: 1,
             filterProperty: "",
-            query:""
+            query: ""
         }
     },
     template: `
@@ -421,11 +487,12 @@ filtervalues = Vue.component('filter-values', {
             <div v-if="itemsType==''"><p>Getting values for filter <b>{{currentFilter.valueLabel}}</b> ...</p><img src='loading.gif'></div>
             <p v-else-if="itemsType=='Empty'">There are no values for the filter <b>{{currentFilter.valueLabel}}</b>.</p>
             <p v-else-if="itemsType=='Additionalempty'">There are no additional values for the filter <b>{{currentFilter.valueLabel}}</b>.</p>
-            <p v-else-if="itemsType=='Error'">Trying to get values for the filter X took too long. <a @click="back()">Go back</a>.</p>
+            <p v-else-if="itemsType=='Error'">Trying to get values for the filter {{currentFilter.valueLabel}} took too long. <a @click="back()">Go back</a>.</p>
             <div v-else-if="itemsType=='Item'">
                 <p v-if="totalValues!=''">There are <b>{{ totalValues<1000000?numberWithCommas(totalValues):"1 million +" }}</b> items that match this description.</p>
                 <p> Select {{ appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) !=-1?"an additional value":"a value"}} for <b>{{currentFilter.valueLabel}}</b>: </p>
                 <ul>
+                    <li><i><a @click="applyFilter('novalue')">No Value</i></li>
                     <li v-for="(item,index) in items" v-if="index < currentPage*200 && index >= (currentPage-1)*200">
                         <a @click="applyFilter(item)">{{item.valueLabel.value}}</a> ({{numberWithCommas(item.count.value)}} results)
                     </li>
@@ -444,6 +511,7 @@ filtervalues = Vue.component('filter-values', {
                 <p v-if="totalValues!=''">There are <b>{{ totalValues<1000000?numberWithCommas(totalValues):"1 million +" }}</b> items that match this description.</p>
                 <p> Select a value for <b>{{currentFilter.valueLabel}}</b>:</p>
                 <ul v-if="displayCount == 1">
+                    <li><i><a @click="applyRange('novalue')">No Value</i></li>
                     <li v-for="item in items" v-if="item.numValues>0">
                         <a @click="applyRange(item)">{{item.bucketName}} </a> ({{numberWithCommas(item.numValues)}} results)
                     </li>
@@ -468,11 +536,13 @@ filtervalues = Vue.component('filter-values', {
                 <p v-if="displayCount == 0"><i>(Getting a complete set of values for this filter took too long; instead, here is a possibly incomplete set.)</i></p>
                 <p> Select a value for <b>{{currentFilter.valueLabel}}</b>:</p>
                 <ul v-if="displayCount == 1">
+                    <li><i><a @click="applyQuantityRange('novalue')">No Value</i></li>
                     <li v-for="item in items" v-if="item.numValues>0">
                         <a @click="applyQuantityRange(item)">{{item.bucketName}} {{item.unit}} </a> ({{numberWithCommas(item.numValues)}} results)
                     </li>
                 </ul>
                 <ul v-if="displayCount == 0">
+                    <li><i><a @click="applyQuantityRange('novalue')">No Value</i></li>
                     <li v-for="item in items">
                         <a @click="applyQuantityRange(item)">{{item.bucketName}} </a>
                     </li>
@@ -582,8 +652,8 @@ filtervalues = Vue.component('filter-values', {
         },
         generateDatePropertyValues(dateArray, range) {
             var len = dateArray.length,
-            start = 0,
-            end = len - 1;
+                start = 0,
+                end = len - 1;
             for (let i = start; i <= end; i++) {
                 dateArray[i].time.value = this.parseDate(dateArray[i].time.value)
             }
@@ -621,8 +691,9 @@ filtervalues = Vue.component('filter-values', {
                 while (curYear <= latestYear) {
                     propertyValues.push({
                         bucketName: this.yearToBCFormat(curYear) + " - " + this.yearToBCFormat(curYear + 99),
-                        bucketLL: curYear,
-                        bucketUL: (curYear + 99),
+                        bucketLL: curYear + '-01-01',
+                        bucketUL: (curYear + 99) + '-12-31',
+                        size: 1,
                         numValues: 0
                     });
                     curYear += 100;
@@ -639,8 +710,9 @@ filtervalues = Vue.component('filter-values', {
                 while (curYear <= latestYear) {
                     propertyValues.push({
                         bucketName: this.yearToBCFormat(curYear) + " - " + this.yearToBCFormat(curYear + 49),
-                        bucketLL: curYear,
-                        bucketUL: (curYear + 49),
+                        bucketLL: curYear + '-01-01',
+                        bucketUL: (curYear + 49) + '-12-31',
+                        size: 1,
                         numValues: 0
                     });
                     curYear += 50;
@@ -657,8 +729,9 @@ filtervalues = Vue.component('filter-values', {
                 while (curYear <= latestYear) {
                     propertyValues.push({
                         bucketName: this.yearToBCFormat(curYear) + " - " + this.yearToBCFormat(curYear + 9),
-                        bucketLL: curYear,
-                        bucketUL: (curYear + 9),
+                        bucketLL: curYear + '-01-01',
+                        bucketUL: (curYear + 9) + '-12-31',
+                        size: 1,
                         numValues: 0
                     });
                     curYear += 10;
@@ -675,8 +748,9 @@ filtervalues = Vue.component('filter-values', {
                 while (curYear <= latestYear) {
                     propertyValues.push({
                         bucketName: this.yearToBCFormat(curYear) + " - " + this.yearToBCFormat(curYear + 4),
-                        bucketLL: curYear,
-                        bucketUL: (curYear + 4),
+                        bucketLL: curYear + '-01-01',
+                        bucketUL: (curYear + 4) + '-12-31',
+                        size: 1,
                         numValues: 0
                     });
                     curYear += 5;
@@ -695,6 +769,7 @@ filtervalues = Vue.component('filter-values', {
                         bucketName: this.yearToBCFormat(curYear),
                         bucketLL: curYear + '-01-01',
                         bucketUL: curYear + '-12-31',
+                        size: 2,
                         numValues: 0
                     });
                     curYear++;
@@ -711,12 +786,12 @@ filtervalues = Vue.component('filter-values', {
                 var curMonth = iniMonth = earliestMonth;
                 // Add in year filter values as well, to handle year-only
                 // values.
-                // propertyValues.push(curYear);
                 while (curYear < latestYear || (curYear == latestYear && curMonth <= latestMonth)) {
                     propertyValues.push({
                         bucketName: this.monthNumberToString(curMonth) + " " + this.yearToBCFormat(curYear),
                         bucketLL: curYear + "-" + curMonth + "-01",
                         bucketUL: curYear + "-" + curMonth + "-30",
+                        size: 3,
                         numValues: 0
                     });
                     if (curMonth == 12) {
@@ -747,6 +822,7 @@ filtervalues = Vue.component('filter-values', {
                         bucketName: this.monthNumberToString(curDate.getUTCMonth() + 1) + " " + curDate.getUTCDate() + ", " + curDate.getUTCFullYear(),
                         bucketLL: curDate.getUTCFullYear() + "-" + (curDate.getUTCMonth() + 1) + "-" + curDate.getUTCDate(),
                         bucketUL: curDate.getUTCFullYear() + "-" + (curDate.getUTCMonth() + 1) + "-" + (curDate.getUTCDate() + 1),
+                        size: 4,
                         numValues: 0
 
                     });
@@ -765,6 +841,7 @@ filtervalues = Vue.component('filter-values', {
                     bucketName: this.monthNumberToString(curDate.getUTCMonth() + 1) + " " + curDate.getUTCDate() + ", " + curDate.getUTCFullYear(),
                     bucketLL: curDate.getUTCFullYear() + "-" + (curDate.getUTCMonth() + 1) + "-" + curDate.getUTCDate(),
                     bucketUL: curDate.getUTCFullYear() + "-" + (curDate.getUTCMonth() + 1) + "-" + (curDate.getUTCDate() + 1),
+                    size: 5,
                     numValues: len
 
                 });
@@ -909,21 +986,63 @@ filtervalues = Vue.component('filter-values', {
                 propertyValues[curSeparator]['numValues']++;
             }
             return propertyValues;
+        },
+        getTimePrecision(earliestDate, latestDate) {
+            var earliestYear = earliestDate.getUTCFullYear();
+            var earliestMonth = earliestDate.getUTCMonth() + 1;
+            var earliestDay = earliestDate.getUTCDate();
+            var latestYear = latestDate.getUTCFullYear();
+            var latestMonth = latestDate.getUTCMonth() + 1;
+            var latestDay = latestDate.getUTCDate();
+            var yearDifference = latestYear - earliestYear;
+            var monthDifference = (12 * yearDifference) + (latestMonth - earliestMonth);
+            var dayDifference = (30 * monthDifference) + (latestDay - earliestDay);
+            if (dayDifference <= 1) return 11
+            else if (monthDifference <= 1) return 10
+            else if (yearDifference <= 1) return 9
+            else if (yearDifference <= 10) return 8
+            else if (yearDifference <= 100) return 7
+            else if (yearDifference <= 1000) return 6
+            else if (yearDifference <= 1e4) return 5
+            else if (yearDifference <= 1e5) return 4
+            else if (yearDifference <= 1e6) return 3
+            else if (yearDifference <= 1e8) return 1
+            return 0
         }
     },
     mounted() {
         var filterString = "";
+        var noValueString = "";
         for (let i = 0; i < this.appliedFilters.length; i++) {
-            filterString += "?item wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n";
+            if (this.appliedFilters[i].value == "novalue") {
+                noValueString += " FILTER(NOT EXISTS { ?item wdt:" + this.appliedFilters[i].filterValue + " ?no. }).\n"
+            }
+            else {
+                filterString += "?item wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n";
+            }
         }
         var filterRanges = "";
         for (let i = 0; i < this.appliedRanges.length; i++) {
-            filterRanges += "?item wdt:" + this.appliedRanges[i].filterValue + " ?time" + i + ".\n" +
-                "  FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?time" + i + " && ?time" + i + " < '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n"
+            if (this.appliedRanges[i].valueLL == "novalue") {
+                noValueString += " FILTER(NOT EXISTS { ?item wdt:" + this.appliedRanges[i].filterValue + " ?no. }).\n"
+            }
+            else {
+                // filterRanges += "?item wdt:" + this.appliedRanges[i].filterValue + " ?time" + i + ".\n" +
+                //     "  FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?time" + i + " && ?time" + i + " < '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n"
+                timePrecision = this.getTimePrecision(new Date(this.appliedRanges[i].valueLL), new Date(this.appliedRanges[i].valueUL))
+                filterRanges += "?item (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
+                    "  ?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
+                    "  ?timenode"+i+" wikibase:timePrecision ?timeprecision"+i+".\n" +
+                    "  FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?time" + i + " && ?time" + i + " < '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n" +
+                    "  FILTER(?timeprecision"+i+">=" + timePrecision + ")\n";
+            }
         }
         var filterQuantities = "";
         for (let i = 0; i < this.appliedQuantities.length; i++) {
-            if (this.appliedQuantities[i].unit == "") {
+            if (this.appliedQuantities[i].valueLL == "novalue") {
+                noValueString += " FILTER(NOT EXISTS { ?item wdt:" + this.appliedQuantities[i].filterValue + " ?no. }).\n"
+            }
+            else if (this.appliedQuantities[i].unit == "") {
                 filterQuantities += "?item (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
                     "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
                     "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >" + this.appliedQuantities[i].valueLL + ")\n"
@@ -949,6 +1068,7 @@ filtervalues = Vue.component('filter-values', {
                         filterRanges +
                         "?item wdt:" + this.currentFilter.value + " ?time.\n" +
                         filterQuantities +
+                        noValueString +
                         "}\n" +
                         "ORDER by ?time";
                     this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
@@ -963,6 +1083,7 @@ filtervalues = Vue.component('filter-values', {
                                 "?item wdt:" + vm.currentFilter.value + " ?time.\n" +
                                 filterRanges +
                                 filterQuantities +
+                                noValueString +
                                 "}\n" +
                                 "LIMIT 200\n" +
                                 "}\n" +
@@ -985,6 +1106,7 @@ filtervalues = Vue.component('filter-values', {
                         "    ?v wikibase:quantityAmount ?amount.\n" +
                         filterRanges +
                         filterQuantities +
+                        noValueString +
                         "}\n" +
                         "ORDER BY ?amount";
                     this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
@@ -1001,6 +1123,7 @@ filtervalues = Vue.component('filter-values', {
                                         "    ?v wikibase:quantityAmount ?amount.\n" +
                                         filterRanges +
                                         filterQuantities +
+                                        noValueString +
                                         "}\n" +
                                         "ORDER BY ?amount";
                                     this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery2);
@@ -1075,33 +1198,34 @@ filtervalues = Vue.component('filter-values', {
                         "  ?value rdfs:label ?valueLabel.\n" +
                         filterRanges +
                         filterQuantities +
+                        noValueString +
                         "  FILTER(LANG(?valueLabel) = 'en').\n" +
                         "}\n" +
                         "GROUP BY ?value ?valueLabel\n" +
                         "ORDER BY DESC(?count)";
                     this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
-                        const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
-                        axios.get(fullUrl)
+                    const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
+                    axios.get(fullUrl)
                         .then(response => {
-                            if(response.data['results']['bindings'].length){
+                            if (response.data['results']['bindings'].length) {
                                 arr = [...response.data['results']['bindings']]
                                 index = vm.appliedFilters.findIndex(filter => filter.filterValue == vm.currentFilter.value)
-                                if(index !=-1){
+                                if (index != -1) {
                                     for (let i = 0; i < arr.length; i++) {
-                                        if (arr[i].value.value.split('/').slice(-1)[0] == vm.appliedFilters[index].value){
-                                            arr.splice(i,1)
+                                        if (arr[i].value.value.split('/').slice(-1)[0] == vm.appliedFilters[index].value) {
+                                            arr.splice(i, 1)
                                         }
                                     }
                                 }
-                                if(arr.length>0){
+                                if (arr.length > 0) {
                                     this.itemsType = "Item"
                                     this.items = arr
                                 }
-                                else{
+                                else {
                                     this.itemsType = "Additionalempty"
                                 }
-                            } 
-                            else{
+                            }
+                            else {
                                 this.itemsType = 'Empty'
                             }
                         })
@@ -1116,6 +1240,7 @@ filtervalues = Vue.component('filter-values', {
                                 "  ?value rdfs:label ?valueLabel.\n" +
                                 filterRanges +
                                 filterQuantities +
+                                noValueString +
                                 "  FILTER(LANG(?valueLabel) = 'en').\n" +
                                 "}\n" +
                                 "LIMIT 300\n" +
@@ -1308,10 +1433,10 @@ var app = new Vue({
         getFiltersFromURL: 1,
         allItemscomponentKey: 0,
         filterscomponentKey: 0,
-        total:''
+        total: ''
     },
     mounted: function () {
-        if(this.classLabel != ""){
+        if (this.classLabel != "") {
             window.history.pushState({
                 page: this.view,
                 classValue: this.classValue,
@@ -1331,14 +1456,14 @@ var app = new Vue({
             if (e.state) {
                 app.page = e.state.page
                 app.clsValue = e.state.classValue
-                app.getFiltersFromURL =  e.state.fromURL
+                app.getFiltersFromURL = e.state.fromURL
                 app.appFilters = e.state.filters
                 app.appQuantities = e.state.quantities
                 app.appRanges = e.state.ranges
-                app.currentFilterLabel =  e.state.currentFilterLabel
-                app.currentFilterValue =  e.state.currentFilterValue
-                app.allItemscomponentKey =  e.state.allItemscomponentKey
-                app.filterscomponentKey =  e.state.filterscomponentKey
+                app.currentFilterLabel = e.state.currentFilterLabel
+                app.currentFilterValue = e.state.currentFilterValue
+                app.allItemscomponentKey = e.state.allItemscomponentKey
+                app.filterscomponentKey = e.state.filterscomponentKey
             }
         };
     },
@@ -1389,64 +1514,115 @@ var app = new Vue({
             this.updatePage('filter-values')
         },
         applyFilter: function (filter) {
-            this.appFilters.push({
-                filterValue: this.currentFilter.value,
-                filterValueLabel: this.currentFilter.valueLabel,
-                value: filter.value.value.split('/').slice(-1)[0],
-                valueLabel: filter.valueLabel.value
-            });
-            urlParams.set("filter[" + this.currentFilter.value + "]", filter.value.value.split('/').slice(-1)[0])
+            if (filter == "novalue") {
+                this.appFilters.push({
+                    filterValue: this.currentFilter.value,
+                    filterValueLabel: this.currentFilter.valueLabel,
+                    value: "novalue",
+                    valueLabel: "No Value"
+                });
+                urlParams.set("filter[" + this.currentFilter.value + "]", "novalue")
+            }
+            else {
+                this.appFilters.push({
+                    filterValue: this.currentFilter.value,
+                    filterValueLabel: this.currentFilter.valueLabel,
+                    value: filter.value.value.split('/').slice(-1)[0],
+                    valueLabel: filter.valueLabel.value
+                });
+                urlParams.set("filter[" + this.currentFilter.value + "]", filter.value.value.split('/').slice(-1)[0])
+            }
             urlParams.delete("cf")
             this.updatePage('view-all-items')
         },
         applyRange: function (range) {
-            const i = this.appRanges.findIndex(_item => _item.filterValue == this.currentFilter.value);
-            if (i > -1) {
-                this.appRanges[i] = {
-                    filterValue: this.currentFilter.value,
-                    filterValueLabel: this.currentFilter.valueLabel,
-                    valueLabel: range.bucketName,
-                    valueLL: range.bucketLL,
-                    valueUL: range.bucketUL
-                }
+            if (range == 'novalue') {
+                urlParams.set("range[" + this.currentFilter.value + "]", "novalue")
             }
             else {
-                this.appRanges.push({
-                    filterValue: this.currentFilter.value,
-                    filterValueLabel: this.currentFilter.valueLabel,
-                    valueLabel: range.bucketName,
-                    valueLL: range.bucketLL,
-                    valueUL: range.bucketUL
-                });
+                const i = this.appRanges.findIndex(_item => _item.filterValue == this.currentFilter.value);
+                if (i > -1) {
+                    this.appRanges[i] = {
+                        filterValue: this.currentFilter.value,
+                        filterValueLabel: this.currentFilter.valueLabel,
+                        valueLabel: range.bucketName,
+                        valueLL: range.bucketLL,
+                        valueUL: range.bucketUL
+                    }
+                }
+                else {
+                    this.appRanges.push({
+                        filterValue: this.currentFilter.value,
+                        filterValueLabel: this.currentFilter.valueLabel,
+                        valueLabel: range.bucketName,
+                        valueLL: range.bucketLL,
+                        valueUL: range.bucketUL
+                    });
+                }
+
+                if (range.size == 1) urlParams.set("range[" + this.currentFilter.value + "]", (new Date(this.parseDate(range.bucketLL))).getFullYear() + "|" + (new Date(this.parseDate(range.bucketUL))).getFullYear())
+                else if (range.size == 2) urlParams.set("range[" + this.currentFilter.value + "]", (new Date(this.parseDate(range.bucketLL))).getFullYear())
+                else if (range.size == 3) urlParams.set("range[" + this.currentFilter.value + "]", (new Date(this.parseDate(range.bucketLL))).getFullYear() + "|" + (Number((new Date(range.bucketLL)).getMonth()) + 1))
+                else if (range.size == 4) urlParams.set("range[" + this.currentFilter.value + "]", range.bucketLL + "|" + range.bucketUL)
+                else if (range.size == 5) urlParams.set("range[" + this.currentFilter.value + "]", range.bucketLL)
             }
             urlParams.delete("cf")
-            urlParams.set("range[" + this.currentFilter.value + "]", range.bucketLL + "|" + range.bucketUL)
             this.updatePage('view-all-items')
         },
         applyQuantityRange: function (range) {
             const i = this.appQuantities.findIndex(_item => _item.filterValue == this.currentFilter.value);
             if (i > -1) {
-                this.appQuantities[i] = {
-                    filterValue: this.currentFilter.value,
-                    filterValueLabel: this.currentFilter.valueLabel,
-                    valueLabel: range.bucketName,
-                    valueLL: range.bucketLL,
-                    valueUL: range.bucketUL,
-                    unit: range.unit
+                if (range == 'novalue') {
+                    urlParams.set("quantity[" + this.currentFilter.value + "]", "novalue")
+                    this.appQuantities[i] = {
+                        filterValue: this.currentFilter.value,
+                        filterValueLabel: this.currentFilter.valueLabel,
+                        valueLabel: "No Value",
+                        valueLL: "novalue",
+                        valueUL: "novalue",
+                        unit: ""
+                    }
+                    urlParams.set("quantity[" + this.currentFilter.value + "]", "novalue")
+                }
+                else {
+                    this.appQuantities[i] = {
+                        filterValue: this.currentFilter.value,
+                        filterValueLabel: this.currentFilter.valueLabel,
+                        valueLabel: range.bucketName,
+                        valueLL: range.bucketLL,
+                        valueUL: range.bucketUL,
+                        unit: range.unit
+                    }
+                    urlParams.set("quantity[" + this.currentFilter.value + "]", range.bucketLL + "|" + range.bucketUL + "|" + range.unit)
                 }
             }
             else {
-                this.appQuantities.push({
-                    filterValue: this.currentFilter.value,
-                    filterValueLabel: this.currentFilter.valueLabel,
-                    valueLabel: range.bucketName,
-                    valueLL: range.bucketLL,
-                    valueUL: range.bucketUL,
-                    unit: range.unit
-                });
+                if (range == 'novalue') {
+                    urlParams.set("quantity[" + this.currentFilter.value + "]", "novalue")
+                    this.appQuantities.push({
+                        filterValue: this.currentFilter.value,
+                        filterValueLabel: this.currentFilter.valueLabel,
+                        valueLabel: "No Value",
+                        valueLL: "novalue",
+                        valueUL: "novalue",
+                        unit: ""
+                    })
+                    urlParams.set("quantity[" + this.currentFilter.value + "]", "novalue")
+
+                }
+                else {
+                    this.appQuantities.push({
+                        filterValue: this.currentFilter.value,
+                        filterValueLabel: this.currentFilter.valueLabel,
+                        valueLabel: range.bucketName,
+                        valueLL: range.bucketLL,
+                        valueUL: range.bucketUL,
+                        unit: range.unit
+                    });
+                    urlParams.set("quantity[" + this.currentFilter.value + "]", range.bucketLL + "|" + range.bucketUL + "|" + range.unit)
+                }
             }
             urlParams.delete("cf")
-            urlParams.set("quantity[" + this.currentFilter.value + "]", range.bucketLL + "|" + range.bucketUL + "|" + range.unit)
             this.updatePage('view-all-items')
         },
         forceAllItemsRerender() {
@@ -1482,7 +1658,73 @@ var app = new Vue({
             this.forceAllItemsRerender()
             this.forceFiltersRerender()
         },
-
+        parseDate(date) {
+            if (date.split("-")[0] == "") {
+                year = "-" + "0".repeat(6 - date.split("-")[1].length) + date.split("-")[1]
+                return date.replace(/^-(\w+)(?=-)/g, year)
+            }
+            return date
+        },
+        parseDateRange(dateString) {
+            dateParts = dateString.split("|")
+            console.log(dateParts);
+            if (dateParts.length == 2) {
+                if (dateParts[0].split("-").length == 1 && dateParts[1].split("-").length == 1) {
+                    return [dateParts[0] + "-01-01", dateParts[1] + "-12-31"]
+                }
+                else if (dateParts[0].split("-").length == 2 && dateParts[1].split("-").length == 2) {
+                    if (dateParts[0].split("-")[0] == "") {
+                        return [dateParts[0] + "-01-01", dateParts[1] + "-12-31"]
+                    }
+                    else {
+                        return [dateParts[0] + "-01", dateParts[1] + "-31"]
+                    }
+                }
+                else if (dateParts[0].split("-").length > 2 && dateParts[1].split("-").length > 2) {
+                    return [dateParts[0], dateParts[1]]
+                }
+            }
+            else if (dateParts.length == 1) {
+                if (dateParts[0].split("-").length == 1) {
+                    return [dateParts[0] + "-01-01", dateParts[0] + "-12-31"]
+                }
+                else if (dateParts[0].split("-").length == 2) {
+                    if (dateParts[0].split("-")[0] == "") {
+                        return [dateParts[0] + "-01-01", dateParts[0] + "-12-31"]
+                    }
+                    else {
+                        return [dateParts[0] + "-01", dateParts[0] + "-31"]
+                    }
+                }
+                else if (dateParts[0].split("-").length > 2) {
+                    nextDateArray = dateParts[0].split("-")
+                    nextDateArray[nextDateArray.length - 1] = Number(nextDateArray[nextDateArray.length - 1]) + 1
+                    return [dateParts[0], nextDateArray.join("-")]
+                }
+            }
+        },
+        getTimePrecision(earliestDate, latestDate) {
+            var earliestYear = earliestDate.getUTCFullYear();
+            var earliestMonth = earliestDate.getUTCMonth() + 1;
+            var earliestDay = earliestDate.getUTCDate();
+            var latestYear = latestDate.getUTCFullYear();
+            var latestMonth = latestDate.getUTCMonth() + 1;
+            var latestDay = latestDate.getUTCDate();
+            var yearDifference = latestYear - earliestYear;
+            var monthDifference = (12 * yearDifference) + (latestMonth - earliestMonth);
+            var dayDifference = (30 * monthDifference) + (latestDay - earliestDay);
+            if (dayDifference <= 1) return 11
+            else if (monthDifference <= 1) return 10
+            else if (yearDifference <= 1) return 9
+            else if (yearDifference <= 10) return 8
+            else if (yearDifference <= 100) return 7
+            else if (yearDifference <= 1000) return 6
+            else if (yearDifference <= 1e4) return 5
+            else if (yearDifference <= 1e5) return 4
+            else if (yearDifference <= 1e6) return 3
+            else if (yearDifference <= 1e8) return 1
+            return 0
+        }
     },
     computed: {
         view: function () {
@@ -1551,14 +1793,24 @@ var app = new Vue({
                 var filters = values = "";
                 if (res != null) {
                     for (var i = 0; i < res.length; i++) {
-                        this.appFilters.push({
-                            filterValue: res[i].split("[")[1].slice(0, -1),
-                            filterValueLabel: res[i].split("[")[1].slice(0, -1),
-                            value: urlParams.get(res[i]),
-                            valueLabel: urlParams.get(res[i])
-                        })
+                        if (urlParams.get(res[i]) == "novalue") {
+                            this.appFilters.push({
+                                filterValue: res[i].split("[")[1].slice(0, -1),
+                                filterValueLabel: res[i].split("[")[1].slice(0, -1),
+                                value: "novalue",
+                                valueLabel: "No Value"
+                            })
+                        }
+                        else {
+                            this.appFilters.push({
+                                filterValue: res[i].split("[")[1].slice(0, -1),
+                                filterValueLabel: res[i].split("[")[1].slice(0, -1),
+                                value: urlParams.get(res[i]),
+                                valueLabel: urlParams.get(res[i])
+                            })
+                            values += " wd:" + urlParams.get(res[i])
+                        }
                         filters += " wdt:" + res[i].split("[")[1].slice(0, -1)
-                        values += " wd:" + urlParams.get(res[i])
                     }
                     var sparqlQuery = "SELECT ?prop ?propLabel WHERE {\n" +
                         "  hint:Query hint:optimizer \"None\".\n" +
@@ -1576,7 +1828,7 @@ var app = new Vue({
                                 }
                             }
                         })
-                        
+
                     sparqlQuery = "SELECT ?value ?label WHERE {\n" +
                         "  VALUES ?value { " + values + " }\n" +
                         "  ?value rdfs:label ?label.\n" +
@@ -1603,13 +1855,25 @@ var app = new Vue({
                 var filters = "";
                 if (res != null) {
                     for (var i = 0; i < res.length; i++) {
-                        this.appRanges.push({
-                            filterValue: res[i].split("[")[1].slice(0, -1),
-                            filterValueLabel: res[i].split("[")[1].slice(0, -1),
-                            valueLL: urlParams.get(res[i]).split("|")[0].trim(),
-                            valueUL: urlParams.get(res[i]).split("|")[1].trim(),
-                            valueLabel: urlParams.get(res[i]).split("|")[0].trim() + " - " + urlParams.get(res[i]).split("|")[1].trim()
-                        })
+                        if (urlParams.get(res[i]) == "novalue") {
+                            this.appRanges.push({
+                                filterValue: res[i].split("[")[1].slice(0, -1),
+                                filterValueLabel: res[i].split("[")[1].slice(0, -1),
+                                valueLL: "novalue",
+                                valueUL: "novalue",
+                                valueLabel: "No Value"
+                            })
+                        }
+                        else {
+                            dateRangeParts = this.parseDateRange(urlParams.get(res[i]))
+                            this.appRanges.push({
+                                filterValue: res[i].split("[")[1].slice(0, -1),
+                                filterValueLabel: res[i].split("[")[1].slice(0, -1),
+                                valueLL: dateRangeParts[0],
+                                valueUL: dateRangeParts[1],
+                                valueLabel: urlParams.get(res[i]).split("|").length == 2 ? urlParams.get(res[i]).split("|")[0] + " - " + urlParams.get(res[i]).split("|")[1] : urlParams.get(res[i]).split("|")[0]
+                            })
+                        }
                         filters += " wdt:" + res[i].split("[")[1].slice(0, -1)
                     }
                     var sparqlQuery = "SELECT ?prop ?propLabel WHERE {\n" +
@@ -1639,14 +1903,26 @@ var app = new Vue({
                 var filters = "";
                 if (res != null) {
                     for (var i = 0; i < res.length; i++) {
-                        this.appQuantities.push({
-                            filterValue: res[i].split("[")[1].slice(0, -1),
-                            filterValueLabel: res[i].split("[")[1].slice(0, -1),
-                            valueLL: urlParams.get(res[i]).split("|")[0].trim(),
-                            valueUL: urlParams.get(res[i]).split("|")[1].trim(),
-                            valueLabel: numberWithCommas(urlParams.get(res[i]).split("|")[0].trim()) + " - " + numberWithCommas(urlParams.get(res[i]).split("|")[1].trim()),
-                            unit: urlParams.get(res[i]).split("|")[2].trim()
-                        })
+                        if (urlParams.get(res[i]) == "novalue") {
+                            this.appQuantities.push({
+                                filterValue: res[i].split("[")[1].slice(0, -1),
+                                filterValueLabel: res[i].split("[")[1].slice(0, -1),
+                                valueLL: "novalue",
+                                valueUL: "novalue",
+                                valueLabel: "No Value",
+                                unit: ""
+                            })
+                        }
+                        else {
+                            this.appQuantities.push({
+                                filterValue: res[i].split("[")[1].slice(0, -1),
+                                filterValueLabel: res[i].split("[")[1].slice(0, -1),
+                                valueLL: urlParams.get(res[i]).split("|")[0].trim(),
+                                valueUL: urlParams.get(res[i]).split("|")[1].trim(),
+                                valueLabel: numberWithCommas(urlParams.get(res[i]).split("|")[0].trim()) + " - " + numberWithCommas(urlParams.get(res[i]).split("|")[1].trim()),
+                                unit: urlParams.get(res[i]).split("|")[2].trim()
+                            })
+                        }
                         filters += " wdt:" + res[i].split("[")[1].slice(0, -1)
                     }
                     var sparqlQuery = "SELECT ?prop ?propLabel WHERE {\n" +
@@ -1669,26 +1945,42 @@ var app = new Vue({
             }
             return this.appQuantities
         },
-        totalValues: function(){
+        totalValues: function () {
             var filterString = "";
+            var noValueString = "";
             for (let i = 0; i < this.appliedFilters.length; i++) {
-                filterString += "?value wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n";
+                if (this.appliedFilters[i].value == "novalue") {
+                    noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedFilters[i].filterValue + " ?no. }).\n"
+                }
+                else {
+                    filterString += "?value wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n";
+                }
             }
             var filterRanges = "";
             for (let i = 0; i < this.appliedRanges.length; i++) {
-                filterRanges += "?value (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
-                    "  ?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
-                    "  FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?time" + i + " && ?time" + i + " < '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n"
+                if (this.appliedRanges[i].valueLL == "novalue") {
+                    noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedRanges[i].filterValue + " ?no. }).\n"
+                }
+                else {
+                    timePrecision = this.getTimePrecision(new Date(this.appliedRanges[i].valueLL), new Date(this.appliedRanges[i].valueUL))
+                    filterRanges += "?value (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
+                        "  ?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
+                        "  ?timenode"+i+" wikibase:timePrecision ?timeprecision"+i+".\n" +
+                        "  FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?time" + i + " && ?time" + i + " < '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n" +
+                        "  FILTER(?timeprecision"+i+">=" + timePrecision + ")\n";
+                }
             }
             var filterQuantities = "";
             for (let i = 0; i < this.appliedQuantities.length; i++) {
-                if (this.appliedQuantities[i].unit == "") {
+                if (this.appliedQuantities[i].valueLL == "novalue") {
+                    noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedQuantities[i].filterValue + " ?no. }).\n"
+                }
+                else if (this.appliedQuantities[i].unit == "") {
                     filterQuantities += "?value (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
                         "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
                         "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
                 }
                 else {
-                    Values
                     filterQuantities += "?value (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
                         "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
                         "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
@@ -1701,6 +1993,7 @@ var app = new Vue({
                 "  ?value rdfs:label ?valueLabel.\n" +
                 filterRanges +
                 filterQuantities +
+                noValueString +
                 "  FILTER((LANG(?valueLabel)) = \"en\")\n" +
                 "}";
             fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
@@ -1712,8 +2005,8 @@ var app = new Vue({
             return this.total
         }
     },
-    watch:{
-        classLabel: function(){
+    watch: {
+        classLabel: function () {
             window.history.pushState({
                 page: this.view,
                 classValue: this.classValue,
