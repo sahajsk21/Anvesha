@@ -46,4 +46,9 @@ a:hover {
     width: 100%;
     float: left;
 }
-
+.filter-box{
+    margin-bottom: 20px;
+    background-color: #f4f4f4;
+    border: 1px solid #e7e7e7;
+    padding: 10px;
+}
