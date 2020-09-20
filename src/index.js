@@ -286,7 +286,6 @@ viewallitems = Vue.component('view-all-items', {
                 <a @click="currentPage<totalValues/200?currentPage++:''">&gt;</a>
             </div>
             <div><a :href="query">View SPARQL query</a></div>
-            <div><a href="/about">About Wikidata Walkabout</a></div>
         </div>
     </div>`,
     methods: {
@@ -1338,14 +1337,13 @@ filtervalues = Vue.component('filter-values', {
                         .then(response => {
                             if (response.data['results']['bindings'].length) {
                                 arr = [...response.data['results']['bindings']]
-                                index = vm.appliedFilters.findIndex(filter => filter.filterValue == vm.currentFilter.value)
-                                if (index != -1) {
-                                    for (let i = 0; i < arr.length; i++) {
-                                        if (arr[i].value.value.split('/').slice(-1)[0] == vm.appliedFilters[index].value) {
-                                            arr.splice(i, 1)
+                                index = []
+                                for (let i = 0; i < vm.appliedFilters.length; i++) {
+                                        if (vm.appliedFilters[i].filterValue == vm.currentFilter.value) {
+                                            index.push(vm.appliedFilters[i].value)
                                         }
                                     }
-                                }
+                                arr = arr.filter(x => !index.includes(x.value.value.split('/').slice(-1)[0]))
                                 if (arr.length > 0) {
                                     this.itemsType = "Item"
                                     this.items = arr

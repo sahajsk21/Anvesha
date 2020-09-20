@@ -52,3 +52,7 @@ a:hover {
     border: 1px solid #e7e7e7;
     padding: 10px;
 }
+.footer{
+    float: right;
+    padding: 10px;
+}
