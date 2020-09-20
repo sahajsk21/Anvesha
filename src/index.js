@@ -1195,7 +1195,7 @@ filtervalues = Vue.component('filter-values', {
                                                     var q = window.location.search;
                                                     parameters = new URLSearchParams(q)
                                                     parameters.delete("cf")
-                                                    parameters.set("q." + vm.currentFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + "~" + arr[i].unit)
+                                                    parameters.set("q." + vm.currentFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + (arr[i].unit != "" ? ("~" + arr[i].unit) : ""))
                                                     arr[i]['href'] = window.location.pathname + "?" + parameters
                                                 }
                                                 vm.items = arr
@@ -1232,7 +1232,7 @@ filtervalues = Vue.component('filter-values', {
                                                             var q = window.location.search;
                                                             parameters = new URLSearchParams(q)
                                                             parameters.delete("cf")
-                                                            parameters.set("q." + vm.currentFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + "~" + arr[i].unit)
+                                                            parameters.set("q." + vm.currentFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + (arr[i].unit != "" ? ("~" + arr[i].unit) : ""))
                                                             arr[i]['href'] = window.location.pathname + "?" + parameters
                                                         }
                                                         vm.items = arr
@@ -1262,7 +1262,7 @@ filtervalues = Vue.component('filter-values', {
                                                     var q = window.location.search;
                                                     parameters = new URLSearchParams(q)
                                                     parameters.delete("cf")
-                                                    parameters.set("quantity," + vm.currentFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + "~" + arr[i].unit)
+                                                    parameters.set("quantity," + vm.currentFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + (arr[i].unit != "" ? ("~" + arr[i].unit) : ""))
                                                     arr[i]['href'] = window.location.pathname + "?" + parameters
                                                 }
                                                 vm.items = arr
@@ -1303,7 +1303,7 @@ filtervalues = Vue.component('filter-values', {
                                             var q = window.location.search;
                                             parameters = new URLSearchParams(q)
                                             parameters.delete("cf")
-                                            parameters.set("q." + vm.currentFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + "~" + arr[i].unit)
+                                            parameters.set("q." + vm.currentFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + (arr[i].unit != "" ? ("~" + arr[i].unit) : ""))
                                             arr[i]['href'] = window.location.pathname + "?" + parameters
                                         }
                                         vm.items = arr
@@ -1318,7 +1318,7 @@ filtervalues = Vue.component('filter-values', {
                 else {
                     var q = window.location.search;
                     parameters = new URLSearchParams(q)
-                    parameters.set("f." + this.currentFilter.value+".0" , "novalue")
+                    parameters.set("f." + this.currentFilter.value , "novalue")
                     this.noValueURL = window.location.pathname + "?" + parameters
                     var sparqlQuery = "SELECT ?value ?valueLabel (COUNT(?value) AS ?count) WHERE {\n" +
                         "  ?item wdt:P31 wd:" + this.classValue + ".\n" +
@@ -1357,11 +1357,14 @@ filtervalues = Vue.component('filter-values', {
                                     var q = window.location.search;
                                     parameters = new URLSearchParams(q)
                                     parameters.delete("cf")
-                                    var num = 0
+                                    var existingValues = ""
                                     for (let i = 0; i < vm.appliedFilters.length; i++) {
-                                        if (vm.appliedFilters[i].filterValue == this.currentFilter.value) num++;
+                                        if (vm.appliedFilters[i].filterValue == this.currentFilter.value)
+                                        {
+                                            existingValues = existingValues + vm.appliedFilters[i].value + "-";                    
+                                        }
                                     }
-                                    parameters.set("f." + this.currentFilter.value+"."+num, arr[i].value.value.split('/').slice(-1)[0])
+                                    parameters.set("f." + this.currentFilter.value, existingValues + arr[i].value.value.split('/').slice(-1)[0])
                                     arr[i]['href'] = window.location.pathname + "?" + parameters
                                 }
                             }
@@ -1674,13 +1677,15 @@ var app = new Vue({
                         value: "novalue",
                         valueLabel: "No Value"
                     });
-                    urlParams.set("f." + this.currentFilter.value+".0", "novalue")
+                    urlParams.set("f." + this.currentFilter.value, "novalue")
                 }
             }
             else {
-                var num = 0
+                var existingValues = ""
                 for (let i = 0; i < this.appFilters.length; i++) {
-                    if(this.appFilters[i].filterValue == this.currentFilter.value) num++;                    
+                    if (this.appFilters[i].filterValue == this.currentFilter.value){
+                        existingValues = existingValues + this.appFilters[i].value+"-";                    
+                    }
                 }
                 this.appFilters.push({
                     filterValue: this.currentFilter.value,
@@ -1688,7 +1693,7 @@ var app = new Vue({
                     value: filter.value.value.split('/').slice(-1)[0],
                     valueLabel: filter.valueLabel.value
                 });
-                urlParams.set("f." + this.currentFilter.value+"."+num, filter.value.value.split('/').slice(-1)[0])
+                urlParams.set("f." + this.currentFilter.value, existingValues + filter.value.value.split('/').slice(-1)[0])
             }
             urlParams.delete("cf")
             this.updatePage('view-all-items')
@@ -1776,7 +1781,7 @@ var app = new Vue({
                         valueUL: range.bucketUL,
                         unit: range.unit
                     }
-                    urlParams.set("q." + this.currentFilter.value, range.bucketLL + "~" + range.bucketUL + "~" + range.unit)
+                    urlParams.set("q." + this.currentFilter.value, range.bucketLL + "~" + range.bucketUL + (range.unit!=""?("~" + range.unit):""))
                 }
             }
             else {
@@ -1802,7 +1807,7 @@ var app = new Vue({
                         valueUL: range.bucketUL,
                         unit: range.unit
                     });
-                    urlParams.set("q." + this.currentFilter.value, range.bucketLL + "~" + range.bucketUL + "~" + range.unit)
+                    urlParams.set("q." + this.currentFilter.value, range.bucketLL + "~" + range.bucketUL + (range.unit != "" ? ("~" + range.unit) : ""))
                 }
             }
             urlParams.delete("cf")
@@ -1815,19 +1820,17 @@ var app = new Vue({
             this.filterscomponentKey += 1;
         },
         removeFilter: function (filter, page) {
-            var num = 0,index = 0;
-            for (let i = 0; i < this.appFilters.length; i++) {
-                if (this.appFilters[i].filterValue == filter.filterValue){
-                    if (this.appFilters[i].value == filter.value){
-                        index = i;
-                        break;
-                    }
-                    num++;
-                }
+            values = urlParams.get("f."+filter.filterValue).split("-")
+            if(values.length>1){
+                i = values.indexOf(filter.value)
+                values.splice(i,1)
+                urlParams.set("f."+filter.filterValue,values.join("-"))
             }
-            // index = this.appFilters.findIndex(i => (i.filterValue == filter.filterValue && i.value == filter.value));
+            else{
+                urlParams.delete("f." + filter.filterValue)
+            }
+            index = this.appFilters.findIndex(i => (i.filterValue == filter.filterValue && i.value == filter.value));
             this.appFilters.splice(index, 1)
-            urlParams.delete("f." + filter.filterValue+"."+num)
             this.updatePage(page)
             this.getFiltersFromURL = 0
             this.forceAllItemsRerender()
@@ -1980,8 +1983,13 @@ var app = new Vue({
         },
         appliedFilters: function () {
             if (this.appFilters.length == 0 && this.getFiltersFromURL == 1) {
+                /*  
+                Find all keys with "f.filterValue" from the URL. 
+                Split the key about "." to get filter and
+                split the result about "-" to get all the values for that particular filter.
+                */
                 url = decodeURI(urlParams);
-                var res = url.match(/[fF]\.[Pp]((\d+))\.((\d+))/g);
+                var res = url.match(/[fF]\.[Pp]((\d+))/g);
                 var filters = values = "";
                 let filterSet = new Set()
                 if (res != null) {
@@ -1995,19 +2003,22 @@ var app = new Vue({
                             })
                         }
                         else {
-                            this.appFilters.push({
-                                filterValue: res[i].split(".")[1],
-                                filterValueLabel: res[i].split(".")[1],
-                                value: urlParams.get(res[i]),
-                                valueLabel: urlParams.get(res[i])
-                            })
-                            values += " wd:" + urlParams.get(res[i])
+                            for (const v of urlParams.get(res[i]).split("-")) {
+                                this.appFilters.push({
+                                    filterValue: res[i].split(".")[1],
+                                    filterValueLabel: res[i].split(".")[1],
+                                    value: v,
+                                    valueLabel: v
+                                })
+                                values += " wd:" + v
+                            } 
                         }
                         filterSet.add(res[i].split(".")[1])
                     }
                     for (let item of filterSet){
                         filters += " wdt:"+item
                     }
+                    // Get filter labels
                     var sparqlQuery = "SELECT ?prop ?propLabel WHERE {\n" +
                         "  hint:Query hint:optimizer \"None\".\n" +
                         "  VALUES ?p {  " + filters + " }\n" +
@@ -2025,7 +2036,7 @@ var app = new Vue({
                                 }
                             }
                         })
-
+                    // Get value labels
                     sparqlQuery = "SELECT ?value ?label WHERE {\n" +
                         "  VALUES ?value { " + values + " }\n" +
                         "  ?value rdfs:label ?label.\n" +
