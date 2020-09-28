@@ -101,8 +101,7 @@ classfilter = Vue.component('class-filter', {
         }
         var sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
             "  VALUES ?value { " + classes + " }\n" +
-            "  ?value rdfs:label ?valueLabel.\n" +
-            "  FILTER(LANG(?valueLabel) = \"en\")\n" +
+            "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }\n" +
             "}";
         const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
         axios.get(fullUrl)
@@ -210,21 +209,19 @@ results = Vue.component('items-results', {
         // Fetch results
         sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
             "  {\n" +
-            "    SELECT ?value ?valueLabel " + maxString + " WHERE {\n" +
+            "    SELECT ?value  " + maxString + " WHERE {\n" +
             "      ?value wdt:P31 wd:" + this.classValue + ".  \n" +
             filterString +
-            "      ?value rdfs:label ?valueLabel.\n" +
             filterRanges +
             filterQuantities +
             noValueString +
-            "      FILTER((LANG(?valueLabel)) = \"en\")\n" +
             "  } \n" +
-            (maxString == "" ? "" : "GROUP BY ?value ?valueLabel\n") +
-            (this.totalValues < 50000 ? "" : "LIMIT 200 OFFSET " + ((this.currentPage - 1) * 200)) +
+            (maxString == "" ? "" : "GROUP BY ?value \n") +
+            "LIMIT 200 OFFSET " + ((this.currentPage - 1) * 200) +
             "  }\n" +
-            "}\n" +
-            (this.totalValues > 50000 ? "" : "ORDER BY ?valueLabel\n") +
-            (this.totalValues >= 50000 ? "" : "LIMIT 200 OFFSET " + ((this.currentPage - 1) * 200));
+            "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }\n" +
+            "}\n"+
+            (this.totalValues < 200 ? "" : "ORDER BY ?valueLabel\n") ;
         fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
         axios.get(fullUrl)
             .then(response => response.data['results']['bindings'].length ? this.items = [...response.data['results']['bindings']] : this.items.push({ value: "Empty" }))
@@ -392,18 +389,16 @@ viewallitems = Vue.component('view-all-items', {
             "    SELECT ?value ?valueLabel " + maxString + " WHERE {\n" +
             "      ?value wdt:P31 wd:" + this.classValue + ".  \n" +
             filterString +
-            "      ?value rdfs:label ?valueLabel.\n" +
             filterRanges +
             filterQuantities +
             noValueString +
-            "      FILTER((LANG(?valueLabel)) = \"en\")\n" +
             "  } \n" +
             (maxString == "" ? "" : "GROUP BY ?value ?valueLabel\n") +
-            (this.totalValues < 50000 ? "" : "LIMIT 200 OFFSET " + ((this.currentPage - 1) * 200)) +
+            "LIMIT 200 OFFSET " + ((this.currentPage - 1) * 200) +
             "  }\n" +
+            "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }\n" +
             "}\n" +
-            (this.totalValues > 50000 ? "" : "ORDER BY ?valueLabel\n") +
-            (this.totalValues >= 50000 ? "" : "LIMIT 200 OFFSET " + ((this.currentPage - 1) * 200));
+            (this.totalValues < 200 ? "" : "ORDER BY ?valueLabel\n");
         this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
     }
 })
@@ -1138,6 +1133,7 @@ filtervalues = Vue.component('filter-values', {
                                             arr[i]['href'] = window.location.pathname + "?" + parameters
                                         }
                                         vm.items = arr
+                                        vm.displayCount = 0
                                         vm.itemsType = 'Time'
                                     }
                                     else{
@@ -1319,18 +1315,21 @@ filtervalues = Vue.component('filter-values', {
                     parameters = new URLSearchParams(q)
                     parameters.set("f." + this.currentFilter.value , "novalue")
                     this.noValueURL = window.location.pathname + "?" + parameters
-                    var sparqlQuery = "SELECT ?value ?valueLabel (COUNT(?value) AS ?count) WHERE {\n" +
-                        "  ?item wdt:P31 wd:" + this.classValue + ".\n" +
-                        " ?item wdt:" + this.currentFilter.value + " ?value.\n" +
+                    var sparqlQuery = "SELECT ?value ?valueLabel ?count WHERE {\n" +
+                        "  {\n" +
+                        "SELECT ?value (COUNT(?value) AS ?count) WHERE {\n" +
+                        "  ?item wdt:P31 wd:" + this.classValue +".\n" +
+                        " ?item wdt:" + this.currentFilter.value+" ?value.\n" +
                         filterString +
-                        "  ?value rdfs:label ?valueLabel.\n" +
                         filterRanges +
                         filterQuantities +
                         noValueString +
-                        "  FILTER(LANG(?valueLabel) = 'en').\n" +
                         "}\n" +
-                        "GROUP BY ?value ?valueLabel\n" +
-                        "ORDER BY DESC(?count)";
+                        "GROUP BY ?value    \n" +
+                        "  }\n" +
+                        "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }\n" +
+                        "}\n" +
+                        "ORDER BY DESC (?count)";
                     this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
                     const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
                     axios.get(fullUrl)
@@ -1373,20 +1372,24 @@ filtervalues = Vue.component('filter-values', {
                             }
                         })
                         .catch(error => {
-                            var sparqlQuery = "SELECT DISTINCT ?value ?valueLabel\n" +
+                            sparqlQuery = "SELECT ?value ?valueLabel WHERE{\n" +
                                 "{\n" +
-                                "  SELECT ?value ?valueLabel WHERE {\n" +
+                                "  SELECT DISTINCT ?value\n" +
+                                "{\n" +
+                                "  SELECT ?value WHERE {\n" +
                                 "    hint:Query hint:optimizer \"None\".\n" +
                                 "  ?item wdt:P31 wd:" + vm.classValue + ".\n" +
                                 " ?item wdt:" + vm.currentFilter.value + " ?value.\n" +
                                 filterString +
-                                "  ?value rdfs:label ?valueLabel.\n" +
                                 filterRanges +
                                 filterQuantities +
-                                "  FILTER(LANG(?valueLabel) = 'en').\n" +
                                 "}\n" +
                                 "LIMIT 300\n" +
+                                "      }\n" +
+                                "\n" +
                                 "}\n" +
+                                "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }\n" +
+                                "  }\n" +
                                 "ORDER BY ?valueLabel";
                             this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
                             const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
@@ -1460,14 +1463,17 @@ subclass = Vue.component('subclass-view', {
         }
     },
     mounted() {
-        var sparqlQuery = "SELECT ?value ?valueLabel (COUNT(?value) AS ?count) WHERE {\n" +
+        var sparqlQuery = "SELECT ?value ?valueLabel ?count WHERE{\n" +
+            "{\n" +
+            "  SELECT ?value (COUNT(?value) AS ?count) WHERE {\n" +
             "  ?v wdt:P31 ?value.\n" +
             "  ?value wdt:P279 wd:" + this.classValue + ".\n" +
-            "  ?value rdfs:label ?valueLabel.\n" +
-            "  \n" +
-            "  FILTER((LANG(?valueLabel)) = \"en\")\n" +
             "}\n" +
-            "GROUP BY ?value ?valueLabel";
+            "GROUP BY ?value\n" +
+            "}\n" +
+            "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }\n" +
+            "  }\n" +
+            "ORDER BY DESC(?count)";
         let vm = this
         const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
         axios.get(fullUrl)
@@ -1534,14 +1540,17 @@ superclass = Vue.component('superclass-view', {
         }
     },
     mounted() {
-        var sparqlQuery = "SELECT ?value ?valueLabel (COUNT(?value) AS ?count) WHERE {\n" +
-            "  ?v wdt:P31 ?value.\n" +
-            "  wd:" + this.classValue + " wdt:P279 ?value.\n" +
-            "  ?value rdfs:label ?valueLabel.\n" +
-            "  \n" +
-            "  FILTER((LANG(?valueLabel)) = \"en\")\n" +
+        var sparqlQuery = "SELECT ?value ?valueLabel ?count WHERE {\n" +
+            "  {\n" +
+            "    SELECT ?value ?valueLabel (COUNT(?value) AS ?count) WHERE {\n" +
+            "      ?v wdt:P31 ?value.\n" +
+            "      wd:" + this.classValue + " wdt:P279 ?value.\n" +
+            "    }\n" +
+            "    GROUP BY ?value ?valueLabel\n" +
+            "  }\n" +
+            "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }\n" +
             "}\n" +
-            "GROUP BY ?value ?valueLabel";
+            "ORDER BY DESC (?count)";
         const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
         let vm = this;
         axios.get(fullUrl)
@@ -1982,9 +1991,9 @@ var app = new Vue({
         appliedFilters: function () {
             if (this.appFilters.length == 0 && this.getFiltersFromURL == 1) {
                 /*  
-                Find all keys with "f.filterValue" from the URL. 
-                Split the key about "." to get filter and
-                split the result about "-" to get all the values for that particular filter.
+                 Find all keys with "f.filterValue" from the URL. 
+                 Split the key about "." to get filter and
+                 split the result about "-" to get all the values for that particular filter.
                 */
                 url = decodeURI(urlParams);
                 var res = url.match(/[fF]\.[Pp]((\d+))/g);
@@ -2056,6 +2065,11 @@ var app = new Vue({
         },
         appliedRanges: function () {
             if (this.appRanges.length == 0 && this.getFiltersFromURL == 1) {
+            /*
+             Find all keys with "r.filterValue" from the URL.
+             Split the key about "." to get filter and
+             split the result about "~" to get upper and lower limits of the date range.
+            */
                 url = decodeURI(urlParams);
                 var res = url.match(/[rR]\.[Pp]\d+/g);
                 var filters = "";
@@ -2104,6 +2118,12 @@ var app = new Vue({
         },
         appliedQuantities: function () {
             if (this.appQuantities.length == 0 && this.getFiltersFromURL == 1) {
+            /*
+             Find all keys with "q.filterValue" from the URL.
+             Split the key about "." to get filter and
+             split the result about "~" to get upper limit,
+             lower limit and unit of the quantity.
+            */
                 url = decodeURI(urlParams);
                 var res = url.match(/[qQ]\.[Pp]\d+/g);
                 var filters = "";
@@ -2193,14 +2213,12 @@ var app = new Vue({
 
                 }
             }
-            sparqlQuery = "SELECT (COUNT(DISTINCT ?value) AS ?count) WHERE {\n" +
+            sparqlQuery = "SELECT (COUNT(DISTINCT *) AS ?count) WHERE {\n" +
                 "  ?value wdt:P31 wd:" + this.classValue + ".  \n" +
                 filterString +
-                "  ?value rdfs:label ?valueLabel.\n" +
                 filterRanges +
                 filterQuantities +
                 noValueString +
-                "  FILTER((LANG(?valueLabel)) = \"en\")\n" +
                 "}";
             fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
             axios.get(fullUrl)

@@ -1,15 +1,13 @@
 <html>
 
 <head>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.2/axios.min.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Wikidata Walkabout</title>
     <link rel="stylesheet" href="css/index.css">
 </head>
 
 <body>
+    <div class="container">
     <nav class="navbar navbar-default">
         <div class="container-fluid">
             <div class="navbar-header">
@@ -17,7 +15,7 @@
             </div>
         </div>
     </nav>
-    <div class="container" id="app">
+    <div id="app">
 
         <class-filter
             @change-page="updatePage"
@@ -98,6 +96,10 @@
         
         <div class = "footer"><a href="/about">About Wikidata Walkabout</a></div>
     </div>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="libs/vue.min.js"></script>
+    <script src="libs/axios.min.js"></script>
     <script src="src/index.js"></script>
 </body>
 
