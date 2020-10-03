@@ -7,99 +7,100 @@
 </head>
 
 <body>
-    <div class="container">
-    <nav class="navbar navbar-default">
-        <div class="container-fluid">
-            <div class="navbar-header">
-                <a style="font-size: 1.5em;" class="navbar-brand" href=".">Wikidata Walkabout</a>
-            </div>
-        </div>
-    </nav>
     <div id="app">
+        <div class="topnav">
+            <a href=".">Wikidata Walkabout</a>
+                <div class="topnav-right">
+                    <a href="/about">About</a>
+                    <language-dropdown
+                        @change-language="changeLanguage">
+                    </language-dropdown>
+                </div>
+        </div>
 
-        <class-filter
-            @change-page="updatePage"
-            @class-label="updateClassValue"
-            v-if="view == 'class-filter'"
-            :class-value="classValue"
-            :class-label="classLabel">
-        </class-filter>
+        <div class="container">
+            <class-filter
+                @change-page="updatePage"
+                @class-label="updateClassValue"
+                v-if="view == 'class-filter'"
+                :class-value="classValue"
+                :class-label="classLabel">
+            </class-filter>
 
-        <view-all-items
-            @change-page="updatePage"
-            @remove-filter="removeFilter"
-            @remove-range="removeRange"
-            @remove-quantity="removeQuantity"
-            @update-filter="updateFilter"
-            v-if="view =='view-all-items'"
-            :total-values="totalValues"
-            :class-label="classLabel"
-            :class-value="classValue"
-            :key="allItemscomponentKey"
-            :applied-filters="appliedFilters"
-            :applied-ranges="appliedRanges"
-            :applied-quantities="appliedQuantities">
-        </view-all-items>
+            <view-all-items
+                @change-page="updatePage"
+                @remove-filter="removeFilter"
+                @remove-range="removeRange"
+                @remove-quantity="removeQuantity"
+                @update-filter="updateFilter"
+                v-if="view =='view-all-items'"
+                :total-values="totalValues"
+                :class-label="classLabel"
+                :class-value="classValue"
+                :key="allItemscomponentKey"
+                :applied-filters="appliedFilters"
+                :applied-ranges="appliedRanges"
+                :applied-quantities="appliedQuantities">
+            </view-all-items>
 
-        <filters-view 
-            @change-page="updatePage"
-            @update-filter="updateFilter"
-            v-if="view =='filters'"
-            :total-values="totalValues"
-            :class-label="classLabel"
-            :class-value="classValue"
-            :applied-filters="appliedFilters"
-            :applied-ranges="appliedRanges"
-            :applied-quantities="appliedQuantities">
-        </filters-view>
+            <filters-view 
+                @change-page="updatePage"
+                @update-filter="updateFilter"
+                v-if="view =='filters'"
+                :total-values="totalValues"
+                :class-label="classLabel"
+                :class-value="classValue"
+                :applied-filters="appliedFilters"
+                :applied-ranges="appliedRanges"
+                :applied-quantities="appliedQuantities">
+            </filters-view>
 
-        <filter-values 
-            @change-page="updatePage"
-            @apply-filter="applyFilter"
-            @apply-range="applyRange" 
-            @apply-quantity="applyQuantityRange" 
-            @remove-filter="removeFilter"
-            @remove-range="removeRange"
-            @remove-quantity="removeQuantity"            
-            v-if="view =='filter-values'" 
-            :key="filterscomponentKey"
-            :total-values="totalValues"
-            :class-label="classLabel"
-            :class-value="classValue"
-            :current-filter="currentFilter"
-            :applied-filters="appliedFilters"
-            :applied-ranges="appliedRanges"
-            :applied-quantities="appliedQuantities">
-        </filter-values>
+            <filter-values 
+                @change-page="updatePage"
+                @apply-filter="applyFilter"
+                @apply-range="applyRange" 
+                @apply-quantity="applyQuantityRange" 
+                @remove-filter="removeFilter"
+                @remove-range="removeRange"
+                @remove-quantity="removeQuantity"            
+                v-if="view =='filter-values'" 
+                :key="filterscomponentKey"
+                :total-values="totalValues"
+                :class-label="classLabel"
+                :class-value="classValue"
+                :current-filter="currentFilter"
+                :applied-filters="appliedFilters"
+                :applied-ranges="appliedRanges"
+                :applied-quantities="appliedQuantities">
+            </filter-values>
 
-        <subclass-view
-            @change-page="updatePage"
-            @update-class="updateClassValue"
-            v-if="view =='subclass'" 
-            :class-label="classLabel"
-            :class-value="classValue"
-            :applied-filters="appliedFilters"
-            :applied-ranges="appliedRanges"
-            :applied-quantities="appliedQuantities">
-        </subclass-view>
+            <subclass-view
+                @change-page="updatePage"
+                @update-class="updateClassValue"
+                v-if="view =='subclass'" 
+                :class-label="classLabel"
+                :class-value="classValue"
+                :applied-filters="appliedFilters"
+                :applied-ranges="appliedRanges"
+                :applied-quantities="appliedQuantities">
+            </subclass-view>
 
-        <superclass-view
-            @change-page="updatePage"
-            @update-class="updateClassValue"
-            v-if="view =='superclass'" 
-            :class-label="classLabel"
-            :class-value="classValue"
-            :applied-filters="appliedFilters"
-            :applied-ranges="appliedRanges"
-            :applied-quantities="appliedQuantities">
-        </superclass-view>
-        
-        <div class = "footer"><a href="/about">About Wikidata Walkabout</a></div>
-    </div>
+            <superclass-view
+                @change-page="updatePage"
+                @update-class="updateClassValue"
+                v-if="view =='superclass'" 
+                :class-label="classLabel"
+                :class-value="classValue"
+                :applied-filters="appliedFilters"
+                :applied-ranges="appliedRanges"
+                :applied-quantities="appliedQuantities">
+            </superclass-view>
+        </div>
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="libs/vue.min.js"></script>
     <script src="libs/axios.min.js"></script>
+    <script src="./config.js"></script>
     <script src="src/index.js"></script>
 </body>
 

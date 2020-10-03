@@ -1,5 +1,16 @@
+
 var queryString = window.location.search;
 var urlParams = new URLSearchParams(queryString);
+// Language
+var langArray = ["en","ceb","sv","de","fr","nl","ru","it","es","pl","war","vi","ja","zh",
+                "arz","ar","uk","pt","fa","ca","sr","id","no","ko","fi","hu","cs","sh","ro","zh - min - nan",
+                "tr","eu","ms","ce","eo","he","hy","bg","da","azb","sk","kk","min","hr","et","lt","be","el","az",
+                "sl","gl","ur","nn","hi","ka","th","tt","uz","la","cy","ta","vo","mk","ast","lv","zh - yue","tg", 
+                "bn","af","mg","oc","bs","sq","ky","nds","new","be - tarask","ml","te","br","tl","vec","pms","mr", 
+                "su","ht","sw","lb","jv","sco","pnb","ba","ga","szl","is","my","fy","cv","lmo","wuu"]
+var langString = config['defaultLanguage'] + "," + langArray.join(",")
+lang = urlParams.get('lang') ? urlParams.get('lang') + "," + langString:langString;
+// History logging
 (function (history) {
     var pushState = history.pushState;
     history.pushState = function (state) {
@@ -41,6 +52,96 @@ NumberRange.prototype.toString = function () {
         return numberWithCommas(this.lowNumber) + " - " + numberWithCommas(this.highNumber);
     }
 }
+
+languagedropdown = Vue.component('language-dropdown',{
+    data(){
+        return{
+        languages:[
+            ["ar","لعربية"],
+            ["arz","مصرى"],
+            ["ast","Asturianu"],
+            ["az","Azərbaycanca"],
+            ["azb","تۆرکجه"],
+            ["be","Беларуская"],
+            ["bg","Български"],
+            ["ca","Català"],
+            ["ce","Нохчийн"],
+            ["ceb","Sinugboanong"],
+            ["cs","Čeština"],
+            ["cy","Cymraeg"],
+            ["da","Dansk"],
+            ["de","Deutsch"],
+            ["el","Ελληνικά"],
+            ["en", "English"],
+            ["eo", "Esperanto"],
+            ["es", "Español"],
+            ["et", "Eesti"],
+            ["eu", "Euskara"],
+            ["fa", "فارسی"],
+            ["fi", "Suomi"],
+            ["fr", "Français"],
+            ["gl", "Galego"],
+            ["he","עברית"],
+            ["hi", "हिन्दी"],
+            ["hr", "Hrvatski"],
+            ["hu", "Magyar"],
+            ["hy", "Հայերեն"],
+            ["id", "Bahasa"],
+            ["it", "Italiano"],
+            ["ja", "日本語"],
+            ["ka", "ქართული"],
+            ["kk","Қазақша / Qazaqşa / قازاقشا"],
+            ["ko", "한국어"],
+            ["la", "Latina"],
+            ["lt", "Lietuvių"],
+            ["lv", "Latviešu"],
+            ["min", "Bahaso"],
+            ["ms", "Bahasa"],
+            ["nb", "Norsk(bokmål)"],
+            ["nl", "Nederlands"],
+            ["nn", "Norsk(nynorsk)"],
+            ["pl", "Polski"],
+            ["pt", "Português"],
+            ["ro", "Română"],
+            ["ru", "Русский"],
+            ["sh", "Srpskohrvatski / Српскохрватски"],
+            ["sk", "Slovenčina"],
+            ["sl", "Slovenščina"],
+            ["sr", "Српски / Srpski"],
+            ["sv", "Svenska"],
+            ["ta", "தமிழ்"],
+            ["tg", "Тоҷикӣ"],
+            ["th", "ภาษาไทย"],
+            ["tr", "Türkçe"],
+            ["tt", "Татарча / Tatarça"],
+            ["ur","اردو"],
+            ["uk", "Українська"],
+            ["uz", "Oʻzbekcha / Ўзбекча"],
+            ["vi", "Tiếng"],
+            ["vo", "Volapük"],
+            ["zh","中文"],
+            ["war", "Winaray"],
+            ["zh - min - nan", "Bân - lâm - gú / Hō - ló - oē"],
+            ["zh - yue", "粵語"]
+        ]
+    }
+    },
+    template:`
+        <div class="dropdown">
+            <button class="dropbtn">{{ urlParams.get('lang')?urlParams.get('lang'): (config['defaultLanguage']?config['defaultLanguage']:'en') }} <span style="font-size: 0.5em;">&#x25BC;</span>
+            </button>
+            <div class="dropdown-content">
+                <a v-for="lang in languages" @click="changeLanguage(lang[0])">{{lang[1]}}</a>
+            </div>
+        </div>
+    `,
+    methods:{
+        changeLanguage(lang) {
+            this.$emit('change-language', lang)
+        }
+    }
+})
+
 classfilter = Vue.component('class-filter', {
     props: ['classValue', 'classLabel'],
     data() {
@@ -74,9 +175,8 @@ classfilter = Vue.component('class-filter', {
     },
     template: `
     <div>
-        <div class="classSearchSection">
-            <h3>Class:</h3>
-            <input v-model="clsValue" @keyup.enter="submit(clsValue,'')" class="classSearch" type="text" style="margin-bottom: 15px;">
+        <div class="classSearchSection" style="border:none">
+            <input v-model="clsValue" @keyup.enter="submit(clsValue,'')" class="classSearch" type="text" placeholder="Enter Class">
         </div>
         <a @click="submit(clsValue,classLabel)">Browse this class</a>
         <div v-if="suggestedClassValues[0].valueLabel != ''">
@@ -101,7 +201,7 @@ classfilter = Vue.component('class-filter', {
         }
         var sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
             "  VALUES ?value { " + classes + " }\n" +
-            "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }\n" +
+            "  SERVICE wikibase:label { bd:serviceParam wikibase:language \""+lang+"\". }\n" +
             "}";
         const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
         axios.get(fullUrl)
@@ -126,7 +226,7 @@ results = Vue.component('items-results', {
     },
     template: `
     <div>
-        <img v-if="!items.length" src='loading.gif'>
+        <img v-if="!items.length" src='images/loading.gif'>
         <p v-else-if="items[0].value=='Empty'">No items match this description.</p>
         <p v-else-if="items[0].value=='Error'">The attempt to display a list of items took too long; please consider adding more filters.</p>
         <div v-else>
@@ -219,9 +319,9 @@ results = Vue.component('items-results', {
             (maxString == "" ? "" : "GROUP BY ?value \n") +
             "LIMIT 200 OFFSET " + ((this.currentPage - 1) * 200) +
             "  }\n" +
-            "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }\n" +
+            "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang +"\". }\n" +
             "}\n"+
-            (this.totalValues < 200 ? "" : "ORDER BY ?valueLabel\n") ;
+            (this.totalValues > 200 ? "" : "ORDER BY ?valueLabel\n") ;
         fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
         axios.get(fullUrl)
             .then(response => response.data['results']['bindings'].length ? this.items = [...response.data['results']['bindings']] : this.items.push({ value: "Empty" }))
@@ -245,22 +345,25 @@ viewallitems = Vue.component('view-all-items', {
     template: `
     <div>
         <div class="header">
-            <p style="margin-bottom:0px"><b>Class</b>: {{ classLabel }} </p>
-            <a :href="window.location.href+'&view=subclass'" onclick="return false;" class="classOptions" @click="changeView('superclass')">More general class </a>
-            <b>&middot;</b>
-            <a :href="window.location.href+'&view=superclass'" onclick="return false;" class="classOptions" @click="changeView('subclass')">More specific class</a>
-            <p v-for="filter in appliedFilters"><b>{{filter.filterValueLabel}}</b>: <span v-if="filter.value == 'novalue'" :style="{ fontStyle: 'italic' }">{{ filter.valueLabel }}</span><span v-else>{{ filter.valueLabel }}</span> (<a @click="removeFilter(filter)">X</a>)</p>
-            <p v-for="range in appliedRanges"><b>{{range.filterValueLabel}}</b>: <span v-if="range.valueLL == 'novalue'" :style="{ fontStyle: 'italic' }">{{ range.valueLabel }}</span><span v-else>{{ range.valueLabel }}</span> (<a @click="removeRange(range)">X</a>)</p>
-            <p v-for="quantity in appliedQuantities"><b>{{quantity.filterValueLabel}}</b>: <span v-if="quantity.valueLL == 'novalue'" :style="{ fontStyle: 'italic' }">{{ quantity.valueLabel }}</span><span v-else>{{ quantity.valueLabel }}</span> {{quantity.unit}}(<a @click="removeQuantity(quantity)">X</a>)</p>
+            <h2> 
+                {{ classLabel }} 
+                <a title="superclass" :href="window.location.href+'&view=subclass'" onclick="return false;" class="classOptions" @click="changeView('superclass')">&uarr;</a>
+                <a title="subclass" :href="window.location.href+'&view=superclass'" onclick="return false;" class="classOptions" @click="changeView('subclass')">&darr;</a>
+            </h2>
+                
+            </p>
+            <p v-for="filter in appliedFilters"><b>{{filter.filterValueLabel}}</b>: <span v-if="filter.value == 'novalue'" :style="{ fontStyle: 'italic' }">{{ filter.valueLabel }}</span><span v-else>{{ filter.valueLabel }}</span> (<a @click="removeFilter(filter)">&#x2715;</a>)</p>
+            <p v-for="range in appliedRanges"><b>{{range.filterValueLabel}}</b>: <span v-if="range.valueLL == 'novalue'" :style="{ fontStyle: 'italic' }">{{ range.valueLabel }}</span><span v-else>{{ range.valueLabel }}</span> (<a @click="removeRange(range)">&#x2715;</a>)</p>
+            <p v-for="quantity in appliedQuantities"><b>{{quantity.filterValueLabel}}</b>: <span v-if="quantity.valueLL == 'novalue'" :style="{ fontStyle: 'italic' }">{{ quantity.valueLabel }}</span><span v-else>{{ quantity.valueLabel }}</span> {{quantity.unit}}(<a @click="removeQuantity(quantity)">&#x2715;</a>)</p>
         </div>
         <div class="content" id="viewallitems">
                 <p v-if="filtersCount==-1"></p>
                 <p v-else-if="filtersCount==0">No filters are defined for this class.</p>
                 <div class="filter-box" v-else-if="filtersCount<40">
-                    <b>Filter on</b>: <span v-for="filter in filters"><a :href="window.location.href+'&cf='+filter.value.value.split('/').slice(-1)[0]" onclick="return false;" @click="showFilter(filter)">{{filter.valueLabel.value}}</a> <b v-if="filters[filtersCount-1].valueLabel.value != filter.valueLabel.value">&middot; </b> </span>
+                    <img src="images/filter-icon.svg" height="14px"> : <span v-for="filter in filters"><a :href="window.location.href+'&cf='+filter.value.value.split('/').slice(-1)[0]" onclick="return false;" @click="showFilter(filter)">{{filter.valueLabel.value}}</a> <b v-if="filters[filtersCount-1].valueLabel.value != filter.valueLabel.value">&middot; </b> </span>
                 </div>
                 <p v-else><a class="classOptions" @click="changeView('filters-view')">Add a filter</a></p>
-            <p><img v-if="totalValues==''" src='loading.gif'></p>
+            <p><img v-if="totalValues==''" src='images/loading.gif'></p>
             <p v-if="totalValues>0">There are <b>{{ totalValues<1000000?numberWithCommas(totalValues):"1 million +" }}</b> items that match this description.</p>
             <div v-if="totalValues>200" style="text-align: center">
                 <a @click="currentPage>1?currentPage--:''">&lt;</a>
@@ -326,13 +429,12 @@ viewallitems = Vue.component('view-all-items', {
     },
     mounted() {
         // Check available filters
-        var sparqlQuery = "SELECT ?value ?valueLabel ?property WHERE {\n" +
-            "  wd:" + this.classValue + " wdt:P1963 ?value.\n" +
-            "  ?value rdfs:label ?valueLabel.\n" +
+        sparqlQuery = "SELECT ?value ?valueLabel ?property WHERE {\n" +
+            "  wd:" + this.classValue +" wdt:P1963 ?value.\n" +
             "  ?value wikibase:propertyType ?property.\n" +
             "  FILTER (?property in (wikibase:Time, wikibase:Quantity, wikibase:WikibaseItem))  \n" +
-            "  FILTER((LANG(?valueLabel)) = \"en\")\n" +
-            "}" +
+            "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang +"\". }\n" +
+            "}\n" +
             "ORDER BY ?valueLabel";
         var fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
         axios.get(fullUrl)
@@ -396,9 +498,9 @@ viewallitems = Vue.component('view-all-items', {
             (maxString == "" ? "" : "GROUP BY ?value ?valueLabel\n") +
             "LIMIT 200 OFFSET " + ((this.currentPage - 1) * 200) +
             "  }\n" +
-            "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }\n" +
+            "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang +"\". }\n" +
             "}\n" +
-            (this.totalValues < 200 ? "" : "ORDER BY ?valueLabel\n");
+            (this.totalValues > 200 ? "" : "ORDER BY ?valueLabel\n");
         this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
     }
 })
@@ -420,7 +522,7 @@ filtersview = Vue.component('filters-view', {
             </ul>
         </div>
         <div class="content">
-            <img v-if="!filters.length" src='loading.gif'>
+            <img v-if="!filters.length" src='images/loading.gif'>
             <p v-else-if="filters[0].value=='Empty'">No filters available</p>
             <div v-else>
                 <p>There are <b>{{ totalValues<1000000?numberWithCommas(totalValues):"1 million +" }}</b> items that match this description.</p>
@@ -447,7 +549,7 @@ filtersview = Vue.component('filters-view', {
             "  ?value rdfs:label ?valueLabel.\n" +
             "  ?value wikibase:propertyType ?property.\n" +
             "  FILTER (?property in (wikibase:Time, wikibase:Quantity, wikibase:WikibaseItem))  \n" +
-            "  FILTER((LANG(?valueLabel)) = \"en\")\n" +
+            "  FILTER((LANG(?valueLabel)) = \"" + lang +"\")\n" +
             "}" +
             "ORDER BY ?valueLabel";
         const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
@@ -476,15 +578,14 @@ filtervalues = Vue.component('filter-values', {
     template: `
     <div>
         <div class="header">
-            <p><b>Class</b>: {{ classLabel }} </p>
-            <p><b>Current Filters</b>:</p>
+            <h2> {{ classLabel }} </h2>
             <p v-if="!appliedFilters.length && !appliedRanges.length && !appliedQuantities.length">No filters</p>
             <p v-for="filter in appliedFilters"><b>{{filter.filterValueLabel}}</b>: <span v-if="filter.value == 'novalue'" :style="{ fontStyle: 'italic' }">{{ filter.valueLabel }}</span><span v-else>{{ filter.valueLabel }}</span> (<a @click="removeFilter(filter)">X</a>)</p>
             <p v-for="range in appliedRanges"><b>{{range.filterValueLabel}}</b>: <span v-if="range.valueLL == 'novalue'" :style="{ fontStyle: 'italic' }">{{ range.valueLabel }}</span><span v-else>{{ range.valueLabel }}</span> (<a @click="removeRange(range)">X</a>)</p>
             <p v-for="quantity in appliedQuantities"><b>{{quantity.filterValueLabel}}</b>: <span v-if="quantity.valueLL == 'novalue'" :style="{ fontStyle: 'italic' }">{{ quantity.valueLabel }}</span><span v-else>{{ quantity.valueLabel }}</span> {{quantity.unit}}(<a @click="removeQuantity(quantity)">X</a>)</p>
         </div>
         <div class="content">
-            <div v-if="itemsType==''"><p>Getting values for filter <b>{{currentFilter.valueLabel}}</b> ...</p><img src='loading.gif'></div>
+            <div v-if="itemsType==''"><p>Getting values for filter <b>{{currentFilter.valueLabel}}</b> ...</p><img src='images/loading.gif'></div>
             <p v-else-if="itemsType=='Additionalempty'">There are no additional values for the filter <b>{{currentFilter.valueLabel}}</b>.</p>
             <p v-else-if="itemsType=='Error'">Trying to get values for the filter {{currentFilter.valueLabel}} took too long. <a @click="back()">Go back</a>.</p>
             <div v-else-if="itemsType=='Item'">
@@ -1327,7 +1428,7 @@ filtervalues = Vue.component('filter-values', {
                         "}\n" +
                         "GROUP BY ?value    \n" +
                         "  }\n" +
-                        "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }\n" +
+                        "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang +"\". }\n" +
                         "}\n" +
                         "ORDER BY DESC (?count)";
                     this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
@@ -1388,7 +1489,7 @@ filtervalues = Vue.component('filter-values', {
                                 "      }\n" +
                                 "\n" +
                                 "}\n" +
-                                "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }\n" +
+                                "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang +"\". }\n" +
                                 "  }\n" +
                                 "ORDER BY ?valueLabel";
                             this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
@@ -1430,8 +1531,7 @@ subclass = Vue.component('subclass-view', {
     template: `
     <div>
         <div class="header">
-            <p><b>Class</b>: {{ classLabel }} </p>
-            <p><b>Current Filters</b>:</p>
+            <h2> {{ classLabel }} </h2>
             <p v-if="!appliedFilters.length && !appliedRanges.length && !appliedQuantities">No filters</p>
             <ul>
                 <li v-for="filter in appliedFilters"><b>{{filter.filterValueLabel}}</b>: <span v-if="filter.value == 'novalue'" :style="{ fontStyle: 'italic' }">{{ filter.valueLabel }}</span><span v-else>{{ filter.valueLabel }}</span></li>
@@ -1442,7 +1542,7 @@ subclass = Vue.component('subclass-view', {
         <p><i>(Note: if you change the class, you will lose the current set of filters.)</i></p>
         <p><b>Change from "{{ classLabel }}" to a more specific class:</b><p>
         <div class="content">
-            <img v-if="!items.length" src='loading.gif'>
+            <img v-if="!items.length" src='images/loading.gif'>
             <p v-else-if="items[0].value=='Empty'">No items match this description.</p>
             <div v-else>
                 <ul>
@@ -1471,7 +1571,7 @@ subclass = Vue.component('subclass-view', {
             "}\n" +
             "GROUP BY ?value\n" +
             "}\n" +
-            "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }\n" +
+            "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang +"\". }\n" +
             "  }\n" +
             "ORDER BY DESC(?count)";
         let vm = this
@@ -1483,8 +1583,7 @@ subclass = Vue.component('subclass-view', {
                     "  SELECT ?value ?valueLabel WHERE {\n" +
                     "    ?v wdt:P31 ?value.\n" +
                     "    ?value wdt:P279 wd:" + vm.classValue + ";\n" +
-                    "      rdfs:label ?valueLabel.\n" +
-                    "    FILTER((LANG(?valueLabel)) = \"en\")\n" +
+                    "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang +"\". }    \n" +
                     "  }\n" +
                     "  LIMIT 200\n" +
                     "}\n" +
@@ -1507,8 +1606,7 @@ superclass = Vue.component('superclass-view', {
     template: `
     <div>
         <div class="header">
-            <p><b>Class</b>: {{ classLabel }} </p>
-            <p><b>Current Filters</b>:</p>
+            <h2> {{ classLabel }} </h2>
             <p v-if="!appliedFilters.length && !appliedRanges.length && !appliedQuantities">No filters</p>
             <ul>
                 <li v-for="filter in appliedFilters"><b>{{filter.filterValueLabel}}</b>: <span v-if="filter.value == 'novalue'" :style="{ fontStyle: 'italic' }">{{ filter.valueLabel }}</span><span v-else>{{ filter.valueLabel }}</span></li>
@@ -1519,7 +1617,7 @@ superclass = Vue.component('superclass-view', {
         <p><i>(Note: if you change the class, you will lose the current set of filters.)</i></p>
         <p><b>Change from "{{ classLabel }}" to a more general class:</b><p>
         <div class="content">
-            <img v-if="!items.length" src='loading.gif'>
+            <img v-if="!items.length" src='images/loading.gif'>
             <p v-else-if="items[0].value=='Empty'">No items match this description.</p>
             <div v-else>
                 <ul>
@@ -1548,7 +1646,7 @@ superclass = Vue.component('superclass-view', {
             "    }\n" +
             "    GROUP BY ?value ?valueLabel\n" +
             "  }\n" +
-            "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }\n" +
+            "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang +"\". }\n" +
             "}\n" +
             "ORDER BY DESC (?count)";
         const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
@@ -1559,14 +1657,12 @@ superclass = Vue.component('superclass-view', {
                 sparqlQuery = "SELECT DISTINCT ?value ?valueLabel WHERE\n" +
                     "{SELECT ?value ?valueLabel WHERE {\n" +
                     "  ?v wdt:P31 ?value.\n" +
-                    "  wd:" + vm.classValue + " wdt:P279 ?value.\n" +
-                    "  ?value rdfs:label ?valueLabel.  \n" +
-                    "  FILTER((LANG(?valueLabel)) = \"en\")\n" +
+                    "  wd:" + vm.classValue +" wdt:P279 ?value. \n" +
+                    "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang +"\". }\n" +
                     "}\n" +
                     "LIMIT 200\n" +
                     "}\n" +
                     "ORDER BY ?valueLabel";
-
                 const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
                 axios.get(fullUrl)
                     .then(response => (response.data['results']['bindings'].length ? (vm.items = [...response.data['results']['bindings']], vm.displayCount = 1) : vm.items.push({ value: "Empty", valueLabel: "No data" })))
@@ -1926,6 +2022,11 @@ var app = new Vue({
             else if (yearDifference <= 1e6) return 3
             else if (yearDifference <= 1e8) return 1
             return 0
+        },
+        changeLanguage(lang){
+            urlParams.set("lang", lang)
+            this.updatePage(this.page)
+            location.reload()
         }
     },
     computed: {
@@ -1960,14 +2061,15 @@ var app = new Vue({
                 value = this.clsValue
             }
             if (value != '') {
-                var sparqlQuery = "SELECT ?value WHERE {\n" +
-                    "  wd:" + value + " rdfs:label ?value.\n" +
-                    "  FILTER(LANG(?value) = \"en\")\n" +
+                sparqlQuery = "SELECT ?valueLabel WHERE {\n" +
+                    "  VALUES ?value { wd:"+value+" }\n" +
+                    "  SERVICE wikibase:label { bd:serviceParam wikibase:language \""+lang+"\". }\n" +
                     "}";
                 const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
                 axios.get(fullUrl)
                     .then(response => {
-                        this.classLabel = response.data['results']['bindings'][0].value.value
+                        str = response.data['results']['bindings'][0].valueLabel.value
+                        this.classLabel = str.replace(/^./, str[0].toUpperCase()); 
                     })
             }
             return value
@@ -1979,13 +2081,13 @@ var app = new Vue({
             else {
                 val = this.currentFilterValue
             }
-            var sparqlQuery = "SELECT ?value WHERE {\n" +
-                "  wd:" + val + " rdfs:label ?value\n" +
-                "  FILTER(LANG(?value) = \"en\")\n" +
+            var sparqlQuery = "SELECT ?valueLabel WHERE {\n" +
+                "  VALUES ?value { wd:"+val+" }\n" +
+                "  SERVICE wikibase:label { bd:serviceParam wikibase:language \""+lang+"\". }\n" +
                 "}";
             const fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
             axios.get(fullUrl)
-                .then(response => (this.currentFilterLabel = response.data['results']['bindings'][0].value.value))
+                .then(response => (this.currentFilterLabel = response.data['results']['bindings'][0].valueLabel.value))
             return { value: val, valueLabel: this.currentFilterLabel }
         },
         appliedFilters: function () {
@@ -2027,10 +2129,9 @@ var app = new Vue({
                     }
                     // Get filter labels
                     var sparqlQuery = "SELECT ?prop ?propLabel WHERE {\n" +
-                        "  hint:Query hint:optimizer \"None\".\n" +
                         "  VALUES ?p {  " + filters + " }\n" +
                         "  ?prop wikibase:directClaim ?p.\n" +
-                        "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }\n" +
+                        "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang +"\". }\n" +
                         "}";
                     var fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
                     axios.get(fullUrl)
@@ -2044,10 +2145,9 @@ var app = new Vue({
                             }
                         })
                     // Get value labels
-                    sparqlQuery = "SELECT ?value ?label WHERE {\n" +
-                        "  VALUES ?value { " + values + " }\n" +
-                        "  ?value rdfs:label ?label.\n" +
-                        "  FILTER((LANG(?label)) = \"en\")\n" +
+                    sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
+                        "  VALUES ?value {  " + values + " }\n" +
+                        "  SERVICE wikibase:label { bd:serviceParam wikibase:language \""+lang+"\". } \n" +
                         "}";
                     var fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
                     axios.get(fullUrl)
@@ -2055,7 +2155,7 @@ var app = new Vue({
                             for (let i = 0; i < response.data['results']['bindings'].length; i++) {
                                 index = this.appFilters.findIndex(filter => filter.value == response.data['results']['bindings'][i].value.value.split("/").slice(-1)[0]);
                                 if (index != -1) {
-                                    this.appFilters[index].valueLabel = response.data['results']['bindings'][i].label.value
+                                    this.appFilters[index].valueLabel = response.data['results']['bindings'][i].valueLabel.value
                                 }
                             }
                         })
@@ -2100,7 +2200,7 @@ var app = new Vue({
                         "  hint:Query hint:optimizer \"None\".\n" +
                         "  VALUES ?p {  " + filters + " }\n" +
                         "  ?prop wikibase:directClaim ?p.\n" +
-                        "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }\n" +
+                        "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang +"\". }\n" +
                         "}";
                     var fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
                     axios.get(fullUrl)
@@ -2155,7 +2255,7 @@ var app = new Vue({
                         "  hint:Query hint:optimizer \"None\".\n" +
                         "  VALUES ?p {  " + filters + " }\n" +
                         "  ?prop wikibase:directClaim ?p.\n" +
-                        "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }\n" +
+                        "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang +"\". }\n" +
                         "}";
                     var fullUrl = 'https://query.wikidata.org/sparql' + '?query=' + encodeURIComponent(sparqlQuery);
                     axios.get(fullUrl)

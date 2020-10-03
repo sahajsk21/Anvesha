@@ -1,0 +1,4 @@
+config = {
+    "defaultLanguage": "en"
+};
+        
