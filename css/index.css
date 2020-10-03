@@ -45,6 +45,16 @@ a:hover {
 .classSearch {
     width: 100%;
     float: left;
+    margin-bottom: 15px;
+    margin-top: 15px;
+    height:34px;
+    border-radius: 100px;
+    border: 1px solid;
+    padding: 12px;
+}
+.classSearch:focus {
+    outline: none;
+    box-shadow: 1px 1px #D8FBD8;
 }
 .filter-box{
     margin-bottom: 20px;
@@ -52,7 +62,63 @@ a:hover {
     border: 1px solid #e7e7e7;
     padding: 10px;
 }
-.footer{
-    float: right;
-    padding: 10px;
+.topnav {
+  overflow: hidden;
+  background-color: #D8FBD8;
+  border: 1px solid #fff;
+
 }
+
+.topnav a {
+  float: left;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 1.3em;
+}
+
+.topnav a:hover {
+  color: #008CBA;
+}
+
+.topnav-right {
+  float: right;
+}
+.dropdown {
+  float: left;
+  overflow: hidden;
+}
+
+.dropdown .dropbtn {
+  font-size: 1.3em;
+  border: none;
+  outline: none;
+  padding: 14px 16px;
+  background-color: inherit;
+  font-family: inherit;
+  margin: 0;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 120px;
+  right: 20px;
+  z-index: 1;
+}
+
+.dropdown-content a {
+    font-size: 1em;
+  float: none;
+  color: black;
+  padding: 2px 16px;
+  text-decoration: none;
+  display: block;
+  text-align: left;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
