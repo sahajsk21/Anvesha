@@ -5,7 +5,7 @@ var urlParams = new URLSearchParams(queryString);
 var langArray = ["en","ceb","sv","de","fr","nl","ru","it","es","pl","war","vi","ja","zh",
                 "arz","ar","uk","pt","fa","ca","sr","id","no","ko","fi","hu","cs","sh","ro","nan",
                 "tr","eu","ms","ce","eo","he","hy","bg","da","azb","sk","kk","min","hr","et","lt","be","el","az",
-                "sl","gl","ur","nn","hi","ka","th","tt","uz","la","cy","ta","vo","mk","ast","lv","yue","tg",
+                "sl","gl","ur","nn","nb","hi","ka","th","tt","uz","la","cy","ta","vo","mk","ast","lv","yue","tg",
                 "bn","af","mg","oc","bs","sq","ky","nds","new","be-tarask","ml","te","br","tl","vec","pms","mr",
                 "su","ht","sw","lb","jv","sco","pnb","ba","ga","szl","is","my","fy","cv","lmo","wuu"]
 var langString = config['defaultLanguage'] + "," + langArray.join(",")
