@@ -56,6 +56,7 @@ NumberRange.prototype.toString = function () {
 languagedropdown = Vue.component('language-dropdown',{
     data(){
         return{
+        dropdownDisplay: 'none',
         languages:[
             ["ar","&#1575;&#1604;&#1593;&#1585;&#1576;&#1610;&#1577;"],
             ["arz","&#1605;&#1589;&#1585;&#1609;"],
@@ -128,9 +129,9 @@ languagedropdown = Vue.component('language-dropdown',{
     },
     template:`
         <div class="dropdown">
-            <button class="dropbtn">{{ urlParams.get('lang')?urlParams.get('lang'): (config['defaultLanguage']?config['defaultLanguage']:'en') }} <span style="font-size: 0.5em;">&#x25BC;</span>
+            <button class="dropbtn" @click="toggleDropdown">{{ urlParams.get('lang')?urlParams.get('lang'): (config['defaultLanguage']?config['defaultLanguage']:'en') }} <span style="font-size: 0.5em;">&#x25BC;</span>
             </button>
-            <div class="dropdown-content">
+            <div class="dropdown-content" v-bind:style="{ display: dropdownDisplay }">
                 <a v-for="lang in languages" v-html="lang[1]" @click="changeLanguage(lang[0])">{{lang[1]}}</a>
             </div>
         </div>
@@ -138,6 +139,9 @@ languagedropdown = Vue.component('language-dropdown',{
     methods:{
         changeLanguage(lang) {
             this.$emit('change-language', lang)
+        },
+        toggleDropdown() {
+            this.dropdownDisplay = ( this.dropdownDisplay == 'none' ) ? 'block' : 'none';
         }
     }
 })
