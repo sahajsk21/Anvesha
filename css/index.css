@@ -125,10 +125,6 @@ a:hover {
   text-align: left;
 }
 
-.dropdown:hover .dropdown-content {
-  display: block;
-}
-
 .dropdown-content a:hover {
   background-color: #F1F1F1;
 }
