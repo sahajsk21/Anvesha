@@ -53,7 +53,7 @@ NumberRange.prototype.toString = function () {
     }
 }
 
-languagedropdown = Vue.component('language-dropdown',{
+topnav = Vue.component('top-nav',{
     data(){
         return{
         dropdownDisplay: 'none',
@@ -128,11 +128,16 @@ languagedropdown = Vue.component('language-dropdown',{
     }
     },
     template:`
-        <div class="dropdown">
-            <button class="dropbtn" @click="toggleDropdown">{{ urlParams.get('lang')?urlParams.get('lang'): (config['defaultLanguage']?config['defaultLanguage']:'en') }} <span style="font-size: 0.5em;">&#x25BC;</span>
-            </button>
-            <div class="dropdown-content" v-bind:style="{ display: dropdownDisplay }">
-                <a v-for="lang in languages" v-html="lang[1]" @click="changeLanguage(lang[0])">{{lang[1]}}</a>
+        <div class="topnav">
+            <a @click="changePage('class-filter')">Wikidata Walkabout</a>
+            <div class="topnav-right">
+                <a href="/about">About</a>
+                <div class="dropdown">
+                    <button class="dropbtn" @click="toggleDropdown">{{ urlParams.get('lang')?urlParams.get('lang'): (config['defaultLanguage']?config['defaultLanguage']:'en') }} <span style="font-size: 0.5em;">&#x25BC;</span></button>
+                    <div class="dropdown-content" v-bind:style="{ display: dropdownDisplay }">
+                        <a v-for="lang in languages" v-html="lang[1]" @click="changeLanguage(lang[0])">{{lang[1]}}</a>
+                    </div>
+                </div>
             </div>
         </div>
     `,
@@ -142,6 +147,12 @@ languagedropdown = Vue.component('language-dropdown',{
         },
         toggleDropdown() {
             this.dropdownDisplay = ( this.dropdownDisplay == 'none' ) ? 'block' : 'none';
+        },
+        changePage(page){
+            curLang = urlParams.get("lang")
+            urlParams = new URLSearchParams();
+            urlParams.set("lang", curLang)
+            this.$emit('change-page',page)
         }
     }
 })
@@ -1747,6 +1758,9 @@ var app = new Vue({
         updatePage: function (page) {
             if (page == "subclass" || page == "superclass" || page == "filters") {
                 urlParams.set('view', page)
+            }
+            if(!urlParams.get("lang")){
+                urlParams.set("lang",lang.split(",")[0])
             }
             this.page = page
             this.total = ""

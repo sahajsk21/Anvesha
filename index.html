@@ -8,15 +8,10 @@
 
 <body>
     <div id="app">
-        <div class="topnav">
-            <a href=".">Wikidata Walkabout</a>
-                <div class="topnav-right">
-                    <a href="/about">About</a>
-                    <language-dropdown
-                        @change-language="changeLanguage">
-                    </language-dropdown>
-                </div>
-        </div>
+        <top-nav
+            @change-page="updatePage"
+            @change-language="changeLanguage">
+        </top-nav>
 
         <div class="container">
             <class-filter
