@@ -151,6 +151,7 @@ classfilter = Vue.component('class-filter', {
     data() {
         return {
             clsValue: '',
+            searchResults:'',
             suggestedClassValues: [
                 { value: "Q5", valueLabel: "" },
                 { value: "Q515", valueLabel: "" },
@@ -179,11 +180,15 @@ classfilter = Vue.component('class-filter', {
     },
     template: `
     <div>
-        <div class="classSearchSection" style="border:none">
-            <input v-model="clsValue" @keyup.enter="submit(clsValue,'')" class="classSearch" type="text" placeholder="Enter Class">
+        <div class="classSearchSection">
+            <div class="classInput">
+                <input v-model="clsValue" @input="showClasses" style="border: none;outline: none;width: 100%;font-size:1em" type="search" placeholder="Enter Class">
+            </div>
+            <div v-if="clsValue.length>0" class="searchOptions">
+                <a class="searchOption" v-for="result in searchResults" @click="submit(result.id,result.label)"><b>{{ result.label.replace(/^./, result.label[0].toUpperCase()) }}</b> : {{result.description}}</a>    
+            </div>
         </div>
-        <a @click="submit(clsValue,classLabel)">Browse this class</a>
-        <div v-if="suggestedClassValues[0].valueLabel != ''">
+        <div class="browseOptions" v-if="suggestedClassValues[0].valueLabel != ''">
             <p style="margin-top:20px">Or, browse any of the following classes:</p>
             <ul>
                 <li v-for="item in suggestedClassValues"><a :href="'/?c='+item.value" onclick="return false;" @click="submit(item.value)">{{ item.valueLabel }}</a></li>
@@ -197,6 +202,15 @@ classfilter = Vue.component('class-filter', {
         submit(cv, cl) {
             this.$emit("class-label", cv, cl);
         },
+        showClasses(){
+            if(this.clsValue.length>0){
+                const fullUrl = 'https://www.wikidata.org/w/api.php?action=wbsearchentities&origin=*&format=json&language='+lang.split(",")[0]+'&type=item&search='+this.clsValue;
+                axios.get(fullUrl)
+                .then(response => {
+                    this.searchResults = [...response.data['search']]
+                })
+            }
+        }
     },
     mounted() {
         var classes = "";
