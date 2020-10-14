@@ -53,6 +53,34 @@ NumberRange.prototype.toString = function () {
     }
 }
 
+sitename = Vue.component('site-name', {
+    template: `
+    <a :href="mainPagePath()" onclick="return false;" @click="changeView('class-filter')">Wikidata Walkabout</a>
+    `,
+    methods: {
+        mainPagePath() {
+            var curPath = window.location.pathname;
+            var curLang = urlParams.get('lang');
+            if (curLang != null ) {
+                return curPath + '?lang=' + curLang;
+            } else {
+                return curPath;
+            }
+        },
+        changeView(page) {
+            this.clsValue = '';
+            this.classLabel = '';
+            this.currentFilterLabel = '';
+            this.currentFilterValue = '';
+            this.appFilters = [];
+            this.appRanges = [];
+            this.appQuantities = [];
+            this.$emit('change-page', page)
+            this.page = page;
+        }
+    }
+});
+
 languagedropdown = Vue.component('language-dropdown',{
     data(){
         return{
@@ -1694,7 +1722,7 @@ superclass = Vue.component('superclass-view', {
 var app = new Vue({
     el: '#app',
     components: {
-        classfilter, viewallitems, filtersview, filtervalues
+        sitename, classfilter, viewallitems, filtersview, filtervalues
     },
     data: {
         clsValue: '',
@@ -1748,25 +1776,36 @@ var app = new Vue({
             if (page == "subclass" || page == "superclass" || page == "filters") {
                 urlParams.set('view', page)
             }
-            this.page = page
-            this.total = ""
-            window.history.pushState({
-                page: page,
-                classValue: this.classValue,
-                filters: this.appliedFilters,
-                quantities: this.appliedQuantities,
-                ranges: this.appliedRanges,
-                currentFilterLabel: this.currentFilterLabel,
-                currentFilterValue: this.currentFilterValue,
-                fromURL: 0,
-                allItemscomponentKey: this.allItemscomponentKey,
-                filterscomponentKey: this.filterscomponentKey
-            }, '',
-                window.location.pathname + "?" + urlParams
+            if (page == "class-filter") {
+                var curLang = urlParams.get('lang');
+                urlParams = new URLSearchParams("")
+                if ( curLang != null ) {
+                    urlParams.set('lang', curLang);
+                }
+            }
+            this.page = page;
+            this.total = "";
+            var newURL = window.location.pathname;
+            var urlParamsString = urlParams.toString();
+            if (urlParamsString != '' ) {
+                newURL += '?' + urlParamsString;
+            }
+            window.history.pushState(
+                {
+                    page: page,
+                    classValue: this.classValue,
+                    filters: this.appliedFilters,
+                    quantities: this.appliedQuantities,
+                    ranges: this.appliedRanges,
+                    currentFilterLabel: this.currentFilterLabel,
+                    currentFilterValue: this.currentFilterValue,
+                    fromURL: 0,
+                    allItemscomponentKey: this.allItemscomponentKey,
+                    filterscomponentKey: this.filterscomponentKey
+                }, '', newURL
             );
         },
         updateClassValue: function (classValue, classLabel = "") {
-            urlParams = new URLSearchParams("")
             urlParams.set('c', classValue)
             this.clsValue = classValue;
             this.classLabel = classLabel
