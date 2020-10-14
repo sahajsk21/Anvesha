@@ -9,13 +9,15 @@
 <body>
     <div id="app">
         <div class="topnav">
-            <a href=".">Wikidata Walkabout</a>
-                <div class="topnav-right">
-                    <a href="/about">About</a>
-                    <language-dropdown
-                        @change-language="changeLanguage">
-                    </language-dropdown>
-                </div>
+            <site-name
+                @change-page="updatePage">
+            </site-name>
+            <div class="topnav-right">
+                <a href="/about">About</a>
+                <language-dropdown
+                    @change-language="changeLanguage">
+                </language-dropdown>
+            </div>
         </div>
 
         <div class="container">
