@@ -16,7 +16,7 @@
         <div class="container">
             <class-filter
                 @change-page="updatePage"
-                @class-label="updateClassValue"
+                @change-class="updateClassValue"
                 v-if="view == 'class-filter'"
                 :class-value="classValue"
                 :class-label="classLabel">
