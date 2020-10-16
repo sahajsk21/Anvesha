@@ -640,7 +640,7 @@ filtervalues = Vue.component('filter-values', {
         <div class="content">
             <div v-if="itemsType==''"><p>Getting values for filter <b>{{currentFilter.valueLabel}}</b> ...</p><img src='images/loading.gif'></div>
             <p v-else-if="itemsType=='Additionalempty'">There are no additional values for the filter <b>{{currentFilter.valueLabel}}</b>.</p>
-            <p v-else-if="itemsType=='Error'">Trying to get values for the filter {{currentFilter.valueLabel}} took too long. <a @click="back()">Go back</a>.</p>
+            <p v-else-if="itemsType=='Error'">Trying to get values for the filter <b>{{currentFilter.valueLabel}}</b> took too long. <a @click="back()">Go back</a>.</p>
             <div v-else-if="itemsType=='Item'">
                 <p v-if="totalValues!=''">There are <b>{{ totalValues<1000000?numberWithCommas(totalValues):"1 million +" }}</b> items that match this description.</p>
                 <p> Select {{ appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) !=-1?"an additional value":"a value"}} for <b>{{currentFilter.valueLabel}}</b>: </p>
