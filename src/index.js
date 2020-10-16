@@ -700,7 +700,7 @@ filtervalues = Vue.component('filter-values', {
                         <i><a :href="noValueURL" onclick="return false;" @click.exact="applyQuantityRange('novalue')" @click.ctrl="window.open(noValueURL, '_blank')">No Value</i>
                     </li>
                     <li v-for="item in items" v-if="item.numValues>0">
-                        <a :href="item.href" onclick="return false; @click.exact="applyQuantityRange(item)" @click.ctrl="window.open(item.href, '_blank')">{{item.bucketName}} {{item.unit}} </a> ({{numberWithCommas(item.numValues)}} results)
+                        <a :href="item.href" onclick="return false;" @click.exact="applyQuantityRange(item)" @click.ctrl="window.open(item.href, '_blank')">{{item.bucketName}} {{item.unit}} </a> ({{numberWithCommas(item.numValues)}} results)
                     </li>
                 </ul>
                 <ul v-if="displayCount == 0">
