@@ -129,7 +129,7 @@ topnav = Vue.component('top-nav',{
     },
     template:`
         <div class="topnav">
-            <a @click="changePage('class-filter')">Wikidata Walkabout</a>
+            <a :href="mainPagePath()" onclick="return false;" @click.exact="changePage('class-filter')" @click.ctrl="window.open(mainPagePath(), '_blank')">Wikidata Walkabout</a>
             <div class="topnav-right">
                 <a href="/about">About</a>
                 <div class="dropdown">
@@ -147,6 +147,15 @@ topnav = Vue.component('top-nav',{
         },
         toggleDropdown() {
             this.dropdownDisplay = ( this.dropdownDisplay == 'none' ) ? 'block' : 'none';
+        },
+        mainPagePath() {
+            var curPath = window.location.pathname;
+            var curLang = urlParams.get('lang');
+            if (curLang != null ) {
+                return curPath + '?lang=' + curLang;
+            } else {
+                return curPath;
+            }
         },
         changePage(page){
             curLang = urlParams.get("lang")
@@ -202,13 +211,18 @@ classfilter = Vue.component('class-filter', {
         <div class="browseOptions" v-if="suggestedClassValues[0].valueLabel != ''">
             <p style="margin-top:20px">Or, browse any of the following classes:</p>
             <ul>
-                <li v-for="item in suggestedClassValues"><a :href="'/?c='+item.value" onclick="return false;" @click="submit(item.value)">{{ item.valueLabel }}</a></li>
+                <li v-for="item in suggestedClassValues"><a :href="pathFor(item)" onclick="return false;" @click.exact="submit(item.value)" @click.ctrl="window.open(pathFor(item),'_blank')">{{ item.valueLabel }}</a></li>
             </ul>
         </div>
     </div>`,
     methods: {
         changePage(page) {
             this.$emit('change-page', page)
+        },
+        pathFor(item) {
+            var curPath = window.location.pathname + window.location.search;
+            curPath += (curPath.includes('?')) ? '&' : '?';
+            return curPath + 'c=' + item.value;
         },
         submit(cv, cl) {
             this.$emit("class-label", cv, cl);
@@ -376,8 +390,8 @@ viewallitems = Vue.component('view-all-items', {
         <div class="header">
             <h2> 
                 {{ classLabel }} 
-                <a title="superclass" :href="window.location.href+'&view=subclass'" onclick="return false;" class="classOptions" @click="changeView('superclass')">&uarr;</a>
-                <a title="subclass" :href="window.location.href+'&view=superclass'" onclick="return false;" class="classOptions" @click="changeView('subclass')">&darr;</a>
+                <a title="superclass" :href="pathForView('superclass')" onclick="return false;" class="classOptions" @click.exact="changeView('superclass')" @click.ctrl="window.open(pathForView('superclass'))">&uarr;</a>
+                <a title="subclass" :href="pathForView('subclass')" onclick="return false;" class="classOptions" @click.exact="changeView('subclass')" @click.ctrl="window.open(pathForView('subclass'))">&darr;</a>
             </h2>
                 
             </p>
@@ -389,7 +403,11 @@ viewallitems = Vue.component('view-all-items', {
                 <p v-if="filtersCount==-1"></p>
                 <p v-else-if="filtersCount==0">No filters are defined for this class.</p>
                 <div class="filter-box" v-else-if="filtersCount<40">
-                    <img src="images/filter-icon.svg" height="14px"> <span v-for="filter in filters"><a :href="window.location.href+'&cf='+filter.value.value.split('/').slice(-1)[0]" onclick="return false;" @click="showFilter(filter)">{{filter.valueLabel.value}}</a> <b v-if="filters[filtersCount-1].valueLabel.value != filter.valueLabel.value">&middot; </b> </span>
+                    <img src="images/filter-icon.svg" height="14px" />
+                    <span v-for="filter in filters">
+                        <a :href="pathForFilter(filter)" onclick="return false;" @click.exact="showFilter(filter)" @click.ctrl="window.open(pathForFilter(filter),'_blank')">{{filter.valueLabel.value}}</a>
+                        <b v-if="filters[filtersCount-1].valueLabel.value != filter.valueLabel.value">&middot; </b>
+                    </span>
                 </div>
                 <p v-else><a class="classOptions" @click="changeView('filters-view')">Add a filter</a></p>
             <p><img v-if="totalValues==''" src='images/loading.gif'></p>
@@ -418,6 +436,12 @@ viewallitems = Vue.component('view-all-items', {
         </div>
     </div>`,
     methods: {
+        pathForView(view) {
+            return window.location.href + '&view=' + view;
+        },
+        pathForFilter(filter) {
+            return window.location.href + '&cf=' + filter.value.value.split('/').slice(-1)[0];
+        },
         changeView(page) {
             this.$emit('change-page', page)
         },
@@ -621,9 +645,11 @@ filtervalues = Vue.component('filter-values', {
                 <p v-if="totalValues!=''">There are <b>{{ totalValues<1000000?numberWithCommas(totalValues):"1 million +" }}</b> items that match this description.</p>
                 <p> Select {{ appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) !=-1?"an additional value":"a value"}} for <b>{{currentFilter.valueLabel}}</b>: </p>
                 <ul>
-                    <li v-if="appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) ==-1"><i><a :href="noValueURL" onclick="return false;" @click="applyFilter('novalue')">No Value</i></li>
+                    <li v-if="appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) ==-1">
+                        <i><a :href="noValueURL" onclick="return false;" @click.exact="applyFilter('novalue')" @click.ctrl="window.open(noValueURL, '_blank')">No Value</i>
+                    </li>
                     <li v-for="(item,index) in items" v-if="index < currentPage*200 && index >= (currentPage-1)*200">
-                        <a :href="item.href" onclick="return false;" @click="applyFilter(item)">{{item.valueLabel.value}}</a> ({{numberWithCommas(item.count.value)}} results)
+                        <a :href="item.href" onclick="return false;" @click.exact="applyFilter(item)" @click.ctrl="window.open(item.href, '_blank')">{{item.valueLabel.value}}</a> ({{numberWithCommas(item.count.value)}} results)
                     </li>
                 </ul>
             </div>
@@ -631,9 +657,9 @@ filtervalues = Vue.component('filter-values', {
                 <p><i>(Getting a complete set of values for this filter took too long; instead, here is a possibly incomplete set.)</i></p>
                 <p> Select a value for <b>{{currentFilter.valueLabel}}</b>:</p>
                 <ul>
-                    <li><i><a :href="noValueURL" onclick="return false;" @click="applyFilter('novalue')">No Value</i></li>
+                    <li><i><a :href="noValueURL" onclick="return false;" @click.exact="applyFilter('novalue')" @click.ctrl="window.open(noValueURL, '_blank')">No Value</i></li>
                     <li v-for="item in items">
-                        <a :href="item.href" onclick="return false;" @click="applyFilter(item)">{{item.valueLabel.value}}</a>
+                        <a :href="item.href" onclick="return false;" @click.exact="applyFilter(item)" @click.ctrl="window.open(item.href, '_blank')">{{item.valueLabel.value}}</a>
                     </li>
                 </ul>
             </div>
@@ -641,15 +667,17 @@ filtervalues = Vue.component('filter-values', {
                 <p v-if="totalValues!=''">There are <b>{{ totalValues<1000000?numberWithCommas(totalValues):"1 million +" }}</b> items that match this description.</p>
                 <p> Select a value for <b>{{currentFilter.valueLabel}}</b>:</p>
                 <ul v-if="displayCount == 1">
-                    <li v-if="appliedRanges.findIndex(filter => filter.filterValue == currentFilter.value) ==-1"><i><a :href="noValueURL" onclick="return false;" @click="applyRange('novalue')">No Value</i></li>
+                    <li v-if="appliedRanges.findIndex(filter => filter.filterValue == currentFilter.value) ==-1">
+                        <i><a :href="noValueURL" onclick="return false;" @click.exact="applyRange('novalue')" @click.ctrl="window.open(noValueURL, '_blank')">No Value</i>
+                    </li>
                     <li v-for="item in items" v-if="item.numValues>0">
-                        <a :href="item.href" onclick="return false;" @click="applyRange(item)">{{item.bucketName}} </a> ({{numberWithCommas(item.numValues)}} results)
+                        <a :href="item.href" onclick="return false;" @click.exact="applyRange(item)" @click.ctrl="window.open(item.href, '_blank')">{{item.bucketName}} </a> ({{numberWithCommas(item.numValues)}} results)
                     </li>
                 </ul>
                 <ul v-if="displayCount == 0">
-                    <li><i><a :href="noValueURL" onclick="return false;" @click="applyFilter('novalue')">No Value</i></li>
+                    <li><i><a :href="noValueURL" onclick="return false;" @click.exact="applyFilter('novalue')" @click.ctrl="window.open(noValueURL, '_blank')">No Value</i></li>
                     <li v-for="item in items">
-                        <a :href="item.href" onclick="return false;" @click="applyRange(item)">{{item.bucketName}} </a>
+                        <a :href="item.href" onclick="return false;" @click.exact="applyRange(item)" @click.ctrl="window.open(item.href, '_blank')">{{item.bucketName}} </a>
                     </li>
                 </ul>
             </div>
@@ -657,9 +685,9 @@ filtervalues = Vue.component('filter-values', {
                 <p><i>(Getting a complete set of values for this filter took too long; instead, here is a possibly incomplete set.)</i></p>
                 <p> Select a value for <b>{{currentFilter.valueLabel}}</b>:</p>
                 <ul>
-                    <li><i><a :href="noValueURL" onclick="return false;" @click="applyFilter('novalue')">No Value</i></li>
+                    <li><i><a :href="noValueURL" onclick="return false;" @click.exact="applyFilter('novalue')" @click.ctrl="window.open(noValueURL, '_blank')">No Value</i></li>
                     <li v-for="item in items">
-                        <a :href="item.href" onclick="return false;" @click="applyRange(item)">{{item.bucketName}} </a>
+                        <a :href="item.href" onclick="return false;" @click.exact="applyRange(item)" @click.ctrl="window.open(item.href, '_blank')">{{item.bucketName}} </a>
                     </li>
                 </ul>
             </div>
@@ -668,15 +696,17 @@ filtervalues = Vue.component('filter-values', {
                 <p v-if="displayCount == 0"><i>(Getting a complete set of values for this filter took too long; instead, here is a possibly incomplete set.)</i></p>
                 <p> Select a value for <b>{{currentFilter.valueLabel}}</b>:</p>
                 <ul v-if="displayCount == 1">
-                    <li v-if="appliedQuantities.findIndex(filter => filter.filterValue == currentFilter.value) ==-1"><i><a :href="noValueURL" onclick="return false;" @click="applyQuantityRange('novalue')">No Value</i></li>
+                    <li v-if="appliedQuantities.findIndex(filter => filter.filterValue == currentFilter.value) ==-1">
+                        <i><a :href="noValueURL" onclick="return false;" @click.exact="applyQuantityRange('novalue')" @click.ctrl="window.open(noValueURL, '_blank')">No Value</i>
+                    </li>
                     <li v-for="item in items" v-if="item.numValues>0">
-                        <a :href="item.href" onclick="return false;" @click="applyQuantityRange(item)">{{item.bucketName}} {{item.unit}} </a> ({{numberWithCommas(item.numValues)}} results)
+                        <a :href="item.href" onclick="return false; @click.exact="applyQuantityRange(item)" @click.ctrl="window.open(item.href, '_blank')">{{item.bucketName}} {{item.unit}} </a> ({{numberWithCommas(item.numValues)}} results)
                     </li>
                 </ul>
                 <ul v-if="displayCount == 0">
-                    <li><i><a :href="noValueURL" onclick="return false;" @click="applyQuantityRange('novalue')">No Value</i></li>
+                    <li><i><a :href="noValueURL" onclick="return false;" @click.exact="applyQuantityRange('novalue')" @click.ctrl="window.open(noValueURL, '_blank'>No Value</i></li>
                     <li v-for="item in items">
-                        <a :href="item.href" onclick="return false;" @click="applyQuantityRange(item)">{{item.bucketName}} </a>
+                        <a :href="item.href" onclick="return false;" @click.exact="applyQuantityRange(item)" @click.ctrl="window.open(item.href, '_blank')">{{item.bucketName}} </a>
                     </li>
                 </ul>
             </div>
@@ -1576,7 +1606,7 @@ subclass = Vue.component('subclass-view', {
             <div v-else>
                 <ul>
                     <li v-for="item in items">
-                        <a :href="'/?c='+item.value.value.split('/').slice(-1)[0]" onclick="return false;" @click="updateClass(item)">{{item.valueLabel.value}}</a> <span v-if="displayCount==0">({{item.count.value}} results)</span>
+                        <a :href="pathFor(item)" onclick="return false;" @click.exact="updateClass(item)" @click.ctrl="window.open(pathFor(item), '_blank')">{{item.valueLabel.value}}</a> <span v-if="displayCount==0">({{item.count.value}} results)</span>
                     </li>
                 </ul>
             </div>
@@ -1584,6 +1614,14 @@ subclass = Vue.component('subclass-view', {
     </div>
     `,
     methods: {
+        pathFor(item) {
+            var newURL = window.location.pathname + '?';
+            var curLang = urlParams.get('lang');
+            if ( curLang != null ) {
+                newURL += 'lang=' + curLang + '&';
+            }
+            return newURL + 'c=' + item.value.value.split('/').slice(-1)[0];
+        },
         changePage(page) {
             this.$emit('change-page', page)
         },
@@ -1651,7 +1689,7 @@ superclass = Vue.component('superclass-view', {
             <div v-else>
                 <ul>
                     <li v-for="item in items">
-                        <a :href="'/?c='+item.value.value.split('/').slice(-1)[0]" onclick="return false;" @click="updateClass(item)">{{item.valueLabel.value}}</a> <span v-if="displayCount==0">({{item.count.value}} results)</span>
+                        <a :href="pathFor(item)" onclick="return false;" @click.exact="updateClass(item)" @click.ctrl="window.open(pathFor(item), '_blank')">{{item.valueLabel.value}}</a> <span v-if="displayCount==0">({{item.count.value}} results)</span>
                     </li>
                 </ul>
             </div>
@@ -1659,6 +1697,14 @@ superclass = Vue.component('superclass-view', {
     </div>
     `,
     methods: {
+        pathFor(item) {
+            var newURL = window.location.pathname + '?';
+            var curLang = urlParams.get('lang');
+            if ( curLang != null ) {
+                newURL += 'lang=' + curLang + '&';
+            }
+            return newURL + 'c=' + item.value.value.split('/').slice(-1)[0];
+        },
         changePage(page) {
             this.$emit('change-page', page)
         },
