@@ -225,7 +225,7 @@ classfilter = Vue.component('class-filter', {
             return curPath + 'c=' + item.value;
         },
         submit(cv, cl) {
-            this.$emit("class-label", cv, cl);
+            this.$emit("change-class", cv, cl);
         },
         showClasses(){
             if(this.clsValue.length>0){
