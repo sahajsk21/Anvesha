@@ -229,7 +229,7 @@ classfilter = Vue.component('class-filter', {
         },
         showClasses(){
             if(this.clsValue.length>0){
-                const fullUrl = 'https://www.wikidata.org/w/api.php?action=wbsearchentities&origin=*&format=json&language='+lang.split(",")[0]+'&type=item&search='+this.clsValue;
+                const fullUrl = 'https://www.wikidata.org/w/api.php?action=wbsearchentities&origin=*&format=json&language=' + lang.split(",")[0] + '&uselang=' + lang.split(",")[0] + '&type=item&search=' + this.clsValue;
                 axios.get(fullUrl)
                 .then(response => {
                     this.searchResults = [...response.data['search']]
