@@ -131,7 +131,7 @@ topnav = Vue.component('top-nav',{
         <div class="topnav">
             <a :href="mainPagePath()" onclick="return false;" @click.exact="changePage('class-filter')" @click.ctrl="window.open(mainPagePath(), '_blank')">Wikidata Walkabout</a>
             <div class="topnav-right">
-                <a href="/about">About</a>
+                <a href="/about">{{$t("message.about")}}</a>
                 <div class="dropdown">
                     <button class="dropbtn" @click="toggleDropdown">{{ urlParams.get('lang')?urlParams.get('lang'): (config['defaultLanguage']?config['defaultLanguage']:'en') }} <span style="font-size: 0.5em;">&#x25BC;</span></button>
                     <div class="dropdown-content" v-bind:style="{ display: dropdownDisplay }">
@@ -202,14 +202,14 @@ classfilter = Vue.component('class-filter', {
     <div>
         <div class="classSearchSection">
             <div class="classInput">
-                <input v-model="clsValue" @input="showClasses" style="border: none;outline: none;width: 100%;font-size:1em" type="search" placeholder="Enter Class">
+                <input v-model="clsValue" @input="showClasses" style="border: none;outline: none;width: 100%;font-size:1em" type="search" :placeholder='$t("message.classPlaceholder")'>
             </div>
             <div v-if="clsValue.length>0" class="searchOptions">
                 <a class="searchOption" v-for="result in searchResults" @click="submit(result.id,result.label)"><b>{{ result.label.replace(/^./, result.label[0].toUpperCase()) }}</b> : {{result.description}}</a>    
             </div>
         </div>
         <div class="browseOptions" v-if="suggestedClassValues[0].valueLabel != ''">
-            <p style="margin-top:20px">Or, browse any of the following classes:</p>
+            <p style="margin-top:20px">{{$t("message.browse")}}</p>
             <ul>
                 <li v-for="item in suggestedClassValues"><a :href="pathFor(item)" onclick="return false;" @click.exact="submit(item.value)" @click.ctrl="window.open(pathFor(item),'_blank')">{{ item.valueLabel }}</a></li>
             </ul>
@@ -411,7 +411,7 @@ viewallitems = Vue.component('view-all-items', {
                 </div>
                 <p v-else><a class="classOptions" @click="changeView('filters-view')">Add a filter</a></p>
             <p><img v-if="totalValues==''" src='images/loading.gif'></p>
-            <p v-if="totalValues>0">There are <b>{{ totalValues<1000000?numberWithCommas(totalValues):"1 million +" }}</b> items that match this description.</p>
+            <p v-if="totalValues>0">{{ $t("message.itemCount",{count:totalValues<1000000?numberWithCommas(totalValues):"1 million +" }) }}</p>
             <div v-if="totalValues>200" style="text-align: center">
                 <a @click="currentPage>1?currentPage--:''">&lt;</a>
                 <input v-model.lazy="currentPage" type="text" style="margin-bottom: 15px;width: 48px;text-align: center"> {{totalValues<1000000?" / " + Math.ceil(totalValues/200):''}}
@@ -578,7 +578,8 @@ filtersview = Vue.component('filters-view', {
             <img v-if="!filters.length" src='images/loading.gif'>
             <p v-else-if="filters[0].value=='Empty'">No filters available</p>
             <div v-else>
-                <p>There are <b>{{ totalValues<1000000?numberWithCommas(totalValues):"1 million +" }}</b> items that match this description.</p>
+            <p v-if="totalValues>0">{{ $t("message.itemCount",{count:totalValues<1000000?numberWithCommas(totalValues):"1 million +" }) }}</p>
+                <p>{{ $t("message.itemCount",{count:totalValues<1000000?numberWithCommas(totalValues):"1 million +" }) }}</p>
                 <p><b>Add a filter:</b></p> 
                 <ul>
                     <li v-for="filter in filters">
@@ -642,7 +643,7 @@ filtervalues = Vue.component('filter-values', {
             <p v-else-if="itemsType=='Additionalempty'">There are no additional values for the filter <b>{{currentFilter.valueLabel}}</b>.</p>
             <p v-else-if="itemsType=='Error'">Trying to get values for the filter <b>{{currentFilter.valueLabel}}</b> took too long. <a @click="back()">Go back</a>.</p>
             <div v-else-if="itemsType=='Item'">
-                <p v-if="totalValues!=''">There are <b>{{ totalValues<1000000?numberWithCommas(totalValues):"1 million +" }}</b> items that match this description.</p>
+                <p v-if="totalValues!=''">{{ $t("message.itemCount",{count:totalValues<1000000?numberWithCommas(totalValues):"1 million +" }) }}</p>
                 <p> Select {{ appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) !=-1?"an additional value":"a value"}} for <b>{{currentFilter.valueLabel}}</b>: </p>
                 <ul>
                     <li v-if="appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) ==-1">
@@ -664,7 +665,7 @@ filtervalues = Vue.component('filter-values', {
                 </ul>
             </div>
             <div v-else-if="itemsType=='Time'">
-                <p v-if="totalValues!=''">There are <b>{{ totalValues<1000000?numberWithCommas(totalValues):"1 million +" }}</b> items that match this description.</p>
+                <p v-if="totalValues!=''">{{ $t("message.itemCount",{count:totalValues<1000000?numberWithCommas(totalValues):"1 million +" }) }}</p>
                 <p> Select a value for <b>{{currentFilter.valueLabel}}</b>:</p>
                 <ul v-if="displayCount == 1">
                     <li v-if="appliedRanges.findIndex(filter => filter.filterValue == currentFilter.value) ==-1">
@@ -692,7 +693,7 @@ filtervalues = Vue.component('filter-values', {
                 </ul>
             </div>
             <div v-else-if="itemsType=='Quantity'">
-                <p v-if="displayCount == 1 && totalValues!=''">There are <b>{{ totalValues<1000000?numberWithCommas(totalValues):"1 million +" }}</b> items that match this description.</p>
+                <p v-if="displayCount == 1 && totalValues!=''">{{ $t("message.itemCount",{count:totalValues<1000000?numberWithCommas(totalValues):"1 million +" }) }}</p>
                 <p v-if="displayCount == 0"><i>(Getting a complete set of values for this filter took too long; instead, here is a possibly incomplete set.)</i></p>
                 <p> Select a value for <b>{{currentFilter.valueLabel}}</b>:</p>
                 <ul v-if="displayCount == 1">
@@ -1749,7 +1750,7 @@ superclass = Vue.component('superclass-view', {
 })
 
 var app = new Vue({
-    el: '#app',
+    i18n: i18n,
     components: {
         classfilter, viewallitems, filtersview, filtervalues
     },
@@ -2425,4 +2426,4 @@ var app = new Vue({
             );
         }
     }
-})
+}).$mount('#app')
