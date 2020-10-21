@@ -131,7 +131,7 @@ topnav = Vue.component('top-nav',{
         <div class="topnav">
             <a :href="mainPagePath()" onclick="return false;" @click.exact="changePage('class-filter')" @click.ctrl="window.open(mainPagePath(), '_blank')">Wikidata Walkabout</a>
             <div class="topnav-right">
-                <a href="/about">About</a>
+                <a href="/about">{{$t("message.about")}}</a>
                 <div class="dropdown">
                     <button class="dropbtn" @click="toggleDropdown">{{ urlParams.get('lang')?urlParams.get('lang'): (config['defaultLanguage']?config['defaultLanguage']:'en') }} <span style="font-size: 0.5em;">&#x25BC;</span></button>
                     <div class="dropdown-content" v-bind:style="{ display: dropdownDisplay }">
@@ -202,16 +202,35 @@ classfilter = Vue.component('class-filter', {
     <div>
         <div class="classSearchSection">
             <div class="classInput">
-                <input v-model="clsValue" @input="showClasses" style="border: none;outline: none;width: 100%;font-size:1em" type="search" placeholder="Enter Class">
+                <input 
+                    v-model="clsValue" 
+                    @input="showClasses" 
+                    style="border: none;outline: none;width: 100%;font-size:1em" 
+                    type="search" 
+                    :placeholder='$t("message.classPlaceholder")'>
             </div>
             <div v-if="clsValue.length>0" class="searchOptions">
-                <a class="searchOption" v-for="result in searchResults" @click="submit(result.id,result.label)"><b>{{ result.label.replace(/^./, result.label[0].toUpperCase()) }}</b> : {{result.description}}</a>    
+                <a 
+                    class="searchOption" 
+                    v-for="result in searchResults" 
+                    @click="submit(result.id,result.label)">
+                        <b>
+                            {{ result.label.replace(/^./, result.label[0].toUpperCase()) }}
+                        </b> : {{ result.description }}
+                </a>    
             </div>
         </div>
         <div class="browseOptions" v-if="suggestedClassValues[0].valueLabel != ''">
-            <p style="margin-top:20px">Or, browse any of the following classes:</p>
+            <p style="margin-top:20px">{{$t("message.browse")}}</p>
             <ul>
-                <li v-for="item in suggestedClassValues"><a :href="pathFor(item)" onclick="return false;" @click.exact="submit(item.value)" @click.ctrl="window.open(pathFor(item),'_blank')">{{ item.valueLabel }}</a></li>
+                <li v-for="item in suggestedClassValues">
+                    <a 
+                        :href="pathFor(item)" 
+                        onclick="return false;" 
+                        @click.exact="submit(item.value)" 
+                        @click.ctrl="window.open(pathFor(item),'_blank')">{{ item.valueLabel }}
+                    </a>
+                </li>
             </ul>
         </div>
     </div>`,
@@ -270,8 +289,8 @@ results = Vue.component('items-results', {
     template: `
     <div>
         <img v-if="!items.length" src='images/loading.gif'>
-        <p v-else-if="items[0].value=='Empty'">No items match this description.</p>
-        <p v-else-if="items[0].value=='Error'">The attempt to display a list of items took too long; please consider adding more filters.</p>
+        <p v-else-if="items[0].value=='Empty'">{{ $t('message.noItems') }}</p>
+        <p v-else-if="items[0].value=='Error'">{{ $t('message.displayItemsError')}}</p>
         <div v-else>
                 <ul>
                     <li v-for="item in items">
@@ -390,34 +409,84 @@ viewallitems = Vue.component('view-all-items', {
         <div class="header">
             <h2> 
                 {{ classLabel }} 
-                <a title="superclass" :href="pathForView('superclass')" onclick="return false;" class="classOptions" @click.exact="changeView('superclass')" @click.ctrl="window.open(pathForView('superclass'))">&uarr;</a>
-                <a title="subclass" :href="pathForView('subclass')" onclick="return false;" class="classOptions" @click.exact="changeView('subclass')" @click.ctrl="window.open(pathForView('subclass'))">&darr;</a>
+                <a 
+                    title="superclass" 
+                    :href="pathForView('superclass')" 
+                    onclick="return false;" 
+                    class="classOptions" 
+                    @click.exact="changeView('superclass')" 
+                    @click.ctrl="window.open(pathForView('superclass'))">
+                    &uarr;
+                </a>
+                <a 
+                    title="subclass" 
+                    :href="pathForView('subclass')" 
+                    onclick="return false;" 
+                    class="classOptions" 
+                    @click.exact="changeView('subclass')" 
+                    @click.ctrl="window.open(pathForView('subclass'))">
+                    &darr;
+                </a>
             </h2>
-                
-            </p>
-            <p v-for="filter in appliedFilters"><b>{{filter.filterValueLabel}}</b>: <span v-if="filter.value == 'novalue'" :style="{ fontStyle: 'italic' }">{{ filter.valueLabel }}</span><span v-else>{{ filter.valueLabel }}</span> (<a @click="removeFilter(filter)">&#x2715;</a>)</p>
-            <p v-for="range in appliedRanges"><b>{{range.filterValueLabel}}</b>: <span v-if="range.valueLL == 'novalue'" :style="{ fontStyle: 'italic' }">{{ range.valueLabel }}</span><span v-else>{{ range.valueLabel }}</span> (<a @click="removeRange(range)">&#x2715;</a>)</p>
-            <p v-for="quantity in appliedQuantities"><b>{{quantity.filterValueLabel}}</b>: <span v-if="quantity.valueLL == 'novalue'" :style="{ fontStyle: 'italic' }">{{ quantity.valueLabel }}</span><span v-else>{{ quantity.valueLabel }}</span> {{quantity.unit}}(<a @click="removeQuantity(quantity)">&#x2715;</a>)</p>
+            <div>
+                <p v-for="filter in appliedFilters">
+                    <b>{{filter.filterValueLabel}}</b>: 
+                    <span v-if="filter.value == 'novalue'" :style="{ fontStyle: 'italic' }">
+                        {{ filter.valueLabel }}</span><span v-else>{{ filter.valueLabel }}
+                    </span> 
+                    ( <a @click="removeFilter(filter)">&#x2715;</a> )
+                </p>
+                <p v-for="range in appliedRanges">
+                    <b>{{range.filterValueLabel}}</b>: 
+                    <span v-if="range.valueLL == 'novalue'" :style="{ fontStyle: 'italic' }">
+                        {{ range.valueLabel }}
+                    </span>
+                    <span v-else>
+                        {{ range.valueLabel }}
+                    </span> 
+                    ( <a @click="removeRange(range)">&#x2715;</a> )
+                </p>
+                <p v-for="quantity in appliedQuantities">
+                    <b>{{quantity.filterValueLabel}}</b>: 
+                    <span v-if="quantity.valueLL == 'novalue'" :style="{ fontStyle: 'italic' }">
+                        {{ quantity.valueLabel }}</span><span v-else>{{ quantity.valueLabel }}
+                    </span> 
+                    {{quantity.unit}}( <a @click="removeQuantity(quantity)">&#x2715;</a> )
+                </p>
+            </div>
         </div>
         <div class="content" id="viewallitems">
-                <p v-if="filtersCount==-1"></p>
-                <p v-else-if="filtersCount==0">No filters are defined for this class.</p>
-                <div class="filter-box" v-else-if="filtersCount<40">
-                    <img src="images/filter-icon.svg" height="14px" />
-                    <span v-for="filter in filters">
-                        <a :href="pathForFilter(filter)" onclick="return false;" @click.exact="showFilter(filter)" @click.ctrl="window.open(pathForFilter(filter),'_blank')">{{filter.valueLabel.value}}</a>
-                        <b v-if="filters[filtersCount-1].valueLabel.value != filter.valueLabel.value">&middot; </b>
-                    </span>
-                </div>
-                <p v-else><a class="classOptions" @click="changeView('filters-view')">Add a filter</a></p>
-            <p><img v-if="totalValues==''" src='images/loading.gif'></p>
-            <p v-if="totalValues>0">There are <b>{{ totalValues<1000000?numberWithCommas(totalValues):"1 million +" }}</b> items that match this description.</p>
+            <div v-if="filtersCount==-1"></div>
+            <p v-else-if="filtersCount==0">{{ $t('message.filtersCount') }}</p>
+            <div v-else-if="filtersCount<40" class="filter-box">
+                <img src="images/filter-icon.svg" height="14px" />
+                <span v-for="filter in filters">
+                    <a 
+                        :href="pathForFilter(filter)" 
+                        onclick="return false;" 
+                        @click.exact="showFilter(filter)" 
+                        @click.ctrl="window.open(pathForFilter(filter),'_blank')">
+                        {{filter.valueLabel.value}}
+                    </a>
+                    <b v-if="filters[filtersCount-1].valueLabel.value != filter.valueLabel.value">&middot; </b>
+                </span>
+            </div>
+            <div v-else>
+                <a class="classOptions" @click="changeView('filters-view')">{{ $t('message.addFilter') }}</a>
+            </div>
+            <div><img v-if="totalValues==''" src='images/loading.gif'></div>
+            <div v-if="totalValues>0">{{ $t("message.itemCount",{count:totalValues<1000000?numberWithCommas(totalValues):"1 million +" }) }}</div>
             <div v-if="totalValues>200" style="text-align: center">
                 <a @click="currentPage>1?currentPage--:''">&lt;</a>
-                <input v-model.lazy="currentPage" type="text" style="margin-bottom: 15px;width: 48px;text-align: center"> {{totalValues<1000000?" / " + Math.ceil(totalValues/200):''}}
+                <input 
+                    v-model.lazy="currentPage" 
+                    type="text" 
+                    style="margin-bottom: 15px;width: 48px;text-align: center"> 
+                {{totalValues<1000000?" / " + Math.ceil(totalValues/200):''}}
                 <a @click="currentPage<totalValues/200?currentPage++:''">&gt;</a>
             </div>
-            <items-results v-if="totalValues!=''"
+            <items-results 
+                v-if="totalValues!=''"
                 :total-values="totalValues"
                 :class-label="classLabel"
                 :class-value="classValue"
@@ -429,10 +498,14 @@ viewallitems = Vue.component('view-all-items', {
             </items-results>
             <div v-if="totalValues>200" style="text-align: center">
                 <a @click="currentPage>1?currentPage--:''">&lt;</a>
-                <input v-model.lazy="currentPage" type="text" style="margin-bottom: 15px;width: 48px;text-align: center"> {{totalValues<1000000?" / " + Math.ceil(totalValues/200):''}}
+                <input 
+                    v-model.lazy="currentPage" 
+                    type="text" 
+                    style="margin-bottom: 15px;width: 48px;text-align: center"> 
+                    {{totalValues<1000000?" / " + Math.ceil(totalValues/200):''}}
                 <a @click="currentPage<totalValues/200?currentPage++:''">&gt;</a>
             </div>
-            <div><a :href="query">View SPARQL query</a></div>
+            <div><a :href="query">{{ $t('message.viewQuery') }}</a></div>
         </div>
     </div>`,
     methods: {
@@ -578,7 +651,8 @@ filtersview = Vue.component('filters-view', {
             <img v-if="!filters.length" src='images/loading.gif'>
             <p v-else-if="filters[0].value=='Empty'">No filters available</p>
             <div v-else>
-                <p>There are <b>{{ totalValues<1000000?numberWithCommas(totalValues):"1 million +" }}</b> items that match this description.</p>
+            <p v-if="totalValues>0">{{ $t("message.itemCount",{count:totalValues<1000000?numberWithCommas(totalValues):"1 million +" }) }}</p>
+                <p>{{ $t("message.itemCount",{count:totalValues<1000000?numberWithCommas(totalValues):"1 million +" }) }}</p>
                 <p><b>Add a filter:</b></p> 
                 <ul>
                     <li v-for="filter in filters">
@@ -632,90 +706,241 @@ filtervalues = Vue.component('filter-values', {
     <div>
         <div class="header">
             <h2> {{ classLabel }} </h2>
-            <p v-if="!appliedFilters.length && !appliedRanges.length && !appliedQuantities.length">No filters</p>
-            <p v-for="filter in appliedFilters"><b>{{filter.filterValueLabel}}</b>: <span v-if="filter.value == 'novalue'" :style="{ fontStyle: 'italic' }">{{ filter.valueLabel }}</span><span v-else>{{ filter.valueLabel }}</span> (<a @click="removeFilter(filter)">X</a>)</p>
-            <p v-for="range in appliedRanges"><b>{{range.filterValueLabel}}</b>: <span v-if="range.valueLL == 'novalue'" :style="{ fontStyle: 'italic' }">{{ range.valueLabel }}</span><span v-else>{{ range.valueLabel }}</span> (<a @click="removeRange(range)">X</a>)</p>
-            <p v-for="quantity in appliedQuantities"><b>{{quantity.filterValueLabel}}</b>: <span v-if="quantity.valueLL == 'novalue'" :style="{ fontStyle: 'italic' }">{{ quantity.valueLabel }}</span><span v-else>{{ quantity.valueLabel }}</span> {{quantity.unit}}(<a @click="removeQuantity(quantity)">X</a>)</p>
+            <p v-for="filter in appliedFilters">
+                <b>{{filter.filterValueLabel}}</b>: 
+                <span 
+                    v-if="filter.value == 'novalue'" 
+                    :style="{ fontStyle: 'italic' }">{{ filter.valueLabel }}
+                </span>
+                <span v-else>
+                    {{ filter.valueLabel }}
+                </span> 
+                ( <a @click="removeFilter(filter)">X</a> )
+            </p>
+            <p v-for="range in appliedRanges">
+                <b>{{range.filterValueLabel}}</b>: 
+                <span
+                    v-if="range.valueLL == 'novalue'" 
+                    :style="{ fontStyle: 'italic' }">
+                    {{ range.valueLabel }}
+                </span>
+                <span v-else>
+                    {{ range.valueLabel }}
+                </span> 
+                ( <a @click="removeRange(range)">X</a> )</p>
+            <p v-for="quantity in appliedQuantities">
+                <b>{{quantity.filterValueLabel}}</b>: 
+                <span 
+                    v-if="quantity.valueLL == 'novalue'" 
+                    :style="{ fontStyle: 'italic' }">
+                    {{ quantity.valueLabel }}
+                </span>
+                <span v-else>
+                    {{ quantity.valueLabel }}
+                </span> 
+                {{quantity.unit}}
+                ( <a @click="removeQuantity(quantity)">X</a> )
+            </p>
         </div>
         <div class="content">
-            <div v-if="itemsType==''"><p>Getting values for filter <b>{{currentFilter.valueLabel}}</b> ...</p><img src='images/loading.gif'></div>
-            <p v-else-if="itemsType=='Additionalempty'">There are no additional values for the filter <b>{{currentFilter.valueLabel}}</b>.</p>
-            <p v-else-if="itemsType=='Error'">Trying to get values for the filter <b>{{currentFilter.valueLabel}}</b> took too long. <a @click="back()">Go back</a>.</p>
+            <div v-if="itemsType==''">
+                <p> {{ $t('message.gettingValues') }} <b>{{currentFilter.valueLabel}}</b> ... </p>
+                <img src='images/loading.gif'>
+            </div>
+            <div v-else-if="itemsType=='Additionalempty'">
+                <p>{{ $t('message.noAdditionalValues') }} <b>{{currentFilter.valueLabel}}</b>.</p>
+            </div>
+            <div v-else-if="itemsType=='Error'">
+                <p>{{ $t('message.filterError') }} <b>{{currentFilter.valueLabel}}</b>.</p>
+                <a @click="back()">Go back</a>.
+            </div>
             <div v-else-if="itemsType=='Item'">
-                <p v-if="totalValues!=''">There are <b>{{ totalValues<1000000?numberWithCommas(totalValues):"1 million +" }}</b> items that match this description.</p>
-                <p> Select {{ appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) !=-1?"an additional value":"a value"}} for <b>{{currentFilter.valueLabel}}</b>: </p>
+                <p v-if="totalValues!=''">{{ $t("message.itemCount",{count:totalValues<1000000?numberWithCommas(totalValues):"1 million +" }) }}</p>
+                <p> {{ $tc('message.selectValue',appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) !=-1?0:1) }} <b>{{currentFilter.valueLabel}}</b>: </p>
                 <ul>
                     <li v-if="appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) ==-1">
-                        <i><a :href="noValueURL" onclick="return false;" @click.exact="applyFilter('novalue')" @click.ctrl="window.open(noValueURL, '_blank')">No Value</i>
+                        <i>
+                            <a 
+                                :href="noValueURL" 
+                                onclick="return false;" 
+                                @click.exact="applyFilter('novalue')" 
+                                @click.ctrl="window.open(noValueURL, '_blank')">
+                                {{ $t('message.noValue') }}
+                            </a>
+                        </i>
                     </li>
                     <li v-for="(item,index) in items" v-if="index < currentPage*200 && index >= (currentPage-1)*200">
-                        <a :href="item.href" onclick="return false;" @click.exact="applyFilter(item)" @click.ctrl="window.open(item.href, '_blank')">{{item.valueLabel.value}}</a> ({{numberWithCommas(item.count.value)}} results)
+                        <a 
+                            :href="item.href" 
+                            onclick="return false;" 
+                            @click.exact="applyFilter(item)" 
+                            @click.ctrl="window.open(item.href, '_blank')">
+                            {{item.valueLabel.value}}
+                        </a> 
+                        ( {{numberWithCommas(item.count.value)}} results )
                     </li>
                 </ul>
             </div>
             <div v-else-if="itemsType=='ItemFail'">
-                <p><i>(Getting a complete set of values for this filter took too long; instead, here is a possibly incomplete set.)</i></p>
-                <p> Select a value for <b>{{currentFilter.valueLabel}}</b>:</p>
+                <p><i>({{ $t('message.filterTimeout')}})</i></p>
+                <p> {{ $tc('message.selectValue',0) }} <b>{{currentFilter.valueLabel}}</b>:</p>
                 <ul>
-                    <li><i><a :href="noValueURL" onclick="return false;" @click.exact="applyFilter('novalue')" @click.ctrl="window.open(noValueURL, '_blank')">No Value</i></li>
+                    <li>
+                        <i>
+                            <a 
+                            :href="noValueURL" 
+                            onclick="return false;" 
+                            @click.exact="applyFilter('novalue')" 
+                            @click.ctrl="window.open(noValueURL, '_blank')">
+                            {{ $t('message.noValue') }}
+                        </i>
+                    </li>
                     <li v-for="item in items">
-                        <a :href="item.href" onclick="return false;" @click.exact="applyFilter(item)" @click.ctrl="window.open(item.href, '_blank')">{{item.valueLabel.value}}</a>
+                        <a 
+                            :href="item.href" 
+                            onclick="return false;" 
+                            @click.exact="applyFilter(item)" 
+                            @click.ctrl="window.open(item.href, '_blank')">
+                            {{item.valueLabel.value}}
+                        </a>
                     </li>
                 </ul>
             </div>
             <div v-else-if="itemsType=='Time'">
-                <p v-if="totalValues!=''">There are <b>{{ totalValues<1000000?numberWithCommas(totalValues):"1 million +" }}</b> items that match this description.</p>
-                <p> Select a value for <b>{{currentFilter.valueLabel}}</b>:</p>
+                <p v-if="totalValues!=''">{{ $t("message.itemCount",{count:totalValues<1000000?numberWithCommas(totalValues):"1 million +" }) }}</p>
+                <p> {{ $tc('message.selectValue',0) }} <b>{{currentFilter.valueLabel}}</b>:</p>
                 <ul v-if="displayCount == 1">
                     <li v-if="appliedRanges.findIndex(filter => filter.filterValue == currentFilter.value) ==-1">
-                        <i><a :href="noValueURL" onclick="return false;" @click.exact="applyRange('novalue')" @click.ctrl="window.open(noValueURL, '_blank')">No Value</i>
+                        <i>
+                            <a 
+                                :href="noValueURL" 
+                                onclick="return false;" 
+                                @click.exact="applyRange('novalue')" 
+                                @click.ctrl="window.open(noValueURL, '_blank')">
+                                {{ $t('message.noValue') }}
+                            </a>
+                        </i>
                     </li>
                     <li v-for="item in items" v-if="item.numValues>0">
-                        <a :href="item.href" onclick="return false;" @click.exact="applyRange(item)" @click.ctrl="window.open(item.href, '_blank')">{{item.bucketName}} </a> ({{numberWithCommas(item.numValues)}} results)
+                        <a 
+                            :href="item.href" 
+                            onclick="return false;" 
+                            @click.exact="applyRange(item)" 
+                            @click.ctrl="window.open(item.href, '_blank')">
+                            {{item.bucketName}} 
+                        </a> 
+                        ( {{numberWithCommas(item.numValues)}} results )
                     </li>
                 </ul>
                 <ul v-if="displayCount == 0">
-                    <li><i><a :href="noValueURL" onclick="return false;" @click.exact="applyFilter('novalue')" @click.ctrl="window.open(noValueURL, '_blank')">No Value</i></li>
+                    <li>
+                        <i>
+                            <a 
+                                :href="noValueURL" 
+                                onclick="return false;" 
+                                @click.exact="applyFilter('novalue')" 
+                                @click.ctrl="window.open(noValueURL, '_blank')">
+                                {{ $t('message.noValue') }}
+                            </a>
+                        </i>
+                    </li>
                     <li v-for="item in items">
-                        <a :href="item.href" onclick="return false;" @click.exact="applyRange(item)" @click.ctrl="window.open(item.href, '_blank')">{{item.bucketName}} </a>
+                        <a 
+                            :href="item.href" 
+                            onclick="return false;" 
+                            @click.exact="applyRange(item)" 
+                            @click.ctrl="window.open(item.href, '_blank')">
+                            {{item.bucketName}} 
+                        </a>
                     </li>
                 </ul>
             </div>
             <div v-else-if="itemsType=='TimeFail'">
-                <p><i>(Getting a complete set of values for this filter took too long; instead, here is a possibly incomplete set.)</i></p>
-                <p> Select a value for <b>{{currentFilter.valueLabel}}</b>:</p>
+                <p><i>({{ $t('message.filterTimeout') }})</i></p>
+                <p> {{ $tc('message.selectValue',0) }} <b>{{currentFilter.valueLabel}}</b>:</p>
                 <ul>
-                    <li><i><a :href="noValueURL" onclick="return false;" @click.exact="applyFilter('novalue')" @click.ctrl="window.open(noValueURL, '_blank')">No Value</i></li>
+                    <li>
+                        <i>
+                            <a 
+                                :href="noValueURL" 
+                                onclick="return false;" 
+                                @click.exact="applyFilter('novalue')" 
+                                @click.ctrl="window.open(noValueURL, '_blank')">
+                                {{ $t('message.noValue') }}
+                            </a>
+                            </i>
+                        </li>
                     <li v-for="item in items">
-                        <a :href="item.href" onclick="return false;" @click.exact="applyRange(item)" @click.ctrl="window.open(item.href, '_blank')">{{item.bucketName}} </a>
+                        <a 
+                            :href="item.href" 
+                            onclick="return false;" 
+                            @click.exact="applyRange(item)" 
+                            @click.ctrl="window.open(item.href, '_blank')">
+                            {{item.bucketName}} 
+                        </a>
                     </li>
                 </ul>
             </div>
             <div v-else-if="itemsType=='Quantity'">
-                <p v-if="displayCount == 1 && totalValues!=''">There are <b>{{ totalValues<1000000?numberWithCommas(totalValues):"1 million +" }}</b> items that match this description.</p>
-                <p v-if="displayCount == 0"><i>(Getting a complete set of values for this filter took too long; instead, here is a possibly incomplete set.)</i></p>
-                <p> Select a value for <b>{{currentFilter.valueLabel}}</b>:</p>
+                <p v-if="displayCount == 1 && totalValues!=''">{{ $t("message.itemCount",{count:totalValues<1000000?numberWithCommas(totalValues):"1 million +" }) }}</p>
+                <p v-if="displayCount == 0"><i>({{ $t('message.filterTimeout') }})</i></p>
+                <p> {{ $tc('message.selectValue',0) }} <b>{{currentFilter.valueLabel}}</b>:</p>
                 <ul v-if="displayCount == 1">
                     <li v-if="appliedQuantities.findIndex(filter => filter.filterValue == currentFilter.value) ==-1">
-                        <i><a :href="noValueURL" onclick="return false;" @click.exact="applyQuantityRange('novalue')" @click.ctrl="window.open(noValueURL, '_blank')">No Value</i>
+                        <i>
+                            <a 
+                                :href="noValueURL" 
+                                onclick="return false;" 
+                                @click.exact="applyQuantityRange('novalue')" 
+                                @click.ctrl="window.open(noValueURL, '_blank')">
+                                {{ $t('message.noValue') }}
+                            </a>
+                        </i>
                     </li>
                     <li v-for="item in items" v-if="item.numValues>0">
-                        <a :href="item.href" onclick="return false;" @click.exact="applyQuantityRange(item)" @click.ctrl="window.open(item.href, '_blank')">{{item.bucketName}} {{item.unit}} </a> ({{numberWithCommas(item.numValues)}} results)
+                        <a 
+                            :href="item.href" 
+                            onclick="return false;" 
+                            @click.exact="applyQuantityRange(item)" 
+                            @click.ctrl="window.open(item.href, '_blank')">
+                            {{item.bucketName}} {{item.unit}} 
+                        </a> 
+                        ( {{numberWithCommas(item.numValues)}} results )
                     </li>
                 </ul>
                 <ul v-if="displayCount == 0">
-                    <li><i><a :href="noValueURL" onclick="return false;" @click.exact="applyQuantityRange('novalue')" @click.ctrl="window.open(noValueURL, '_blank'>No Value</i></li>
+                    <li>
+                        <i>
+                            <a 
+                                :href="noValueURL" 
+                                onclick="return false;" 
+                                @click.exact="applyQuantityRange('novalue')" 
+                                @click.ctrl="window.open(noValueURL, '_blank'>
+                                {{ $t('message.noValue') }}
+                            </a>
+                        </i>
+                    </li>
                     <li v-for="item in items">
-                        <a :href="item.href" onclick="return false;" @click.exact="applyQuantityRange(item)" @click.ctrl="window.open(item.href, '_blank')">{{item.bucketName}} </a>
+                        <a 
+                            :href="item.href" 
+                            onclick="return false;" 
+                            @click.exact="applyQuantityRange(item)" 
+                            @click.ctrl="window.open(item.href, '_blank')">
+                            {{item.bucketName}} 
+                        </a>
                     </li>
                 </ul>
             </div>
             <div v-if="items.length>200 && itemsType=='Item'" style="text-align: center">
                 <a @click="currentPage>1?currentPage--:''">&lt;</a>
-                <input v-model.lazy="currentPage" type="text" style="margin-bottom: 15px;width: 48px;text-align: center"> {{items.length<1000000?" / " + Math.ceil(items.length/200):''}}
+                <input 
+                    v-model.lazy="currentPage" 
+                    type="text" 
+                    style="margin-bottom: 15px;width: 48px;text-align: center"> 
+                {{items.length<1000000?" / " + Math.ceil(items.length/200):''}}
                 <a @click="currentPage<items.length/200?currentPage++:''">&gt;</a>
             </div>
-            <a :href="query">View SPARQL query</a>
+            <a :href="query">{{ $t('message.viewQuery') }}</a>
         </div>
     </div>`,
     methods: {
@@ -1591,22 +1816,37 @@ subclass = Vue.component('subclass-view', {
     <div>
         <div class="header">
             <h2> {{ classLabel }} </h2>
-            <p v-if="!appliedFilters.length && !appliedRanges.length && !appliedQuantities">No filters</p>
             <ul>
-                <li v-for="filter in appliedFilters"><b>{{filter.filterValueLabel}}</b>: <span v-if="filter.value == 'novalue'" :style="{ fontStyle: 'italic' }">{{ filter.valueLabel }}</span><span v-else>{{ filter.valueLabel }}</span></li>
-                <li v-for="range in appliedRanges"><b>{{range.filterValueLabel}}</b>: <span v-if="range.valueLL == 'novalue'" :style="{ fontStyle: 'italic' }">{{ range.valueLabel }}</span><span v-else>{{ range.valueLabel }}</span></li>
-                <li v-for="quantity in appliedQuantities"><b>{{quantity.filterValueLabel}}</b>: <span v-if="quantity.valueLL == 'novalue'" :style="{ fontStyle: 'italic' }">{{ quantity.valueLabel }}</span><span v-else>{{ quantity.valueLabel }}</span></li>
+                <li v-for="filter in appliedFilters"><b>{{filter.filterValueLabel}}</b>: 
+                    <span v-if="filter.value == 'novalue'" :style="{ fontStyle: 'italic' }">{{ filter.valueLabel }}</span>
+                    <span v-else>{{ filter.valueLabel }}</span>
+                </li>
+                <li v-for="range in appliedRanges"><b>{{range.filterValueLabel}}</b>: 
+                    <span v-if="range.valueLL == 'novalue'" :style="{ fontStyle: 'italic' }">{{ range.valueLabel }}</span>
+                    <span v-else>{{ range.valueLabel }}</span>
+                </li>
+                <li v-for="quantity in appliedQuantities"><b>{{quantity.filterValueLabel}}</b>: 
+                    <span v-if="quantity.valueLL == 'novalue'" :style="{ fontStyle: 'italic' }">{{ quantity.valueLabel }}</span>
+                    <span v-else>{{ quantity.valueLabel }}</span>
+                </li>
             </ul>
         </div>
-        <p><i>(Note: if you change the class, you will lose the current set of filters.)</i></p>
-        <p><b>Change from "{{ classLabel }}" to a more specific class:</b><p>
+        <p><i>{{ $t('message.changeClassNote') }}</i></p>
+        <p><b>{{ $t('message.specificClass') }}:</b><p>
         <div class="content">
             <img v-if="!items.length" src='images/loading.gif'>
-            <p v-else-if="items[0].value=='Empty'">No items match this description.</p>
+            <p v-else-if="items[0].value=='Empty'">{{ $t('message.noItems') }}</p>
             <div v-else>
                 <ul>
                     <li v-for="item in items">
-                        <a :href="pathFor(item)" onclick="return false;" @click.exact="updateClass(item)" @click.ctrl="window.open(pathFor(item), '_blank')">{{item.valueLabel.value}}</a> <span v-if="displayCount==0">({{item.count.value}} results)</span>
+                        <a 
+                            :href="pathFor(item)" 
+                            onclick="return false;" 
+                            @click.exact="updateClass(item)" 
+                            @click.ctrl="window.open(pathFor(item), '_blank')">
+                            {{item.valueLabel.value}}
+                        </a> 
+                        <span v-if="displayCount==0">( {{item.count.value}} results )</span>
                     </li>
                 </ul>
             </div>
@@ -1674,22 +1914,40 @@ superclass = Vue.component('superclass-view', {
     <div>
         <div class="header">
             <h2> {{ classLabel }} </h2>
-            <p v-if="!appliedFilters.length && !appliedRanges.length && !appliedQuantities">No filters</p>
             <ul>
-                <li v-for="filter in appliedFilters"><b>{{filter.filterValueLabel}}</b>: <span v-if="filter.value == 'novalue'" :style="{ fontStyle: 'italic' }">{{ filter.valueLabel }}</span><span v-else>{{ filter.valueLabel }}</span></li>
-                <li v-for="range in appliedRanges"><b>{{range.filterValueLabel}}</b>: <span v-if="range.valueLL == 'novalue'" :style="{ fontStyle: 'italic' }">{{ range.valueLabel }}</span><span v-else>{{ range.valueLabel }}</span></li>
-                <li v-for="quantity in appliedQuantities"><b>{{quantity.filterValueLabel}}</b>: <span v-if="quantity.valueLL == 'novalue'" :style="{ fontStyle: 'italic' }">{{ quantity.valueLabel }}</span><span v-else>{{ quantity.valueLabel }}</span></li>
+                <li v-for="filter in appliedFilters">
+                    <b>{{filter.filterValueLabel}}</b>: 
+                    <span v-if="filter.value == 'novalue'" :style="{ fontStyle: 'italic' }">{{ filter.valueLabel }}</span>
+                    <span v-else>{{ filter.valueLabel }}</span>
+                </li>
+                <li v-for="range in appliedRanges">
+                    <b>{{range.filterValueLabel}}</b>: 
+                    <span v-if="range.valueLL == 'novalue'" :style="{ fontStyle: 'italic' }">{{ range.valueLabel }}</span>
+                    <span v-else>{{ range.valueLabel }}</span>
+                </li>
+                <li v-for="quantity in appliedQuantities">
+                    <b>{{quantity.filterValueLabel}}</b>: 
+                    <span v-if="quantity.valueLL == 'novalue'" :style="{ fontStyle: 'italic' }">{{ quantity.valueLabel }}</span>
+                    <span v-else>{{ quantity.valueLabel }}</span>
+                </li>
             </ul>
         </div>
-        <p><i>(Note: if you change the class, you will lose the current set of filters.)</i></p>
-        <p><b>Change from "{{ classLabel }}" to a more general class:</b><p>
+        <p><i>({{ $t('message.changeClassNote')}}.)</i></p>
+        <p><b>{{ $t('generalClass') }}:</b><p>
         <div class="content">
             <img v-if="!items.length" src='images/loading.gif'>
-            <p v-else-if="items[0].value=='Empty'">No items match this description.</p>
+            <p v-else-if="items[0].value=='Empty'">{{ $t('noItems') }}</p>
             <div v-else>
                 <ul>
                     <li v-for="item in items">
-                        <a :href="pathFor(item)" onclick="return false;" @click.exact="updateClass(item)" @click.ctrl="window.open(pathFor(item), '_blank')">{{item.valueLabel.value}}</a> <span v-if="displayCount==0">({{item.count.value}} results)</span>
+                        <a 
+                            :href="pathFor(item)" 
+                            onclick="return false;" 
+                            @click.exact="updateClass(item)" 
+                            @click.ctrl="window.open(pathFor(item), '_blank')">
+                            {{item.valueLabel.value}}
+                        </a> 
+                        <span v-if="displayCount==0">( {{item.count.value}} results )</span>
                     </li>
                 </ul>
             </div>
@@ -1749,7 +2007,7 @@ superclass = Vue.component('superclass-view', {
 })
 
 var app = new Vue({
-    el: '#app',
+    i18n: i18n,
     components: {
         classfilter, viewallitems, filtersview, filtervalues
     },
@@ -2425,4 +2683,4 @@ var app = new Vue({
             );
         }
     }
-})
+}).$mount('#app')
