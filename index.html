@@ -1,8 +1,6 @@
 <html>
-
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Wikidata Walkabout</title>
     <link rel="stylesheet" href="css/index.css">
 </head>
 
@@ -41,6 +39,9 @@
             <filters-view 
                 @change-page="updatePage"
                 @update-filter="updateFilter"
+                @remove-filter="removeFilter"
+                @remove-range="removeRange"
+                @remove-quantity="removeQuantity"  
                 v-if="view =='filters'"
                 :total-values="totalValues"
                 :class-label="classLabel"
@@ -98,6 +99,7 @@
     <script src="./config.js"></script>
     <script src="src/translate.js"></script>
     <script src="src/index.js"></script>
+    <script src="src/components.js"></script>
 </body>
 
 </html>

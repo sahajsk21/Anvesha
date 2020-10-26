@@ -15,12 +15,13 @@ var messages = {
             gettingValues: "Getting values for filter",
             noAdditionalValues: "There are no additional values for the filter",
             filterError: "Trying to get values took too long for the filter",
-            filterTimeout: "Getting a complete set of values for this filter took too long; instead, here is a possibly incomplete set.",
+            filterTimeout: "(Getting a complete set of values for this filter took too long; instead, here is a possibly incomplete set.)",
             selectValue: "Select a value for | Select an additional value for",
             noValue: "No Value",
-            changeClassNote: "Note: if you change the class, you will lose the current set of filters.",
-            specificClass: "Change to a more specific class",
-            generalClass: "Change to a more general class"
+            changeClassNote: "(Note: if you change the class, you will lose the current set of filters.)",
+            specificClass: "Change to a more specific class:",
+            generalClass: "Change to a more general class:",
+            goBack: "Go back"
         }
     },
     fr: {
@@ -37,12 +38,13 @@ var messages = {
             gettingValues: "Obtenir des valeurs pour le filtre",
             noAdditionalValues: "Il n'y a pas de valeurs supplémentaires pour le filtre",
             filterError: "Essayer d'obtenir des valeurs a pris trop de temps pour le filtre",
-            filterTimeout: "L'obtention d'un ensemble complet de valeurs pour ce filtre a pris trop de temps; à la place, voici un ensemble éventuellement incomplet.",
+            filterTimeout: "(L'obtention d'un ensemble complet de valeurs pour ce filtre a pris trop de temps; à la place, voici un ensemble éventuellement incomplet.)",
             selectValue: "Sélectionnez une valeur pour | Sélectionnez une valeur supplémentaire pour",
             noValue: "Aucune valeur",
-            changeClassNote: "Remarque: si vous changez de classe, vous perdrez l'ensemble de filtres actuel.",
-            specificClass: "Passer à une classe plus spécifique",
-            generalClass: "Passer à une classe plus générale"
+            changeClassNote: "(Remarque: si vous changez de classe, vous perdrez l'ensemble de filtres actuel.)",
+            specificClass: "Passer à une classe plus spécifique:",
+            generalClass: "Passer à une classe plus générale:",
+            goBack: "Retourner"
         }
     }
 }
@@ -50,6 +52,7 @@ var messages = {
 Vue.use(VueI18n)
 
 var i18n = new VueI18n({
-    locale: urlParams.get("lang") ? urlParams.get("lang") : config["defaultLanguage"],
+    locale: urlParams.get("lang") ? urlParams.get("lang") : (typeof DEFAULT_LANGUAGES != "undefined" ? DEFAULT_LANGUAGES[0] : "en"),
+    fallbackLocale: typeof DEFAULT_LANGUAGES != "undefined" ? DEFAULT_LANGUAGES : "en",
     messages: messages
 })
