@@ -15,8 +15,7 @@ body {
 
 .container{
     width: auto;
-    padding-right: 15px;
-    padding-left: 15px;
+    padding: 0px 8%;
     margin-right: auto;
     margin-left: auto;
     max-width: 1140px;
@@ -24,7 +23,7 @@ body {
 
 a {
     cursor: pointer;
-    color: #6b34ff;
+    color: #6B34FF;
     text-decoration: none;
     background-color: transparent;
 }
@@ -49,7 +48,7 @@ a:hover {
     float: left;
     height:18px;
     border-radius: 5px;
-    border: 1px solid;
+    border: 1px solid #6B34FF;
     padding: 1%;
 }
 
@@ -58,7 +57,8 @@ a:hover {
     width: 98%;
     padding:0% 1%;
     border-top: none;
-    border: 1px #e9e9e9 solid;
+    border: 1px #6B34FF solid;
+    border-top: none;
     border-radius: 5px;
     background-color: #f1f0fe;
 }
@@ -68,16 +68,18 @@ a:hover {
   float:left;
   padding: 2px 2px; 
   font-size: 1em;
+  color: black;
 }
 
 .searchOption:hover{
-  background-color: #F1F1F1;
+  background-color: #6B34FF;
+  color: white;
   text-decoration: none;
 }
 
 .classInput:focus {
     outline: none;
-    box-shadow: 1px 1px #6b34ff;
+    box-shadow: 1px 1px #6B34FF;
 }
 
 /* Filter Section */
@@ -95,7 +97,8 @@ a:hover {
 .filter-box{
     margin-bottom: 20px;
     background-color: #f1f0fe;
-    border: 1px solid #e7e7e7;
+    border: 1px solid #6B34FF;
+    border-radius: 5px;
     padding: 10px;
 }
 
@@ -117,7 +120,7 @@ a:hover {
 }
 
 .topnav a:hover {
-  color: #6c63f6;
+  color: #6B34FF;
 }
 
 .topnav-right {
@@ -149,7 +152,12 @@ a:hover {
 }
 
 .dropbtn:hover {
-  background-color: #6b34ff;
+  background-color: #6B34FF;
+  color: white;
+}
+
+.dropbtn:focus {
+  background-color: #6B34FF;
   color: white;
 }
 
@@ -157,7 +165,9 @@ a:hover {
   display: none;
   position: absolute;
   background-color: #f1f0fe;
-  border: 1px #e9e9e9 solid;
+  border: 1px #6b34ff solid;
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.2);
   min-width: 120px;
   right: 20px;
   padding-bottom: 10px;
@@ -178,17 +188,18 @@ a:hover {
 }
 
 .dropdown-content a:hover {
-  background-color: #6c63f6;
+  background-color: #6B34FF;
   color: white;
 }
 
 .active {
   background-color: white;
-  color: #6c63f6!important;
+  color: #6B34FF!important;
 }
 
 .active:hover {
-  background-color: #6c63f6!important;
+  background-color: #6B34FF!important;
+  color:white!important
 }
 
 .notActive {
