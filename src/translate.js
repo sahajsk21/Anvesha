@@ -21,7 +21,8 @@ var messages = {
             changeClassNote: "(Note: if you change the class, you will lose the current set of filters.)",
             specificClass: "Change to a more specific class:",
             generalClass: "Change to a more general class:",
-            goBack: "Go back"
+            viewList: "View list of items",
+            results: "({count} results)"
         }
     },
     fr: {
@@ -44,7 +45,8 @@ var messages = {
             changeClassNote: "(Remarque: si vous changez de classe, vous perdrez l'ensemble de filtres actuel.)",
             specificClass: "Passer à une classe plus spécifique:",
             generalClass: "Passer à une classe plus générale:",
-            goBack: "Retourner"
+            viewList: "Afficher la liste des articles",
+            results: "({count} résultats)"
         }
     }
 }

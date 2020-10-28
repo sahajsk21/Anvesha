@@ -1,4 +1,5 @@
 // Vue components
+
 topnav = Vue.component('top-nav', {
     data() {
         return {
@@ -75,13 +76,20 @@ topnav = Vue.component('top-nav', {
     },
     template: `
         <div class="topnav">
-            <a :href="mainPagePath()" onclick="return false;" @click.exact="changePage('class-filter')" @click.ctrl="window.open(mainPagePath(), '_blank')">{{ siteName }}</a>
+            <a 
+                :href="mainPagePath()" 
+                onclick="return false;" 
+                @click.exact="changePage('class-filter')" 
+                @click.ctrl="window.open(mainPagePath(), '_blank')">
+                {{ siteName }}
+                <img :src="LOGO" class="logo">
+            </a>
             <div class="topnav-right">
                 <a href="/about">{{ $t("message.about") }}</a>
                 <div class="dropdown">
                     <button class="dropbtn" @click="toggleDropdown">{{ urlParams.get('lang')?urlParams.get('lang'): (defaultLanguages[0]?defaultLanguages[0]:'en') }} <span style="font-size: 0.5em;">&#x25BC;</span></button>
                     <div class="dropdown-content" v-bind:style="{ display: dropdownDisplay }">
-                        <a v-for="lang in languages" v-html="lang[1]" @click="changeLanguage(lang[0])">{{lang[1]}}</a>
+                        <a v-for="language in languages" v-html="language[1]" @click="changeLanguage(language[0])" :class="lang.split(',')[0] == language[0] ? 'active' : 'notActive' ">{{ language[0] }}</a>
                     </div>
                 </div>
             </div>
@@ -192,7 +200,6 @@ classfilter = Vue.component('class-filter', {
                 "  VALUES ?value { " + suggestedClasses + " }\n" +
                 "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
                 "}";
-            console.log(sparqlQuery)
             const fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
             axios.get(fullUrl)
                 .then(response => {
@@ -336,7 +343,7 @@ viewallitems = Vue.component('view-all-items', {
     template: `
     <div>
         <div class="header">
-            <h2> 
+            <p class="heading"> 
                 {{ classLabel }} 
                 <a 
                     title="superclass" 
@@ -356,7 +363,7 @@ viewallitems = Vue.component('view-all-items', {
                     @click.ctrl="window.open(pathForView('subclass'))">
                     &darr;
                 </a>
-            </h2>
+            </p>
             <div>
                 <p v-for="filter in appliedFilters">
                     <b>{{filter.filterValueLabel}}</b>: 
@@ -571,7 +578,7 @@ filtersview = Vue.component('filters-view', {
     template: `
     <div>
         <div class="header">
-            <h2> 
+            <p class="heading"> 
                 {{ classLabel }} 
                 <a 
                     title="superclass" 
@@ -591,7 +598,7 @@ filtersview = Vue.component('filters-view', {
                     @click.ctrl="window.open(pathForView('subclass'))">
                     &darr;
                 </a>
-            </h2>
+            </p>
             <div>
                 <p v-for="filter in appliedFilters">
                     <b>{{filter.filterValueLabel}}</b>: 
@@ -692,7 +699,7 @@ filtervalues = Vue.component('filter-values', {
     template: `
     <div>
         <div class="header">
-            <h2> 
+            <p class="heading"> 
                 {{ classLabel }} 
                 <a 
                     title="superclass" 
@@ -712,7 +719,7 @@ filtervalues = Vue.component('filter-values', {
                     @click.ctrl="window.open(pathForView('subclass'))">
                     &darr;
                 </a>
-            </h2>
+            </p>
             <p v-for="filter in appliedFilters">
                 <b>{{filter.filterValueLabel}}</b>: 
                 <span 
@@ -751,21 +758,21 @@ filtervalues = Vue.component('filter-values', {
         </div>
         <div class="content">
             <div v-if="itemsType==''">
-                <a @click="changePage('view-all-items')">{{ $t('message.goBack') }}</a>
+                <a @click="changePage('view-all-items')">{{ $t('message.viewList') }}</a>
                 <p> {{ $t('message.gettingValues') }} <b>{{currentFilter.valueLabel}}</b> ... </p>
                 <img src='images/loading.gif'>
             </div>
             <div v-else-if="itemsType=='Additionalempty'">
-                <a @click="changePage('view-all-items')">{{ $t('message.goBack') }}</a>
+                <a @click="changePage('view-all-items')">{{ $t('message.viewList') }}</a>
                 <p>{{ $t('message.noAdditionalValues') }} <b>{{currentFilter.valueLabel}}</b>.</p>
             </div>
             <div v-else-if="itemsType=='Error'">
-                <a @click="changePage('view-all-items')">{{ $t('message.goBack') }}</a>
+                <a @click="changePage('view-all-items')">{{ $t('message.viewList') }}</a>
                 <p>{{ $t('message.filterError') }} <b>{{currentFilter.valueLabel}}</b>.</p>
             </div>
             <div v-else-if="itemsType=='Item'">
                 <p v-if="totalValues!=''">{{ $t("message.itemCount",{count:totalValues<1000000?numberWithCommas(totalValues):"1 million +" }) }}</p>
-                <a @click="changePage('view-all-items')">{{ $t('message.goBack') }}</a>
+                <a @click="changePage('view-all-items')">{{ $t('message.viewList') }}</a>
                 <p> {{ $tc('message.selectValue',appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) !=-1?0:1) }} <b>{{currentFilter.valueLabel}}</b>:</p>
                 <div v-if="items.length>resultsPerPage && itemsType=='Item'" style="text-align: center">
                     <a @click="currentPage>1?currentPage--:''">&lt;</a>
@@ -796,13 +803,15 @@ filtervalues = Vue.component('filter-values', {
                             @click.ctrl="window.open(item.href, '_blank')">
                             {{item.valueLabel.value}}
                         </a> 
-                        ( {{ numberWithCommas(item.count.value) }} results )
+                        <span class="result-count">
+                            {{ $t('message.results', {count:numberWithCommas(item.count.value)}) }}
+                        <span>
                     </li>
                 </ul>
             </div>
             <div v-else-if="itemsType=='ItemFail'">
                 <p><i>{{ $t('message.filterTimeout') }}</i></p>
-                <a @click="changePage('view-all-items')">{{ $t('message.goBack') }}</a>
+                <a @click="changePage('view-all-items')">{{ $t('message.viewList') }}</a>
                 <p> {{ $tc('message.selectValue',0) }} <b>{{ currentFilter.valueLabel }}</b>:</p>
                 <ul>
                     <li>
@@ -828,7 +837,7 @@ filtervalues = Vue.component('filter-values', {
             </div>
             <div v-else-if="itemsType=='Time'">
                 <p v-if="totalValues!=''">{{ $t("message.itemCount",{count:totalValues<1000000?numberWithCommas(totalValues):"1 million +" }) }}</p>
-                <a @click="changePage('view-all-items')">{{ $t('message.goBack') }}</a>
+                <a @click="changePage('view-all-items')">{{ $t('message.viewList') }}</a>
                 <p> {{ $tc('message.selectValue',0) }} <b>{{currentFilter.valueLabel}}</b>:</p>
                 <ul v-if="displayCount == 1">
                     <li v-if="appliedRanges.findIndex(filter => filter.filterValue == currentFilter.value) ==-1">
@@ -850,7 +859,9 @@ filtervalues = Vue.component('filter-values', {
                             @click.ctrl="window.open(item.href, '_blank')">
                             {{item.bucketName}} 
                         </a> 
-                        ( {{numberWithCommas(item.numValues)}} results )
+                        <span class="result-count">
+                            {{ $t('message.results', {count:numberWithCommas(item.numValues)}) }}
+                        <span>
                     </li>
                 </ul>
                 <ul v-if="displayCount == 0">
@@ -878,7 +889,7 @@ filtervalues = Vue.component('filter-values', {
             </div>
             <div v-else-if="itemsType=='TimeFail'">
                 <p><i>{{ $t('message.filterTimeout') }}</i></p>
-                <a @click="changePage('view-all-items')">{{ $t('message.goBack') }}</a>
+                <a @click="changePage('view-all-items')">{{ $t('message.viewList') }}</a>
                 <p> {{ $tc('message.selectValue',0) }} <b>{{currentFilter.valueLabel}}</b>:</p>
                 <ul>
                     <li>
@@ -906,7 +917,7 @@ filtervalues = Vue.component('filter-values', {
             <div v-else-if="itemsType=='Quantity'">
                 <p v-if="displayCount == 1 && totalValues!=''">{{ $t("message.itemCount",{count:totalValues<1000000?numberWithCommas(totalValues):"1 million +" }) }}</p>
                 <p v-if="displayCount == 0"><i>{{ $t('message.filterTimeout') }}</i></p>
-                <a @click="changePage('view-all-items')">{{ $t('message.goBack') }}</a>
+                <a @click="changePage('view-all-items')">{{ $t('message.viewList') }}</a>
                 <p> {{ $tc('message.selectValue',0) }} <b>{{currentFilter.valueLabel}}</b>:</p>
                 <ul v-if="displayCount == 1">
                     <li v-if="appliedQuantities.findIndex(filter => filter.filterValue == currentFilter.value) ==-1">
@@ -928,7 +939,9 @@ filtervalues = Vue.component('filter-values', {
                             @click.ctrl="window.open(item.href, '_blank')">
                             {{item.bucketName}} {{item.unit}} 
                         </a> 
-                        ( {{numberWithCommas(item.numValues)}} results )
+                        <span class="result-count">
+                            {{ $t('message.results', {count:numberWithCommas(item.numValues)}) }}
+                        <span>
                     </li>
                 </ul>
                 <ul v-if="displayCount == 0">
@@ -1495,9 +1508,9 @@ filtervalues = Vue.component('filter-values', {
                                     var q = window.location.search;
                                     parameters = new URLSearchParams(q)
                                     parameters.delete("cf")
-                                    if (arr[i].size == 1) parameters.set("r." + this.currentFilter.value, (new Date(this.parseDate(arr[i].bucketLL))).getFullYear() + "~" + (new Date(this.parseDate(arr[i].bucketUL))).getFullYear())
-                                    else if (arr[i].size == 2) parameters.set("r." + this.currentFilter.value, (new Date(this.parseDate(arr[i].bucketLL))).getFullYear())
-                                    else if (arr[i].size == 3) parameters.set("r." + this.currentFilter.value, (new Date(this.parseDate(arr[i].bucketLL))).getFullYear() + "-" + (Number((new Date(arr[i].bucketLL)).getMonth()) + 1))
+                                    if (arr[i].size == 1) parameters.set("r." + this.currentFilter.value, (new Date(this.parseDate(arr[i].bucketLL))).getUTCFullYear() + "~" + (new Date(this.parseDate(arr[i].bucketUL))).getUTCFullYear())
+                                    else if (arr[i].size == 2) parameters.set("r." + this.currentFilter.value, (new Date(this.parseDate(arr[i].bucketLL))).getUTCFullYear())
+                                    else if (arr[i].size == 3) parameters.set("r." + this.currentFilter.value, (new Date(this.parseDate(arr[i].bucketLL))).getUTCFullYear() + "-" + (Number((new Date(arr[i].bucketLL)).getUTCMonth()) + 1))
                                     else if (arr[i].size == 4) parameters.set("r." + this.currentFilter.value, arr[i].bucketLL)
                                     else if (arr[i].size == 5) parameters.set("r." + this.currentFilter.value, arr[i].bucketLL)
                                     arr[i]['href'] = window.location.pathname + "?" + parameters
@@ -1533,9 +1546,9 @@ filtervalues = Vue.component('filter-values', {
                                             var q = window.location.search;
                                             parameters = new URLSearchParams(q)
                                             parameters.delete("cf")
-                                            if (arr[i].size == 1) parameters.set("r." + this.currentFilter.value, (new Date(this.parseDate(arr[i].bucketLL))).getFullYear() + "~" + (new Date(this.parseDate(arr[i].bucketUL))).getFullYear())
-                                            else if (arr[i].size == 2) parameters.set("r." + this.currentFilter.value, (new Date(this.parseDate(arr[i].bucketLL))).getFullYear())
-                                            else if (arr[i].size == 3) parameters.set("r." + this.currentFilter.value, (new Date(this.parseDate(arr[i].bucketLL))).getFullYear() + "-" + (Number((new Date(arr[i].bucketLL)).getMonth()) + 1))
+                                            if (arr[i].size == 1) parameters.set("r." + this.currentFilter.value, (new Date(this.parseDate(arr[i].bucketLL))).getUTCFullYear() + "~" + (new Date(this.parseDate(arr[i].bucketUL))).getUTCFullYear())
+                                            else if (arr[i].size == 2) parameters.set("r." + this.currentFilter.value, (new Date(this.parseDate(arr[i].bucketLL))).getUTCFullYear())
+                                            else if (arr[i].size == 3) parameters.set("r." + this.currentFilter.value, (new Date(this.parseDate(arr[i].bucketLL))).getUTCFullYear() + "-" + (Number((new Date(arr[i].bucketLL)).getUTCMonth()) + 1))
                                             else if (arr[i].size == 4) parameters.set("r." + this.currentFilter.value, arr[i].bucketLL)
                                             else if (arr[i].size == 5) parameters.set("r." + this.currentFilter.value, arr[i].bucketLL)
                                             arr[i]['href'] = window.location.pathname + "?" + parameters
@@ -1837,7 +1850,7 @@ subclass = Vue.component('subclass-view', {
     template: `
     <div>
         <div class="header">
-            <h2>
+            <p class="heading">
                 {{ classLabel }} 
                 <a 
                     title="superclass" 
@@ -1848,7 +1861,7 @@ subclass = Vue.component('subclass-view', {
                     @click.ctrl="window.open(pathForView('superclass'))">
                     &uarr;
                 </a>
-            </h2>
+            </p>
             <ul>
                 <li v-for="filter in appliedFilters"><b>{{filter.filterValueLabel}}</b>: 
                     <span v-if="filter.value == 'novalue'" :style="{ fontStyle: 'italic' }">{{ filter.valueLabel }}</span>
@@ -1865,7 +1878,7 @@ subclass = Vue.component('subclass-view', {
             </ul>
         </div>
         <p><i>{{ $t('message.changeClassNote') }}</i></p>
-        <a @click="changePage('view-all-items')">{{ $t('message.goBack') }}</a>
+        <a @click="changePage('view-all-items')">{{ $t('message.viewList') }}</a>
         <p><b>{{ $t('message.specificClass') }}</b><p>
         <div class="content">
             <img v-if="!items.length" src='images/loading.gif'>
@@ -1880,7 +1893,7 @@ subclass = Vue.component('subclass-view', {
                             @click.ctrl="window.open(pathFor(item), '_blank')">
                             {{item.valueLabel.value}}
                         </a> 
-                        <span v-if="displayCount==0">( {{item.count.value}} results )</span>
+                        <span v-if="displayCount==0">{{ $t('message.results',{count:item.count.value)} }}</span>
                     </li>
                 </ul>
             </div>
@@ -1950,7 +1963,7 @@ superclass = Vue.component('superclass-view', {
     template: `
     <div>
         <div class="header">
-            <h2> 
+            <p class="heading"> 
                 {{ classLabel }}
                 <a 
                     title="subclass" 
@@ -1961,7 +1974,7 @@ superclass = Vue.component('superclass-view', {
                     @click.ctrl="window.open(pathForView('subclass'))">
                     &darr;
                 </a>
-            </h2>
+            </p>
             <ul>
                 <li v-for="filter in appliedFilters">
                     <b>{{filter.filterValueLabel}}</b>: 
@@ -1981,7 +1994,7 @@ superclass = Vue.component('superclass-view', {
             </ul>
         </div>
         <p><i>{{ $t('message.changeClassNote') }}</i></p>
-        <a @click="changePage('view-all-items')">{{ $t('message.goBack') }}</a>
+        <a @click="changePage('view-all-items')">{{ $t('message.viewList') }}</a>
         <p><b>{{ $t('message.generalClass') }}</b><p>
         <div class="content">
             <img v-if="!items.length" src='images/loading.gif'>
@@ -1996,7 +2009,7 @@ superclass = Vue.component('superclass-view', {
                             @click.ctrl="window.open(pathFor(item), '_blank')">
                             {{item.valueLabel.value}}
                         </a> 
-                        <span v-if="displayCount==0">( {{item.count.value}} results )</span>
+                        <span v-if="displayCount==0">{{ $t('message.results',{count:item.count.value}) }}</span>
                     </li>
                 </ul>
             </div>
@@ -2214,9 +2227,9 @@ var app = new Vue({
                         valueLL: range.bucketLL,
                         valueUL: range.bucketUL
                     }
-                    if (range.size == 1) urlParams.set("r." + this.currentFilter.value, (new Date(this.parseDate(range.bucketLL))).getFullYear() + "~" + (new Date(this.parseDate(range.bucketUL))).getFullYear())
-                    else if (range.size == 2) urlParams.set("r." + this.currentFilter.value, (new Date(this.parseDate(range.bucketLL))).getFullYear())
-                    else if (range.size == 3) urlParams.set("r." + this.currentFilter.value, (new Date(this.parseDate(range.bucketLL))).getFullYear() + "-" + (Number((new Date(range.bucketLL)).getMonth()) + 1))
+                    if (range.size == 1) urlParams.set("r." + this.currentFilter.value, (new Date(this.parseDate(range.bucketLL))).getUTCFullYear() + "~" + (new Date(this.parseDate(range.bucketUL))).getUTCFullYear())
+                    else if (range.size == 2) urlParams.set("r." + this.currentFilter.value, (new Date(this.parseDate(range.bucketLL))).getUTCFullYear())
+                    else if (range.size == 3) urlParams.set("r." + this.currentFilter.value, (new Date(this.parseDate(range.bucketLL))).getUTCFullYear() + "-" + (Number((new Date(range.bucketLL)).getUTCMonth()) + 1))
                     else if (range.size == 4) urlParams.set("r." + this.currentFilter.value, range.bucketLL)
                     else if (range.size == 5) urlParams.set("r." + this.currentFilter.value, range.bucketLL)
 
@@ -2241,9 +2254,9 @@ var app = new Vue({
                         valueLL: range.bucketLL,
                         valueUL: range.bucketUL
                     });
-                    if (range.size == 1) urlParams.set("r." + this.currentFilter.value, (new Date(this.parseDate(range.bucketLL))).getFullYear() + "~" + (new Date(this.parseDate(range.bucketUL))).getFullYear())
-                    else if (range.size == 2) urlParams.set("r." + this.currentFilter.value, (new Date(this.parseDate(range.bucketLL))).getFullYear())
-                    else if (range.size == 3) urlParams.set("r." + this.currentFilter.value, (new Date(this.parseDate(range.bucketLL))).getFullYear() + "~" + (Number((new Date(range.bucketLL)).getMonth()) + 1))
+                    if (range.size == 1) urlParams.set("r." + this.currentFilter.value, (new Date(this.parseDate(range.bucketLL))).getUTCFullYear() + "~" + (new Date(this.parseDate(range.bucketUL))).getUTCFullYear())
+                    else if (range.size == 2) urlParams.set("r." + this.currentFilter.value, (new Date(this.parseDate(range.bucketLL))).getUTCFullYear())
+                    else if (range.size == 3) urlParams.set("r." + this.currentFilter.value, (new Date(this.parseDate(range.bucketLL))).getUTCFullYear() + "~" + (Number((new Date(range.bucketLL)).getUTCMonth()) + 1))
                     else if (range.size == 4) urlParams.set("r." + this.currentFilter.value, range.bucketLL)
                     else if (range.size == 5) urlParams.set("r." + this.currentFilter.value, range.bucketLL)
                 }

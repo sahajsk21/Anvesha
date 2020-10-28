@@ -1,13 +1,13 @@
 // Configuration variables
 siteName = typeof SITE_NAME != "undefined" ? SITE_NAME:"Anvesha";
-defaultLanguages = typeof DEFAULT_LANGUAGES != "undefined" ? DEFAULT_LANGUAGES : [];
+defaultLanguages = typeof PREFERRED_LANGUAGES != "undefined" ? PREFERRED_LANGUAGES : [];
 resultsPerPage = typeof RESULTS_PER_PAGE != "undefined" ? RESULTS_PER_PAGE : 200;
 favicon = typeof FAVICON != "undefined" ? FAVICON : "";
 logo = typeof LOGO != "undefined" ? LOGO : "";
-classes = typeof CLASSES != "undefined" ? CLASSES.map(function(v){return {value:v}}) : [];
+classes = typeof SUGGESTED_CLASSES != "undefined" ? SUGGESTED_CLASSES.map(function(v){return {value:v}}) : [];
 sparqlEndpoint = typeof SPARQL_ENDPOINT != "undefined" ? SPARQL_ENDPOINT : "https://query.wikidata.org/sparql?query=";
-instanceOf = typeof INSTANCE_OF != "undefined" ? INSTANCE_OF : "P31";
-propertiesForThisType = typeof PROPERTIES_FOR_THIS_TYPE != "undefined" ? PROPERTIES_FOR_THIS_TYPE : "P1963";
+instanceOf = typeof INSTANCE_OF_PID != "undefined" ? INSTANCE_OF_PID : "P31";
+propertiesForThisType = typeof PROPERTIES_FOR_THIS_TYPE_PID != "undefined" ? PROPERTIES_FOR_THIS_TYPE_PID : "P1963";
 
 // Website name
 document.title = siteName
