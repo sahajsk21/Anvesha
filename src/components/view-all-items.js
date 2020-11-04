@@ -14,7 +14,7 @@ results = Vue.component('items-results', {
         <div v-else>
                 <ul>
                     <li v-for="item in items">
-                        <a :href="item.value.value">{{item.valueLabel.value}}</a>
+                        <a :href="linkToWikidata(item.value.value)">{{item.valueLabel.value}}</a>
                     </li>
                 </ul>
         </div>
@@ -42,6 +42,9 @@ results = Vue.component('items-results', {
             else if (yearDifference <= 1e6) return 3
             else if (yearDifference <= 1e8) return 1
             return 0
+        },
+        linkToWikidata(item){
+            return "https://www.wikidata.org/wiki/" + item.split('/').slice(-1)[0] + "?uselang=" +  (urlParams.get('lang') ? urlParams.get('lang') : (defaultLanguages[0] ? defaultLanguages[0] : 'en'))
         }
     },
     mounted() {

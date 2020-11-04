@@ -289,6 +289,34 @@ var app = new Vue({
             this.forceAllItemsRerender()
             this.forceFiltersRerender()
         },
+        monthNumberToString(monthNum) {
+            if (monthNum == 1) {
+                return 'January';
+            } else if (monthNum == 2) {
+                return 'February';
+            } else if (monthNum == 3) {
+                return 'March';
+            } else if (monthNum == 4) {
+                return 'April';
+            } else if (monthNum == 5) {
+                return 'May';
+            } else if (monthNum == 6) {
+                return 'June';
+            } else if (monthNum == 7) {
+                return 'July';
+            } else if (monthNum == 8) {
+                return 'August';
+            } else if (monthNum == 9) {
+                return 'September';
+            } else if (monthNum == 10) {
+                return 'October';
+            } else if (monthNum == 11) {
+                return 'November';
+            } else if (monthNum == 12) {
+                return 'December';
+            }
+            return 'Invalid month - ' + monthNum;
+        },
         parseDate(date) {
             if (date.split("-")[0] == "") {
                 year = "-" + "0".repeat(6 - date.split("-")[1].length) + date.split("-")[1]
@@ -298,38 +326,56 @@ var app = new Vue({
         },
         parseDateRange(dateString) {
             dateParts = dateString.split("~")
-            if (dateParts.length == 2) {
+            if (dateParts.length == 2) {// Date interval
                 if (dateParts[0].split("-").length == 1 && dateParts[1].split("-").length == 1) {
-                    return [dateParts[0] + "-01-01", dateParts[1] + "-12-31"]
+                    // Year only
+                    label1 = dateParts[0]
+                    label2 = dateParts[1]
+                    return [dateParts[0] + "-01-01", dateParts[1] + "-12-30", label1 + " - " + label2]
                 }
                 else if (dateParts[0].split("-").length == 2 && dateParts[1].split("-").length == 2) {
                     if (dateParts[0].split("-")[0] == "") {
-                        return [dateParts[0] + "-01-01", dateParts[1] + "-12-31"]
+                        // Negative year
+                        label1 = dateParts[0]
+                        label2 = dateParts[1]
+                        return [dateParts[0] + "-01-01", dateParts[1] + "-12-30", label1 + " - " + label2]
                     }
                     else {
-                        return [dateParts[0] + "-01", dateParts[1] + "-31"]
+                        // YYYY-MM
+                        label1 = this.monthNumberToString(dateParts[0].split("-")[1]) + " " + dateParts[0].split("-")[0]
+                        label2 = this.monthNumberToString(dateParts[1].split("-")[1]) + " " + dateParts[1].split("-")[0]
+                        return [dateParts[0] + "-01", dateParts[1] + "-30", label1 + " - " + label2]
                     }
                 }
                 else if (dateParts[0].split("-").length > 2 && dateParts[1].split("-").length > 2) {
-                    return [dateParts[0], dateParts[1]]
+                    // YYYY-MM-DD
+                    label1 = this.monthNumberToString(dateParts[0].split("-")[1]) + " " + dateParts[0].split("-")[2] + ", " + dateParts[0].split("-")[0]
+                    label2 = this.monthNumberToString(dateParts[1].split("-")[1]) + " " + dateParts[1].split("-")[2] + ", " + dateParts[1].split("-")[0]
+                    return [dateParts[0], dateParts[1], label1 + " - " + label2]
                 }
             }
-            else if (dateParts.length == 1) {
+            else if (dateParts.length == 1) {// No interval
                 if (dateParts[0].split("-").length == 1) {
-                    return [dateParts[0] + "-01-01", dateParts[0] + "-12-31"]
+                    // Year Only
+                    return [dateParts[0] + "-01-01", dateParts[0] + "-12-30", dateParts[0]]
                 }
                 else if (dateParts[0].split("-").length == 2) {
                     if (dateParts[0].split("-")[0] == "") {
-                        return [dateParts[0] + "-01-01", dateParts[0] + "-12-31"]
+                        // Negative year
+                        return [dateParts[0] + "-01-01", dateParts[0] + "-12-30", dateParts[0]]
                     }
                     else {
-                        return [dateParts[0] + "-01", dateParts[0] + "-31"]
+                        // YYYY-MM
+                        label = this.monthNumberToString(dateParts[0].split("-")[1]) + " " + dateParts[0].split("-")[0]
+                        return [dateParts[0] + "-01", dateParts[0] + "-30", label]
                     }
                 }
                 else if (dateParts[0].split("-").length > 2) {
+                    // YYYY-MM-DD
+                    label = this.monthNumberToString(dateParts[0].split("-")[1]) + " " + dateParts[0].split("-")[2] + ", " + dateParts[0].split("-")[0]
                     nextDateArray = dateParts[0].split("-")
                     nextDateArray[nextDateArray.length - 1] = Number(nextDateArray[nextDateArray.length - 1]) + 1
-                    return [dateParts[0], nextDateArray.join("-")]
+                    return [dateParts[0], nextDateArray.join("-"), label]
                 }
             }
         },
@@ -523,7 +569,7 @@ var app = new Vue({
                                 filterValueLabel: res[i].split(".")[1],
                                 valueLL: dateRangeParts[0],
                                 valueUL: dateRangeParts[1],
-                                valueLabel: urlParams.get(res[i]).split("~").length == 2 ? urlParams.get(res[i]).split("~")[0] + " - " + urlParams.get(res[i]).split("~")[1] : urlParams.get(res[i]).split("~")[0]
+                                valueLabel: dateRangeParts[2]
                             })
                         }
                         filters += " wdt:" + res[i].split(".")[1]

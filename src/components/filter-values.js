@@ -154,7 +154,7 @@ filtervalues = Vue.component('filter-values', {
             <div v-else-if="itemsType=='Time'">
                 <p v-if="totalValues!=''">{{ $t("message.itemCount",{count:totalValues<1000000?numberWithCommas(totalValues):"1 million +" }) }}</p>
                 <a @click="changePage('view-all-items')">{{ $t('message.viewList') }}</a>
-                <p> {{ $tc('message.selectValue',0) }} <b>{{currentFilter.valueLabel}}</b>:</p>
+                <p> {{ $tc('message.selectValue',1) }} <b>{{currentFilter.valueLabel}}</b>:</p>
                 <ul v-if="displayCount == 1">
                     <li v-if="appliedRanges.findIndex(filter => filter.filterValue == currentFilter.value) ==-1">
                         <i>
@@ -389,34 +389,40 @@ filtervalues = Vue.component('filter-values', {
             }
             return year
         },
+        getUTCTime(date){
+            localTime = date.getTime()
+            localOffset = date.getTimezoneOffset() * 60000;
+            utc = localTime + localOffset;
+            return new Date(utc)
+        },
         generateDatePropertyValues(dateArray, range) {
             var len = dateArray.length,
                 start = 0,
                 end = len - 1;
+            len > 50000 ? val = 0 : val = 1;
             for (let i = start; i <= end; i++) {
                 dateArray[i].time.value = this.parseDate(dateArray[i].time.value)
             }
-            ll = earliestDate = new Date(dateArray[start].time.value)
-            ul = latestDate = new Date(dateArray[end].time.value)
+            ll = earliestDate = this.getUTCTime(new Date(dateArray[start].time.value))
+            ul = latestDate = this.getUTCTime(new Date(dateArray[end].time.value))
             index = this.appliedRanges.findIndex(filter => filter.filterValue == range.value);
             if (index != -1) {
                 ll = new Date(this.parseDate(String(this.appliedRanges[index].valueLL)));
                 ul = new Date(this.parseDate(String(this.appliedRanges[index].valueUL)));
             }
-            len > 50000 ? val = 0 : val = 1;
             while (earliestDate < ll || earliestDate == "Invalid Date") {
                 start++;
-                earliestDate = new Date(dateArray[start].time.value);
+                earliestDate = this.getUTCTime(new Date(dateArray[start].time.value));
             }
             while (latestDate > ul || latestDate == "Invalid Date") {
-                latestDate = new Date(dateArray[--end].time.value);
+                latestDate = this.getUTCTime(new Date(dateArray[--end].time.value));
             }
-            var earliestYear = earliestDate.getUTCFullYear();
-            var earliestMonth = earliestDate.getUTCMonth() + 1;
-            var earliestDay = earliestDate.getUTCDate();
-            var latestYear = latestDate.getUTCFullYear();
-            var latestMonth = latestDate.getUTCMonth() + 1;
-            var latestDay = latestDate.getUTCDate();
+            var earliestYear = earliestDate.getFullYear();
+            var earliestMonth = earliestDate.getMonth() + 1;
+            var earliestDay = earliestDate.getDate();
+            var latestYear = latestDate.getFullYear();
+            var latestMonth = latestDate.getMonth() + 1;
+            var latestDay = latestDate.getDate();
             var yearDifference = latestYear - earliestYear;
             var monthDifference = (12 * yearDifference) + (latestMonth - earliestMonth);
             var dayDifference = (30 * monthDifference) + (latestDay - earliestDay);
@@ -431,15 +437,15 @@ filtervalues = Vue.component('filter-values', {
                     propertyValues.push({
                         bucketName: this.yearToBCFormat(curYear) + " - " + this.yearToBCFormat(curYear + 99),
                         bucketLL: curYear + '-01-01',
-                        bucketUL: (curYear + 99) + '-12-31',
+                        bucketUL: (curYear + 99) + '-12-30',
                         size: 1,
                         numValues: 0
                     });
                     curYear += 100;
                 }
                 for (var i = start; i <= end && val != 0; i++) {
-                    date = new Date(dateArray[i].time.value);
-                    year = Number(date.getUTCFullYear());
+                    date = this.getUTCTime(new Date(dateArray[i].time.value));
+                    year = Number(date.getFullYear());
                     index = Math.floor((year - iniYear) / 100);
                     propertyValues[index].numValues += 1
                 }
@@ -450,15 +456,15 @@ filtervalues = Vue.component('filter-values', {
                     propertyValues.push({
                         bucketName: this.yearToBCFormat(curYear) + " - " + this.yearToBCFormat(curYear + 49),
                         bucketLL: curYear + '-01-01',
-                        bucketUL: (curYear + 49) + '-12-31',
+                        bucketUL: (curYear + 49) + '-12-30',
                         size: 1,
                         numValues: 0
                     });
                     curYear += 50;
                 }
                 for (var i = start; i <= end && val != 0; i++) {
-                    date = new Date(dateArray[i].time.value);
-                    year = Number(date.getUTCFullYear());
+                    date = this.getUTCTime(new Date(dateArray[i].time.value));
+                    year = Number(date.getFullYear());
                     index = Math.floor((year - iniYear) / 50);
                     propertyValues[index].numValues += 1
                 }
@@ -469,15 +475,15 @@ filtervalues = Vue.component('filter-values', {
                     propertyValues.push({
                         bucketName: this.yearToBCFormat(curYear) + " - " + this.yearToBCFormat(curYear + 9),
                         bucketLL: curYear + '-01-01',
-                        bucketUL: (curYear + 9) + '-12-31',
+                        bucketUL: (curYear + 9) + '-12-30',
                         size: 1,
                         numValues: 0
                     });
                     curYear += 10;
                 }
                 for (var i = start; i <= end && val != 0; i++) {
-                    date = new Date(dateArray[i].time.value);
-                    year = Number(date.getUTCFullYear());
+                    date = this.getUTCTime(new Date(dateArray[i].time.value));
+                    year = Number(date.getFullYear());
                     index = Math.floor((year - iniYear) / 10);
                     propertyValues[index].numValues += 1
                 }
@@ -488,15 +494,15 @@ filtervalues = Vue.component('filter-values', {
                     propertyValues.push({
                         bucketName: this.yearToBCFormat(curYear) + " - " + this.yearToBCFormat(curYear + 4),
                         bucketLL: curYear + '-01-01',
-                        bucketUL: (curYear + 4) + '-12-31',
+                        bucketUL: (curYear + 4) + '-12-30',
                         size: 1,
                         numValues: 0
                     });
                     curYear += 5;
                 }
                 for (var i = start; i <= end && val != 0; i++) {
-                    date = new Date(dateArray[i].time.value);
-                    year = Number(date.getUTCFullYear());
+                    date = this.getUTCTime(new Date(dateArray[i].time.value));
+                    year = Number(date.getFullYear());
                     index = Math.floor((year - iniYear) / 5);
                     propertyValues[index].numValues += 1
                 }
@@ -507,15 +513,15 @@ filtervalues = Vue.component('filter-values', {
                     propertyValues.push({
                         bucketName: this.yearToBCFormat(curYear),
                         bucketLL: curYear + '-01-01',
-                        bucketUL: curYear + '-12-31',
+                        bucketUL: curYear + '-12-30',
                         size: 2,
                         numValues: 0
                     });
                     curYear++;
                 }
                 for (var i = start; i <= end && val != 0; i++) {
-                    date = new Date(dateArray[i].time.value);
-                    year = Number(date.getUTCFullYear());
+                    date = this.getUTCTime(new Date(dateArray[i].time.value));
+                    year = Number(date.getFullYear());
                     index = Math.floor(year - iniYear);
                     propertyValues[index].numValues += 1
                 }
@@ -543,33 +549,28 @@ filtervalues = Vue.component('filter-values', {
                     }
                 }
                 for (var i = start; i <= end && val != 0; i++) {
-                    date = new Date(dateArray[i].time.value);
-                    year = date.getUTCFullYear();
-                    month = date.getUTCMonth();
+                    date = this.getUTCTime(new Date(dateArray[i].time.value));
+                    year = date.getFullYear();
+                    month = date.getMonth();
                     index = Math.floor(((year - iniYear) * 12 + month - iniMonth + 1));
                     propertyValues[index].numValues += 1
                 }
             } else if (dayDifference > 1) {
                 // Split into days.
-                // We can't just do "curDate = earliestDate" because that
-                // won't make a copy.
-                var curDate = new Date();
-                curDate.setTime(earliestDate.getTime());
                 var curDay = iniDay = earliestDay
                 while (curDay <= latestDay) {
                     propertyValues.push({
-                        bucketName: this.monthNumberToString(curDate.getUTCMonth() + 1) + " " + curDate.getUTCDate() + ", " + curDate.getUTCFullYear(),
-                        bucketLL: curDate.getUTCFullYear() + "-" + (curDate.getUTCMonth() + 1) + "-" + curDate.getUTCDate(),
-                        bucketUL: curDate.getUTCFullYear() + "-" + (curDate.getUTCMonth() + 1) + "-" + (curDate.getUTCDate() + 1),
+                        bucketName: this.monthNumberToString(earliestMonth) + " " + curDay + ", " + earliestYear,
+                        bucketLL: earliestYear + "-" + earliestMonth + "-" + curDay,
+                        bucketUL: earliestYear + "-" + earliestMonth + "-" + (curDay + 1),
                         size: 4,
                         numValues: 0
                     });
                     curDay += 1;
-                    curDate.setDate(curDate.getUTCDate() + 1);
                 }
                 for (var i = start; i <= end && val != 0; i++) {
-                    date = new Date(dateArray[i].time.value);
-                    day = Number(date.getUTCDate());
+                    date = this.getUTCTime(new Date(dateArray[i].time.value));
+                    day = Number(date.getDate());
                     index = Math.floor(day - iniDay);
                     propertyValues[index].numValues += 1
                 }
@@ -578,9 +579,9 @@ filtervalues = Vue.component('filter-values', {
                 var curDate = new Date();
                 curDate.setTime(earliestDate.getTime());
                 propertyValues.push({
-                    bucketName: this.monthNumberToString(curDate.getUTCMonth() + 1) + " " + curDate.getUTCDate() + ", " + curDate.getUTCFullYear(),
-                    bucketLL: curDate.getUTCFullYear() + "-" + (curDate.getUTCMonth() + 1) + "-" + curDate.getUTCDate(),
-                    bucketUL: curDate.getUTCFullYear() + "-" + (curDate.getUTCMonth() + 1) + "-" + (curDate.getUTCDate() + 1),
+                    bucketName: this.monthNumberToString(curDate.getMonth() + 1) + " " + curDate.getDate() + ", " + curDate.getFullYear(),
+                    bucketLL: curDate.getFullYear() + "-" + (curDate.getMonth() + 1) + "-" + curDate.getDate(),
+                    bucketUL: curDate.getFullYear() + "-" + (curDate.getMonth() + 1) + "-" + (curDate.getDate() + 1),
                     size: 5,
                     numValues: len
 
@@ -728,12 +729,12 @@ filtervalues = Vue.component('filter-values', {
             return propertyValues;
         },
         getTimePrecision(earliestDate, latestDate) {
-            var earliestYear = earliestDate.getUTCFullYear();
-            var earliestMonth = earliestDate.getUTCMonth() + 1;
-            var earliestDay = earliestDate.getUTCDate();
-            var latestYear = latestDate.getUTCFullYear();
-            var latestMonth = latestDate.getUTCMonth() + 1;
-            var latestDay = latestDate.getUTCDate();
+            var earliestYear = earliestDate.getFullYear();
+            var earliestMonth = earliestDate.getMonth() + 1;
+            var earliestDay = earliestDate.getDate();
+            var latestYear = latestDate.getFullYear();
+            var latestMonth = latestDate.getMonth() + 1;
+            var latestDay = latestDate.getDate();
             var yearDifference = latestYear - earliestYear;
             var monthDifference = (12 * yearDifference) + (latestMonth - earliestMonth);
             var dayDifference = (30 * monthDifference) + (latestDay - earliestDay);
@@ -761,18 +762,26 @@ filtervalues = Vue.component('filter-values', {
                 filterString += "?item wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n";
             }
         }
-        var filterRanges = "";
+        var filterRanges = ""
+            timeString = "";
         for (let i = 0; i < this.appliedRanges.length; i++) {
             if (this.appliedRanges[i].valueLL == "novalue") {
                 noValueString += " FILTER(NOT EXISTS { ?item wdt:" + this.appliedRanges[i].filterValue + " ?no. }).\n"
             }
-            else {
+            else if(this.appliedRanges[i].filterValue != this.currentFilter.value) {
                 timePrecision = this.getTimePrecision(new Date(this.appliedRanges[i].valueLL), new Date(this.appliedRanges[i].valueUL))
                 filterRanges += "?item (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
                     "  ?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
                     "  ?timenode" + i + " wikibase:timePrecision ?timeprecision" + i + ".\n" +
-                    "  FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?time" + i + " && ?time" + i + " < '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n" +
+                    "  FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?time" + i + " && ?time" + i + " <= '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n" +
                     "  FILTER(?timeprecision" + i + ">=" + timePrecision + ")\n";
+            }
+            else{
+                timeString = "?item (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode.\n" +
+                    "  ?timenode wikibase:timeValue ?time.\n" +
+                    "  ?timenode wikibase:timePrecision ?timeprecision.\n" +
+                    "  FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?time && ?time <= '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n" +
+                    "  FILTER(?timeprecision>=" + timePrecision + ")\n";
             }
         }
         var filterQuantities = "";
@@ -809,7 +818,7 @@ filtervalues = Vue.component('filter-values', {
                         "?item wdt:" + instanceOf + " wd:" + this.classValue + ".\n" +
                         filterString +
                         filterRanges +
-                        "?item wdt:" + this.currentFilter.value + " ?time.\n" +
+                        (timeString != ""?timeString:"") +
                         filterQuantities +
                         noValueString +
                         "}\n" +
@@ -824,15 +833,20 @@ filtervalues = Vue.component('filter-values', {
                                     var q = window.location.search;
                                     parameters = new URLSearchParams(q)
                                     parameters.delete("cf")
-                                    if (arr[i].size == 1) parameters.set("r." + this.currentFilter.value, (new Date(this.parseDate(arr[i].bucketLL))).getUTCFullYear() + "~" + (new Date(this.parseDate(arr[i].bucketUL))).getUTCFullYear())
-                                    else if (arr[i].size == 2) parameters.set("r." + this.currentFilter.value, (new Date(this.parseDate(arr[i].bucketLL))).getUTCFullYear())
-                                    else if (arr[i].size == 3) parameters.set("r." + this.currentFilter.value, (new Date(this.parseDate(arr[i].bucketLL))).getUTCFullYear() + "-" + (Number((new Date(arr[i].bucketLL)).getUTCMonth()) + 1))
+                                    if (arr[i].size == 1) parameters.set("r." + this.currentFilter.value, (new Date(this.parseDate(arr[i].bucketLL))).getFullYear() + "~" + (new Date(this.parseDate(arr[i].bucketUL))).getFullYear())
+                                    else if (arr[i].size == 2) parameters.set("r." + this.currentFilter.value, (new Date(this.parseDate(arr[i].bucketLL))).getFullYear())
+                                    else if (arr[i].size == 3) parameters.set("r." + this.currentFilter.value, (new Date(this.parseDate(arr[i].bucketLL))).getFullYear() + "-" + (Number((new Date(arr[i].bucketLL)).getMonth()) + 1))
                                     else if (arr[i].size == 4) parameters.set("r." + this.currentFilter.value, arr[i].bucketLL)
                                     else if (arr[i].size == 5) parameters.set("r." + this.currentFilter.value, arr[i].bucketLL)
                                     arr[i]['href'] = window.location.pathname + "?" + parameters
                                 }
-                                vm.items = arr;
-                                this.itemsType = 'Time'
+                                if(arr.length) {
+                                    vm.items = arr;
+                                    this.itemsType = 'Time'
+                                }
+                                else {
+                                    this.itemsType = 'Additionalempty'
+                                }
                             }
                             else {
                                 index = vm.appliedRanges.findIndex(filter => filter.filterValue == vm.currentFilter.value)
@@ -861,9 +875,9 @@ filtervalues = Vue.component('filter-values', {
                                             var q = window.location.search;
                                             parameters = new URLSearchParams(q)
                                             parameters.delete("cf")
-                                            if (arr[i].size == 1) parameters.set("r." + this.currentFilter.value, (new Date(this.parseDate(arr[i].bucketLL))).getUTCFullYear() + "~" + (new Date(this.parseDate(arr[i].bucketUL))).getUTCFullYear())
-                                            else if (arr[i].size == 2) parameters.set("r." + this.currentFilter.value, (new Date(this.parseDate(arr[i].bucketLL))).getUTCFullYear())
-                                            else if (arr[i].size == 3) parameters.set("r." + this.currentFilter.value, (new Date(this.parseDate(arr[i].bucketLL))).getUTCFullYear() + "-" + (Number((new Date(arr[i].bucketLL)).getUTCMonth()) + 1))
+                                            if (arr[i].size == 1) parameters.set("r." + this.currentFilter.value, (new Date(this.parseDate(arr[i].bucketLL))).getFullYear() + "~" + (new Date(this.parseDate(arr[i].bucketUL))).getFullYear())
+                                            else if (arr[i].size == 2) parameters.set("r." + this.currentFilter.value, (new Date(this.parseDate(arr[i].bucketLL))).getFullYear())
+                                            else if (arr[i].size == 3) parameters.set("r." + this.currentFilter.value, (new Date(this.parseDate(arr[i].bucketLL))).getFullYear() + "-" + (Number((new Date(arr[i].bucketLL)).getMonth()) + 1))
                                             else if (arr[i].size == 4) parameters.set("r." + this.currentFilter.value, arr[i].bucketLL)
                                             else if (arr[i].size == 5) parameters.set("r." + this.currentFilter.value, arr[i].bucketLL)
                                             arr[i]['href'] = window.location.pathname + "?" + parameters
