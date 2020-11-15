@@ -1,5 +1,4 @@
 var app = new Vue({
-    i18n: i18n,
     components: {
         classfilter, viewallitems, filtersview, filtervalues
     },
@@ -16,9 +15,11 @@ var app = new Vue({
         getFiltersFromURL: 1,
         allItemscomponentKey: 0,
         filterscomponentKey: 0,
-        total: ''
+        total: '',
+        siteText: ''
     },
     mounted: function () {
+        // History logging
         if (this.classLabel != "") {
             window.history.pushState({
                 page: this.view,
@@ -49,6 +50,18 @@ var app = new Vue({
                 app.filterscomponentKey = e.state.filterscomponentKey
             }
         };
+
+        // Fetching language file 
+        var fullUrl = "../languages/" + primaryLang + ".json";
+        axios.get(fullUrl)
+            .then(response => this.siteText = response.data)
+            .catch(_error => {
+                var fallbackUrl = "../languages/en.json";
+                axios.get(fallbackUrl)
+                    .then(res => {
+                        this.siteText = res.data
+                    })
+            });
     },
     methods: {
         updatePage: function (page) {

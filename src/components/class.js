@@ -1,5 +1,5 @@
 classfilter = Vue.component('class-filter', {
-    props: ['classValue', 'classLabel'],
+    props: ['websiteText', 'classValue', 'classLabel'],
     data() {
         return {
             clsValue: '',
@@ -8,7 +8,7 @@ classfilter = Vue.component('class-filter', {
         }
     },
     template: `
-    <div>
+    <div v-if="websiteText!=''">
         <div class="classSearchSection">
             <div class="classInput">
                 <input 
@@ -16,7 +16,7 @@ classfilter = Vue.component('class-filter', {
                     @input="showClasses" 
                     style="border: none;outline: none;width: 100%;font-size:1em" 
                     type="search" 
-                    :placeholder='$t("message.classPlaceholder")'>
+                    :placeholder='websiteText.classPlaceholder'>
             </div>
             <div v-if="clsValue.length>0" class="searchOptions">
                 <a 
@@ -31,7 +31,7 @@ classfilter = Vue.component('class-filter', {
             </div>
         </div>
         <div class="browseOptions" v-if="suggestedClassValues.length !=0 && suggestedClassValues[0].valueLabel != ''">
-            <p style="margin-top:20px">{{ $t("message.browse") }}</p>
+            <p style="margin-top:20px">{{ websiteText.browse }}</p>
             <ul>
                 <li v-for="item in suggestedClassValues">
                     <a 

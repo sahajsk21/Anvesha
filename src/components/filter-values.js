@@ -1,5 +1,5 @@
 filtervalues = Vue.component('filter-values', {
-    props: ['classValue', 'classLabel', 'currentFilter', 'appliedFilters', 'totalValues', 'appliedRanges', 'appliedQuantities'],
+    props: ['websiteText', 'classValue', 'classLabel', 'currentFilter', 'appliedFilters', 'totalValues', 'appliedRanges', 'appliedQuantities'],
     data() {
         return {
             items: [],
@@ -13,7 +13,7 @@ filtervalues = Vue.component('filter-values', {
         }
     },
     template: `
-    <div>
+    <div v-if="websiteText!=''">
         <div class="header">
             <p class="heading"> 
                 {{ classLabel }} 
@@ -74,22 +74,22 @@ filtervalues = Vue.component('filter-values', {
         </div>
         <div class="content">
             <div v-if="itemsType==''">
-                <a @click="changePage('view-all-items')">{{ $t('message.viewList') }}</a>
-                <p> {{ $t('message.gettingValues') }} <b>{{currentFilter.valueLabel}}</b> ... </p>
+                <a @click="changePage('view-all-items')">{{ websiteText.viewList }}</a>
+                <p> {{ websiteText.gettingValues }} <b>{{currentFilter.valueLabel}}</b> ... </p>
                 <img src='images/loading.gif'>
             </div>
             <div v-else-if="itemsType=='Additionalempty'">
-                <a @click="changePage('view-all-items')">{{ $t('message.viewList') }}</a>
-                <p>{{ $t('message.noAdditionalValues') }} <b>{{currentFilter.valueLabel}}</b>.</p>
+                <a @click="changePage('view-all-items')">{{ websiteText.viewList }}</a>
+                <p>{{ websiteText.noAdditionalValues }} <b>{{currentFilter.valueLabel}}</b>.</p>
             </div>
             <div v-else-if="itemsType=='Error'">
-                <a @click="changePage('view-all-items')">{{ $t('message.viewList') }}</a>
-                <p>{{ $t('message.filterError') }} <b>{{currentFilter.valueLabel}}</b>.</p>
+                <a @click="changePage('view-all-items')">{{ websiteText.viewList }}</a>
+                <p>{{ websiteText.filterError }} <b>{{currentFilter.valueLabel}}</b>.</p>
             </div>
             <div v-else-if="itemsType=='Item'">
-                <p v-if="totalValues!=''">{{ $t("message.itemCount",{count:totalValues<1000000?numberWithCommas(totalValues):"1 million +" }) }}</p>
-                <a @click="changePage('view-all-items')">{{ $t('message.viewList') }}</a>
-                <p> {{ $tc('message.selectValue',appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) !=-1?0:1) }} <b>{{currentFilter.valueLabel}}</b>:</p>
+                <p v-if="totalValues!=''">{{ websiteText.itemCount.replace('0', (totalValues<1000000?numberWithCommas(totalValues):"1 million +")) }}</p>
+                <a @click="changePage('view-all-items')">{{ websiteText.viewList }}</a>
+                <p> {{ websiteText.selectValue.split('|')[(appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) != -1 ? 1 : 0)] }} <b>{{currentFilter.valueLabel}}</b>:</p>
                 <div v-if="items.length>resultsPerPage && itemsType=='Item'" style="text-align: center">
                     <a v-if="currentPage>1" @click="currentPage>1?currentPage--:''">&lt;</a>
                     <input 
@@ -107,7 +107,7 @@ filtervalues = Vue.component('filter-values', {
                                 onclick="return false;" 
                                 @click.exact="applyFilter('novalue')" 
                                 @click.ctrl="window.open(noValueURL, '_blank')">
-                                {{ $t('message.noValue') }}
+                                {{ websiteText.noValue }}
                             </a>
                         </i>
                     </li>
@@ -120,15 +120,15 @@ filtervalues = Vue.component('filter-values', {
                             {{item.valueLabel.value}}
                         </a> 
                         <span class="result-count">
-                            {{ $t('message.results', {count:numberWithCommas(item.count.value)}) }}
+                            {{ websiteText.results.replace('0', numberWithCommas(item.count.value)) }}
                         <span>
                     </li>
                 </ul>
             </div>
             <div v-else-if="itemsType=='ItemFail'">
-                <p><i>{{ $t('message.filterTimeout') }}</i></p>
-                <a @click="changePage('view-all-items')">{{ $t('message.viewList') }}</a>
-                <p> {{ $tc('message.selectValue',0) }} <b>{{ currentFilter.valueLabel }}</b>:</p>
+                <p><i>{{ websiteText.filterTimeout }}</i></p>
+                <a @click="changePage('view-all-items')">{{ websiteText.viewList }}</a>
+                <p> {{ websiteText.selectValue.split('|')[0] }} <b>{{ currentFilter.valueLabel }}</b>:</p>
                 <ul>
                     <li>
                         <i>
@@ -137,7 +137,7 @@ filtervalues = Vue.component('filter-values', {
                             onclick="return false;" 
                             @click.exact="applyFilter('novalue')" 
                             @click.ctrl="window.open(noValueURL, '_blank')">
-                            {{ $t('message.noValue') }}
+                            {{ websiteText.noValue }}
                         </i>
                     </li>
                     <li v-for="item in items">
@@ -152,9 +152,9 @@ filtervalues = Vue.component('filter-values', {
                 </ul>
             </div>
             <div v-else-if="itemsType=='Time'">
-                <p v-if="totalValues!=''">{{ $t("message.itemCount",{count:totalValues<1000000?numberWithCommas(totalValues):"1 million +" }) }}</p>
-                <a @click="changePage('view-all-items')">{{ $t('message.viewList') }}</a>
-                <p> {{ $tc('message.selectValue',1) }} <b>{{currentFilter.valueLabel}}</b>:</p>
+                <p v-if="totalValues!=''">{{ websiteText.itemCount.replace('0', (totalValues<1000000?numberWithCommas(totalValues):"1 million +")) }}</p>
+                <a @click="changePage('view-all-items')">{{ websiteText.viewList }}</a>
+                <p> {{ websiteText.selectValue.split('|')[1] }} <b>{{currentFilter.valueLabel}}</b>:</p>
                 <ul v-if="displayCount == 1">
                     <li v-if="appliedRanges.findIndex(filter => filter.filterValue == currentFilter.value) ==-1">
                         <i>
@@ -163,7 +163,7 @@ filtervalues = Vue.component('filter-values', {
                                 onclick="return false;" 
                                 @click.exact="applyRange('novalue')" 
                                 @click.ctrl="window.open(noValueURL, '_blank')">
-                                {{ $t('message.noValue') }}
+                                {{ websiteText.noValue }}
                             </a>
                         </i>
                     </li>
@@ -176,7 +176,7 @@ filtervalues = Vue.component('filter-values', {
                             {{item.bucketName}} 
                         </a> 
                         <span class="result-count">
-                            {{ $t('message.results', {count:numberWithCommas(item.numValues)}) }}
+                            {{ websiteText.results.replace('0',numberWithCommas(item.numValues)) }}
                         <span>
                     </li>
                 </ul>
@@ -188,7 +188,7 @@ filtervalues = Vue.component('filter-values', {
                                 onclick="return false;" 
                                 @click.exact="applyFilter('novalue')" 
                                 @click.ctrl="window.open(noValueURL, '_blank')">
-                                {{ $t('message.noValue') }}
+                                {{ websiteText.noValue }}
                             </a>
                         </i>
                     </li>
@@ -204,9 +204,9 @@ filtervalues = Vue.component('filter-values', {
                 </ul>
             </div>
             <div v-else-if="itemsType=='TimeFail'">
-                <p><i>{{ $t('message.filterTimeout') }}</i></p>
-                <a @click="changePage('view-all-items')">{{ $t('message.viewList') }}</a>
-                <p> {{ $tc('message.selectValue',0) }} <b>{{currentFilter.valueLabel}}</b>:</p>
+                <p><i>{{ websiteText.filterTimeout }}</i></p>
+                <a @click="changePage('view-all-items')">{{ websiteText.viewList }}</a>
+                <p> {{ websiteText.selectValue.split('|')[0] }} <b>{{currentFilter.valueLabel}}</b>:</p>
                 <ul>
                     <li>
                         <i>
@@ -215,7 +215,7 @@ filtervalues = Vue.component('filter-values', {
                                 onclick="return false;" 
                                 @click.exact="applyFilter('novalue')" 
                                 @click.ctrl="window.open(noValueURL, '_blank')">
-                                {{ $t('message.noValue') }}
+                                {{ websiteText.noValue }}
                             </a>
                             </i>
                         </li>
@@ -231,10 +231,10 @@ filtervalues = Vue.component('filter-values', {
                 </ul>
             </div>
             <div v-else-if="itemsType=='Quantity'">
-                <p v-if="displayCount == 1 && totalValues!=''">{{ $t("message.itemCount",{count:totalValues<1000000?numberWithCommas(totalValues):"1 million +" }) }}</p>
-                <p v-if="displayCount == 0"><i>{{ $t('message.filterTimeout') }}</i></p>
-                <a @click="changePage('view-all-items')">{{ $t('message.viewList') }}</a>
-                <p> {{ $tc('message.selectValue',0) }} <b>{{currentFilter.valueLabel}}</b>:</p>
+                <p v-if="displayCount == 1 && totalValues!=''">{{ websiteText.itemCount.replace('0', (totalValues<1000000?numberWithCommas(totalValues):"1 million +")) }}</p>
+                <p v-if="displayCount == 0"><i>{{ websiteText.filterTimeout }}</i></p>
+                <a @click="changePage('view-all-items')">{{ websiteText.viewList }}</a>
+                <p> {{ websiteText.selectValue.split('|')[0] }} <b>{{currentFilter.valueLabel}}</b>:</p>
                 <ul v-if="displayCount == 1">
                     <li v-if="appliedQuantities.findIndex(filter => filter.filterValue == currentFilter.value) ==-1">
                         <i>
@@ -243,7 +243,7 @@ filtervalues = Vue.component('filter-values', {
                                 onclick="return false;" 
                                 @click.exact="applyQuantityRange('novalue')" 
                                 @click.ctrl="window.open(noValueURL, '_blank')">
-                                {{ $t('message.noValue') }}
+                                {{ websiteText.noValue }}
                             </a>
                         </i>
                     </li>
@@ -256,7 +256,7 @@ filtervalues = Vue.component('filter-values', {
                             {{item.bucketName}} {{item.unit}} 
                         </a> 
                         <span class="result-count">
-                            {{ $t('message.results', {count:numberWithCommas(item.numValues)}) }}
+                            {{ websiteText.results.replace('0',numberWithCommas(item.numValues)) }}
                         <span>
                     </li>
                 </ul>
@@ -268,7 +268,7 @@ filtervalues = Vue.component('filter-values', {
                                 onclick="return false;" 
                                 @click.exact="applyQuantityRange('novalue')" 
                                 @click.ctrl="window.open(noValueURL, '_blank'>
-                                {{ $t('message.noValue') }}
+                                {{ websiteText.noValue }}
                             </a>
                         </i>
                     </li>
@@ -292,7 +292,7 @@ filtervalues = Vue.component('filter-values', {
                 {{items.length<1000000?" / " + Math.ceil(items.length/resultsPerPage):''}}
                 <a v-if="currentPage<items.length/resultsPerPage" @click="currentPage<items.length/resultsPerPage?currentPage++:''">&gt;</a>
             </div>
-            <a :href="query">{{ $t('message.viewQuery') }}</a>
+            <a :href="query">{{ websiteText.viewQuery }}</a>
         </div>
     </div>`,
     methods: {
@@ -763,7 +763,7 @@ filtervalues = Vue.component('filter-values', {
             }
         }
         var filterRanges = ""
-            timeString = "";
+        timeString = "?item wdt:" + this.currentFilter.value + " ?time.\n";
         for (let i = 0; i < this.appliedRanges.length; i++) {
             if (this.appliedRanges[i].valueLL == "novalue") {
                 noValueString += " FILTER(NOT EXISTS { ?item wdt:" + this.appliedRanges[i].filterValue + " ?no. }).\n"
@@ -818,7 +818,7 @@ filtervalues = Vue.component('filter-values', {
                         "?item wdt:" + instanceOf + " wd:" + this.classValue + ".\n" +
                         filterString +
                         filterRanges +
-                        (timeString != ""?timeString:"") +
+                        timeString +
                         filterQuantities +
                         noValueString +
                         "}\n" +

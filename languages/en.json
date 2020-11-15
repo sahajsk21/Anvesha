@@ -1,0 +1,22 @@
+{
+    "itemCount": "There are 0 items that match this description.",
+    "about": "About",
+    "classPlaceholder": "Enter Class",
+    "browse": "Or, browse any of the following classes:",
+    "filtersCount": "No filters are defined for this class.",
+    "addFilter": "Add a filter",
+    "viewQuery": "View SPARQL query",
+    "noItems": "No items match this description.",
+    "displayItemsError": "The attempt to display a list of items took too long; please consider adding more filters.",
+    "gettingValues": "Getting values for filter",
+    "noAdditionalValues": "There are no additional values for the filter",
+    "filterError": "Trying to get values took too long for the filter",
+    "filterTimeout": "(Getting a complete set of values for this filter took too long; instead, here is a possibly incomplete set.)",
+    "selectValue": "Select a value for | Select an additional value for",
+    "noValue": "No Value",
+    "changeClassNote": "(Note: if you change the class, you will lose the current set of filters.)",
+    "specificClass": "Change to a more specific class:",
+    "generalClass": "Change to a more general class:",
+    "viewList": "View list of items",
+    "results": "(0 results)"
+}

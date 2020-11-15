@@ -7,3 +7,6 @@ const SUGGESTED_CLASSES = [ "Q5", "Q515", "Q523", "Q4022", "Q7366", "Q7397", "Q7
 const SPARQL_ENDPOINT = "https://query.wikidata.org/sparql?query="
 const INSTANCE_OF_PID = "P31"
 const PROPERTIES_FOR_THIS_TYPE_PID = "P1963"
+const LINKS_IN_TOPNAV = {
+    "About":"/about",
+}

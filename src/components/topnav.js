@@ -83,7 +83,7 @@ topnav = Vue.component('top-nav', {
                 <img :src="LOGO" class="logo">
             </a>
             <div class="topnav-right">
-                <a href="/about">{{ $t("message.about") }}</a>
+                <a v-for="(link,title) in linksInTopNav" :href="link">{{ title }}</a>
                 <div class="dropdown">
                     <button class="dropbtn" @click="toggleDropdown">{{ urlParams.get('lang')?urlParams.get('lang'): (defaultLanguages[0]?defaultLanguages[0]:'en') }} <span style="font-size: 0.5em;">&#x25BC;</span></button>
                     <div class="dropdown-content" v-bind:style="{ display: dropdownDisplay }">

@@ -8,6 +8,7 @@ classes = typeof SUGGESTED_CLASSES != "undefined" ? SUGGESTED_CLASSES.map(functi
 sparqlEndpoint = typeof SPARQL_ENDPOINT != "undefined" ? SPARQL_ENDPOINT : "https://query.wikidata.org/sparql?query=";
 instanceOf = typeof INSTANCE_OF_PID != "undefined" ? INSTANCE_OF_PID : "P31";
 propertiesForThisType = typeof PROPERTIES_FOR_THIS_TYPE_PID != "undefined" ? PROPERTIES_FOR_THIS_TYPE_PID : "P1963";
+linksInTopNav = typeof LINKS_IN_TOPNAV != "undefined" ? LINKS_IN_TOPNAV : {};
 
 // Website name
 document.title = siteName
@@ -28,10 +29,10 @@ var languages = ["en","ceb","sv","de","fr","nl","ru","it","es","pl","war","vi","
                 "tr","eu","ms","ce","eo","he","hy","bg","da","azb","sk","kk","min","hr","et","lt","be","el","az",
                 "sl","gl","ur","nn","nb","hi","ka","th","tt","uz","la","cy","ta","vo","mk","ast","lv","yue","tg",
                 "bn","af","mg","oc","bs","sq","ky","nds","new","be-tarask","ml","te","br","tl","vec","pms","mr",
-                "su","ht","sw","lb","jv","sco","pnb","ba","ga","szl","is","my","fy","cv","lmo","wuu"];
-    langArray = defaultLanguages.concat(languages.filter(x => !defaultLanguages.includes(x)));
-    lang = urlParams.get('lang') ? urlParams.get('lang') + "," + langArray.join(",") : langArray.join(",");
-
+                "su","ht","sw","lb","jv","sco","pnb","ba","ga","szl","is","my","fy","cv","lmo","wuu"]
+var langArray = defaultLanguages.concat(languages.filter(x => !defaultLanguages.includes(x)))
+var lang = urlParams.get('lang') ? urlParams.get('lang') + "," + langArray.join(",") : langArray.join(",");
+var primaryLang = urlParams.get('lang') ? urlParams.get('lang') : langArray[0];
 // History logging
 (function (history) {
     var pushState = history.pushState;

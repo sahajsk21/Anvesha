@@ -1,16 +1,16 @@
 
 results = Vue.component('items-results', {
-    props: ['classValue', 'classLabel', 'totalValues', 'currentPage', 'appliedFilters', 'appliedRanges', 'appliedQuantities'],
+    props: ['websiteText','classValue', 'classLabel', 'totalValues', 'currentPage', 'appliedFilters', 'appliedRanges', 'appliedQuantities'],
     data() {
         return {
             items: [],
         }
     },
     template: `
-    <div>
+    <div v-if="websiteText!=''">
         <img v-if="!items.length" src='images/loading.gif'>
-        <p v-else-if="items[0].value=='Empty'">{{ $t('message.noItems') }}</p>
-        <p v-else-if="items[0].value=='Error'">{{ $t('message.displayItemsError') }}</p>
+        <p v-else-if="items[0].value=='Empty'">{{ websiteText.noItems }}</p>
+        <p v-else-if="items[0].value=='Error'">{{ websiteText.displayItemsError }}</p>
         <div v-else>
                 <ul>
                     <li v-for="item in items">
@@ -117,7 +117,7 @@ results = Vue.component('items-results', {
 })
 
 viewallitems = Vue.component('view-all-items', {
-    props: ['classValue', 'classLabel', 'appliedFilters', 'totalValues', 'appliedRanges', 'appliedQuantities'],
+    props: ['websiteText', 'classValue', 'classLabel', 'appliedFilters', 'totalValues', 'appliedRanges', 'appliedQuantities'],
     data() {
         return {
             filtersCount: -1,
@@ -128,7 +128,7 @@ viewallitems = Vue.component('view-all-items', {
         }
     },
     template: `
-    <div>
+    <div v-if="websiteText!=''">
         <div class="header">
             <p class="heading"> 
                 {{ classLabel }} 
@@ -180,7 +180,7 @@ viewallitems = Vue.component('view-all-items', {
         </div>
         <div class="content" id="viewallitems">
             <div v-if="filtersCount==-1"></div>
-            <p v-else-if="filtersCount==0">{{ $t('message.filtersCount') }}</p>
+            <p v-else-if="filtersCount==0">{{ websiteText.filtersCount }}</p>
             <div v-else-if="filtersCount<40" class="filter-box">
                 <img src="images/filter-icon.svg" height="14px" />
                 <span v-for="filter in filters">
@@ -195,10 +195,10 @@ viewallitems = Vue.component('view-all-items', {
                 </span>
             </div>
             <div v-else>
-                <a class="classOptions" @click="changePage('filters')">{{ $t('message.addFilter') }}</a>
+                <a class="classOptions" @click="changePage('filters')">{{ websiteText.addFilter }}</a>
             </div>
             <div><img v-if="totalValues==''" src='images/loading.gif'></div>
-            <div v-if="totalValues>0">{{ $t("message.itemCount",{count:totalValues<1000000?numberWithCommas(totalValues):"1 million +" }) }}</div>
+            <div v-if="totalValues>0">{{ websiteText.itemCount.replace('0', (totalValues<1000000?numberWithCommas(totalValues):"1 million +")) }}</div>
             <div v-if="totalValues>resultsPerPage" style="text-align: center">
                 <a v-if="currentPage>1" @click="currentPage>1?currentPage--:''">&lt;</a>
                 <input 
@@ -211,6 +211,7 @@ viewallitems = Vue.component('view-all-items', {
             <items-results 
                 v-if="totalValues!=''"
                 :total-values="totalValues"
+                :website-text="websiteText"
                 :class-label="classLabel"
                 :class-value="classValue"
                 :applied-filters="appliedFilters"
@@ -228,7 +229,7 @@ viewallitems = Vue.component('view-all-items', {
                     {{totalValues<1000000?" / " + Math.ceil(totalValues/resultsPerPage):''}}
                 <a v-if="currentPage<totalValues/resultsPerPage" @click="currentPage<totalValues/resultsPerPage?currentPage++:''">&gt;</a>
             </div>
-            <div><a :href="query">{{ $t('message.viewQuery') }}</a></div>
+            <div><a :href="query">{{ websiteText.viewQuery }}</a></div>
         </div>
     </div>`,
     methods: {

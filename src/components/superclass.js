@@ -1,10 +1,10 @@
 superclass = Vue.component('superclass-view', {
-    props: ['classValue', 'classLabel', 'appliedFilters', 'appliedRanges', 'appliedQuantities'],
+    props: ['websiteText', 'classValue', 'classLabel', 'appliedFilters', 'appliedRanges', 'appliedQuantities'],
     data() {
         return { items: [], displayCount: 0 }
     },
     template: `
-    <div>
+    <div v-if="websiteText!=''">
         <div class="header">
             <p class="heading"> 
                 {{ classLabel }}
@@ -36,12 +36,12 @@ superclass = Vue.component('superclass-view', {
                 </li>
             </ul>
         </div>
-        <p><i>{{ $t('message.changeClassNote') }}</i></p>
-        <a @click="changePage('view-all-items')">{{ $t('message.viewList') }}</a>
-        <p><b>{{ $t('message.generalClass') }}</b><p>
+        <p><i>{{ websiteText.changeClassNote }}</i></p>
+        <a @click="changePage('view-all-items')">{{ websiteText.viewList }}</a>
+        <p><b>{{ websiteText.generalClass }}</b><p>
         <div class="content">
             <img v-if="!items.length" src='images/loading.gif'>
-            <p v-else-if="items[0].value=='Empty'">{{ $t('message.noItems') }}</p>
+            <p v-else-if="items[0].value=='Empty'">{{ websiteText.noItems }}</p>
             <div v-else>
                 <ul>
                     <li v-for="item in items">
@@ -53,7 +53,7 @@ superclass = Vue.component('superclass-view', {
                             {{item.valueLabel.value}}
                         </a> 
                         <span class="result-count" v-if="displayCount==0">
-                            {{ $t('message.results',{count:item.count.value}) }}
+                            {{ websiteText.results.replace('0',item.count.value) }}
                         </span>
                     </li>
                 </ul>

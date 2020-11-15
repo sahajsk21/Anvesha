@@ -1,5 +1,5 @@
 filtersview = Vue.component('filters-view', {
-    props: ['classValue', 'classLabel', 'appliedFilters', 'totalValues', 'appliedRanges', 'appliedQuantities'],
+    props: ['websiteText', 'classValue', 'classLabel', 'appliedFilters', 'totalValues', 'appliedRanges', 'appliedQuantities'],
     data() {
         return {
             filters: [],
@@ -7,7 +7,7 @@ filtersview = Vue.component('filters-view', {
         }
     },
     template: `
-    <div>
+    <div v-if="websiteText!=''">
         <div class="header">
             <p class="heading"> 
                 {{ classLabel }} 
@@ -61,7 +61,7 @@ filtersview = Vue.component('filters-view', {
             <img v-if="!filters.length" src='images/loading.gif'>
             <p v-else-if="filters[0].value=='Empty'">No filters available</p>
             <div v-else>
-                <p v-if="totalValues>0">{{ $t("message.itemCount",{count:totalValues<1000000?numberWithCommas(totalValues):"1 million +" }) }}</p>
+                <p v-if="totalValues>0">{{ websiteText.itemCount.replace('0', (totalValues<1000000?numberWithCommas(totalValues):"1 million +")) }}</p>
                 <p><b>Add a filter:</b></p> 
                 <ul>
                     <li v-for="filter in filters">
@@ -69,7 +69,7 @@ filtersview = Vue.component('filters-view', {
                     </li>
                 </ul>
             </div>
-            <div><a :href="query">{{ $t('message.viewQuery') }}</a></div>
+            <div><a :href="query">{{ websiteText.viewQuery') }}</a></div>
         </div>
     </div>`,
     methods: {
