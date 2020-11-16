@@ -1,5 +1,5 @@
 {
-    "itemCount": "Il y a 0 articles qui correspondent à cette description.",
+    "itemCount": "Il y a $1 articles qui correspondent à cette description.",
     "about": "Sur",
     "classPlaceholder": "Entrer en classe",
     "browse": "Ou parcourez l'une des classes suivantes:",
@@ -18,5 +18,5 @@
     "specificClass": "Passer à une classe plus spécifique:",
     "generalClass": "Passer à une classe plus générale:",
     "viewList": "Afficher la liste des articles",
-    "results": "(0 résultats)"
+    "results": "($1 résultats)"
 }

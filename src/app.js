@@ -52,11 +52,11 @@ var app = new Vue({
         };
 
         // Fetching language file 
-        var fullUrl = "../languages/" + primaryLang + ".json";
+        var fullUrl = "languages/" + primaryLang + ".json";
         axios.get(fullUrl)
             .then(response => this.siteText = response.data)
             .catch(_error => {
-                var fallbackUrl = "../languages/en.json";
+                var fallbackUrl = "languages/en.json";
                 axios.get(fallbackUrl)
                     .then(res => {
                         this.siteText = res.data

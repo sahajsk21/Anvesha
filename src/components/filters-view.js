@@ -61,7 +61,7 @@ filtersview = Vue.component('filters-view', {
             <img v-if="!filters.length" src='images/loading.gif'>
             <p v-else-if="filters[0].value=='Empty'">No filters available</p>
             <div v-else>
-                <p v-if="totalValues>0">{{ websiteText.itemCount.replace('0', (totalValues<1000000?numberWithCommas(totalValues):"1 million +")) }}</p>
+                <p v-if="totalValues>0">{{ websiteText.itemCount.replace('$1', (totalValues<1000000?numberWithCommas(totalValues):"1 million +")) }}</p>
                 <p><b>Add a filter:</b></p> 
                 <ul>
                     <li v-for="filter in filters">

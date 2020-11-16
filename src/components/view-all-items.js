@@ -198,7 +198,7 @@ viewallitems = Vue.component('view-all-items', {
                 <a class="classOptions" @click="changePage('filters')">{{ websiteText.addFilter }}</a>
             </div>
             <div><img v-if="totalValues==''" src='images/loading.gif'></div>
-            <div v-if="totalValues>0">{{ websiteText.itemCount.replace('0', (totalValues<1000000?numberWithCommas(totalValues):"1 million +")) }}</div>
+            <div v-if="totalValues>0">{{ websiteText.itemCount.replace('$1', (totalValues<1000000?numberWithCommas(totalValues):"1 million +")) }}</div>
             <div v-if="totalValues>resultsPerPage" style="text-align: center">
                 <a v-if="currentPage>1" @click="currentPage>1?currentPage--:''">&lt;</a>
                 <input 

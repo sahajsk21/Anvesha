@@ -87,7 +87,7 @@ filtervalues = Vue.component('filter-values', {
                 <p>{{ websiteText.filterError }} <b>{{currentFilter.valueLabel}}</b>.</p>
             </div>
             <div v-else-if="itemsType=='Item'">
-                <p v-if="totalValues!=''">{{ websiteText.itemCount.replace('0', (totalValues<1000000?numberWithCommas(totalValues):"1 million +")) }}</p>
+                <p v-if="totalValues!=''">{{ websiteText.itemCount.replace('$1', (totalValues<1000000?numberWithCommas(totalValues):"1 million +")) }}</p>
                 <a @click="changePage('view-all-items')">{{ websiteText.viewList }}</a>
                 <p> {{ websiteText.selectValue.split('|')[(appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) != -1 ? 1 : 0)] }} <b>{{currentFilter.valueLabel}}</b>:</p>
                 <div v-if="items.length>resultsPerPage && itemsType=='Item'" style="text-align: center">
@@ -120,7 +120,7 @@ filtervalues = Vue.component('filter-values', {
                             {{item.valueLabel.value}}
                         </a> 
                         <span class="result-count">
-                            {{ websiteText.results.replace('0', numberWithCommas(item.count.value)) }}
+                            {{ websiteText.results.replace('$1', numberWithCommas(item.count.value)) }}
                         <span>
                     </li>
                 </ul>
@@ -152,7 +152,7 @@ filtervalues = Vue.component('filter-values', {
                 </ul>
             </div>
             <div v-else-if="itemsType=='Time'">
-                <p v-if="totalValues!=''">{{ websiteText.itemCount.replace('0', (totalValues<1000000?numberWithCommas(totalValues):"1 million +")) }}</p>
+                <p v-if="totalValues!=''">{{ websiteText.itemCount.replace('$1', (totalValues<1000000?numberWithCommas(totalValues):"1 million +")) }}</p>
                 <a @click="changePage('view-all-items')">{{ websiteText.viewList }}</a>
                 <p> {{ websiteText.selectValue.split('|')[1] }} <b>{{currentFilter.valueLabel}}</b>:</p>
                 <ul v-if="displayCount == 1">
@@ -176,7 +176,7 @@ filtervalues = Vue.component('filter-values', {
                             {{item.bucketName}} 
                         </a> 
                         <span class="result-count">
-                            {{ websiteText.results.replace('0',numberWithCommas(item.numValues)) }}
+                            {{ websiteText.results.replace('$1',numberWithCommas(item.numValues)) }}
                         <span>
                     </li>
                 </ul>
@@ -231,7 +231,7 @@ filtervalues = Vue.component('filter-values', {
                 </ul>
             </div>
             <div v-else-if="itemsType=='Quantity'">
-                <p v-if="displayCount == 1 && totalValues!=''">{{ websiteText.itemCount.replace('0', (totalValues<1000000?numberWithCommas(totalValues):"1 million +")) }}</p>
+                <p v-if="displayCount == 1 && totalValues!=''">{{ websiteText.itemCount.replace('$1', (totalValues<1000000?numberWithCommas(totalValues):"1 million +")) }}</p>
                 <p v-if="displayCount == 0"><i>{{ websiteText.filterTimeout }}</i></p>
                 <a @click="changePage('view-all-items')">{{ websiteText.viewList }}</a>
                 <p> {{ websiteText.selectValue.split('|')[0] }} <b>{{currentFilter.valueLabel}}</b>:</p>
@@ -256,7 +256,7 @@ filtervalues = Vue.component('filter-values', {
                             {{item.bucketName}} {{item.unit}} 
                         </a> 
                         <span class="result-count">
-                            {{ websiteText.results.replace('0',numberWithCommas(item.numValues)) }}
+                            {{ websiteText.results.replace('$1',numberWithCommas(item.numValues)) }}
                         <span>
                     </li>
                 </ul>

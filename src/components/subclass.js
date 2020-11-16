@@ -50,7 +50,7 @@ subclass = Vue.component('subclass-view', {
                             {{item.valueLabel.value}}
                         </a>
                         <span class="result-count" v-if="displayCount==0">
-                            {{ websiteText.results.replace('0',item.count.value) }}
+                            {{ websiteText.results.replace('$1',item.count.value) }}
                         </span>
                     </li>
                 </ul>
