@@ -21,6 +21,13 @@ results = Vue.component('items-results', {
     </div>
     `,
     methods: {
+        parseDate(date) {
+            if (date.split("-")[0] == "") {
+                year = "-" + "0".repeat(6 - date.split("-")[1].length) + date.split("-")[1]
+                return date.replace(/^-(\w+)(?=-)/g, year)
+            }
+            return date
+        },
         getTimePrecision(earliestDate, latestDate) {
             var earliestYear = earliestDate.getUTCFullYear();
             var earliestMonth = earliestDate.getUTCMonth() + 1;
@@ -64,7 +71,7 @@ results = Vue.component('items-results', {
                 noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedRanges[i].filterValue + " ?no. }).\n"
             }
             else {
-                timePrecision = this.getTimePrecision(new Date(this.appliedRanges[i].valueLL), new Date(this.appliedRanges[i].valueUL))
+                timePrecision = this.getTimePrecision(new Date(this.parseDate(this.appliedRanges[i].valueLL)), new Date(this.parseDate(this.appliedRanges[i].valueUL)))
                 filterRanges += "?value (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
                     "  ?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
                     "  ?timenode" + i + " wikibase:timePrecision ?timeprecision" + i + ".\n" +
@@ -275,6 +282,13 @@ viewallitems = Vue.component('view-all-items', {
             else if (yearDifference <= 1e6) return 3
             else if (yearDifference <= 1e8) return 1
             return 0
+        },
+        parseDate(date) {
+            if (date.split("-")[0] == "") {
+                year = "-" + "0".repeat(6 - date.split("-")[1].length) + date.split("-")[1]
+                return date.replace(/^-(\w+)(?=-)/g, year)
+            }
+            return date
         }
     },
     mounted() {
@@ -309,7 +323,7 @@ viewallitems = Vue.component('view-all-items', {
                 noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedRanges[i].filterValue + " ?no. }).\n"
             }
             else {
-                timePrecision = this.getTimePrecision(new Date(this.appliedRanges[i].valueLL), new Date(this.appliedRanges[i].valueUL))
+                timePrecision = this.getTimePrecision(new Date(this.parseDate(this.appliedRanges[i].valueLL)), new Date(this.parseDate(this.appliedRanges[i].valueUL)))
                 filterRanges += "?value (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
                     "  ?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
                     "  ?timenode" + i + " wikibase:timePrecision ?timeprecision" + i + ".\n" +

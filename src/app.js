@@ -337,6 +337,12 @@ var app = new Vue({
             }
             return date
         },
+        yearToBCFormat(year) {
+            if (Number(year) < 0) {
+                return (Number(year) * -1) + " BC"
+            }
+            return year
+        },
         parseDateRange(dateString) {
             dateParts = dateString.split("~")
             if (dateParts.length == 2) {// Date interval
@@ -349,8 +355,8 @@ var app = new Vue({
                 else if (dateParts[0].split("-").length == 2 && dateParts[1].split("-").length == 2) {
                     if (dateParts[0].split("-")[0] == "") {
                         // Negative year
-                        label1 = dateParts[0]
-                        label2 = dateParts[1]
+                        label1 = this.yearToBCFormat(dateParts[0])
+                        label2 = this.yearToBCFormat(dateParts[1])
                         return [dateParts[0] + "-01-01", dateParts[1] + "-12-30", label1 + " - " + label2]
                     }
                     else {
@@ -375,7 +381,7 @@ var app = new Vue({
                 else if (dateParts[0].split("-").length == 2) {
                     if (dateParts[0].split("-")[0] == "") {
                         // Negative year
-                        return [dateParts[0] + "-01-01", dateParts[0] + "-12-30", dateParts[0]]
+                        return [dateParts[0] + "-01-01", dateParts[0] + "-12-30", this.yearToBCFormat(dateParts[0])]
                     }
                     else {
                         // YYYY-MM
@@ -679,7 +685,7 @@ var app = new Vue({
                     noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedRanges[i].filterValue + " ?no. }).\n"
                 }
                 else {
-                    timePrecision = this.getTimePrecision(new Date(this.appliedRanges[i].valueLL), new Date(this.appliedRanges[i].valueUL))
+                    timePrecision = this.getTimePrecision(new Date(this.parseDate(this.appliedRanges[i].valueLL)), new Date(this.parseDate(this.appliedRanges[i].valueUL)))
                     filterRanges += "?value (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
                         "  ?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
                         "  ?timenode" + i + " wikibase:timePrecision ?timeprecision" + i + ".\n" +

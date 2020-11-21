@@ -769,7 +769,7 @@ filtervalues = Vue.component('filter-values', {
                 noValueString += " FILTER(NOT EXISTS { ?item wdt:" + this.appliedRanges[i].filterValue + " ?no. }).\n"
             }
             else if(this.appliedRanges[i].filterValue != this.currentFilter.value) {
-                timePrecision = this.getTimePrecision(new Date(this.appliedRanges[i].valueLL), new Date(this.appliedRanges[i].valueUL))
+                timePrecision = this.getTimePrecision(new Date(this.parseDate(this.appliedRanges[i].valueLL)), new Date(this.parseDate(this.appliedRanges[i].valueUL)))
                 filterRanges += "?item (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
                     "  ?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
                     "  ?timenode" + i + " wikibase:timePrecision ?timeprecision" + i + ".\n" +
@@ -777,6 +777,7 @@ filtervalues = Vue.component('filter-values', {
                     "  FILTER(?timeprecision" + i + ">=" + timePrecision + ")\n";
             }
             else{
+                timePrecision = this.getTimePrecision(new Date(this.appliedRanges[i].valueLL), new Date(this.appliedRanges[i].valueUL))
                 timeString = "?item (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode.\n" +
                     "  ?timenode wikibase:timeValue ?time.\n" +
                     "  ?timenode wikibase:timePrecision ?timeprecision.\n" +
