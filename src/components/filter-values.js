@@ -438,13 +438,24 @@ filtervalues = Vue.component('filter-values', {
                 // correctly.
                 var curYear = iniYear = Math.floor((earliestYear-1) / 100) * 100+1;
                 while (curYear <= latestYear) {
-                    propertyValues.push({
-                        bucketName: this.yearToBCFormat(curYear) + " - " + this.yearToBCFormat(curYear + 99),
-                        bucketLL: curYear + '-01-01',
-                        bucketUL: (curYear + 99) + '-12-30',
-                        size: 1,
-                        numValues: 0
-                    });
+                    if(curYear>0){
+                        propertyValues.push({
+                            bucketName: curYear + " - " + (curYear + 99),
+                            bucketLL: curYear + '-01-01',
+                            bucketUL: (curYear + 99) + '-12-30',
+                            size: 1,
+                            numValues: 0
+                        });
+                    }
+                    else{
+                        propertyValues.push({
+                            bucketName: this.yearToBCFormat(curYear-1) + " - " + this.yearToBCFormat(curYear + 98),
+                            bucketLL: curYear-1 + '-01-01',
+                            bucketUL: (curYear + 98) + '-12-30',
+                            size: 1,
+                            numValues: 0
+                        });
+                    }
                     curYear += 100;
                 }
                 for (var i = start; i <= end && val != 0; i++) {
