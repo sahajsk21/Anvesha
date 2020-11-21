@@ -75,22 +75,22 @@ filtervalues = Vue.component('filter-values', {
         <div class="content">
             <div v-if="itemsType==''">
                 <a @click="changePage('view-all-items')">{{ websiteText.viewList }}</a>
-                <p> {{ websiteText.gettingValues }} <b>{{currentFilter.valueLabel}}</b> ... </p>
+                <p v-html="displayMessage(websiteText.gettingValues, currentFilter.valueLabel)"></p>
                 <img src='images/loading.gif'>
             </div>
             <div v-else-if="itemsType=='Additionalempty'">
                 <a @click="changePage('view-all-items')">{{ websiteText.viewList }}</a>
-                <p>{{ websiteText.noAdditionalValues }} <b>{{currentFilter.valueLabel}}</b>.</p>
+                <p v-html="displayMessage(websiteText.noAdditionalValues, currentFilter.valueLabel)"></p>
             </div>
             <div v-else-if="itemsType=='Error'">
                 <a @click="changePage('view-all-items')">{{ websiteText.viewList }}</a>
-                <p>{{ websiteText.filterError }} <b>{{currentFilter.valueLabel}}</b>.</p>
+                <p v-html="displayMessage(websiteText.filterError, currentFilter.valueLabel)"></p>
             </div>
             <div v-else-if="itemsType=='Item'">
-                <p v-if="totalValues!=''">{{ websiteText.itemCount.split('|')[(totalValues>1?0:1)].replace('$1', (totalValues<1000000?numberWithCommas(totalValues):"1 million +")) }}</p>
+                <p v-if="totalValues!=''" v-html="displayMessage(websiteText.itemCount.split('|')[(totalValues>1?0:1)], (totalValues<1000000?numberWithCommas(totalValues):'1 million +'))"></p>
                 <a @click="changePage('view-all-items')">{{ websiteText.viewList }}</a>
-                <p v-if="appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) != -1"> {{ websiteText.selectAdditionalValue }} <b>{{currentFilter.valueLabel}}</b>:</p>
-                <p v-else> {{ websiteText.selectValue }} <b>{{currentFilter.valueLabel}}</b>:</p>
+                <p v-if="appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) != -1" v-html="displayMessage(websiteText.selectAdditionalValue, currentFilter.valueLabel)"></p>
+                <p v-else v-html="displayMessage(websiteText.selectValue, currentFilter.valueLabel)"></p>
                 <div v-if="items.length>resultsPerPage && itemsType=='Item'" style="text-align: center">
                     <a v-if="currentPage>1" @click="currentPage>1?currentPage--:''">&lt;</a>
                     <input 
@@ -127,9 +127,9 @@ filtervalues = Vue.component('filter-values', {
                 </ul>
             </div>
             <div v-else-if="itemsType=='ItemFail'">
-                <p><i>{{ websiteText.filterTimeout }}</i></p>
+                <p><i v-html="displayMessage(websiteText.filterTimeout, currentFilter.valueLabel)"></i></p>
                 <a @click="changePage('view-all-items')">{{ websiteText.viewList }}</a>
-                <p> {{ websiteText.selectValue }} <b>{{ currentFilter.valueLabel }}</b>:</p>
+                <p v-html="displayMessage(websiteText.selectValue, currentFilter.valueLabel)"></p>
                 <ul>
                     <li>
                         <i>
@@ -153,9 +153,9 @@ filtervalues = Vue.component('filter-values', {
                 </ul>
             </div>
             <div v-else-if="itemsType=='Time'">
-                <p v-if="totalValues!=''">{{ websiteText.itemCount.split('|')[(totalValues>1?0:1)].replace('$1', (totalValues<1000000?numberWithCommas(totalValues):"1 million +")) }}</p>
+                <p v-if="totalValues!=''" v-html="displayMessage(websiteText.itemCount.split('|')[(totalValues>1?0:1)], (totalValues<1000000?numberWithCommas(totalValues):'1 million +'))"></p>
                 <a @click="changePage('view-all-items')">{{ websiteText.viewList }}</a>
-                <p> {{ websiteText.selectValue }} <b>{{currentFilter.valueLabel}}</b>:</p>
+                <p v-html="displayMessage(websiteText.selectValue, currentFilter.valueLabel)"></p>
                 <ul v-if="displayCount == 1">
                     <li v-if="appliedRanges.findIndex(filter => filter.filterValue == currentFilter.value) ==-1">
                         <i>
@@ -205,9 +205,9 @@ filtervalues = Vue.component('filter-values', {
                 </ul>
             </div>
             <div v-else-if="itemsType=='TimeFail'">
-                <p><i>{{ websiteText.filterTimeout }}</i></p>
+                <p><i v-html="displayMessage(websiteText.filterTimeout, currentFilter.valueLabel)"></i></p>
                 <a @click="changePage('view-all-items')">{{ websiteText.viewList }}</a>
-                <p> {{ websiteText.selectValue }} <b>{{currentFilter.valueLabel}}</b>:</p>
+                <p v-html="displayMessage(websiteText.selectValue, currentFilter.valueLabel)"></p>
                 <ul>
                     <li>
                         <i>
@@ -232,10 +232,10 @@ filtervalues = Vue.component('filter-values', {
                 </ul>
             </div>
             <div v-else-if="itemsType=='Quantity'">
-                <p v-if="displayCount == 1 && totalValues!=''">{{ websiteText.itemCount.split('|')[(totalValues>1?0:1)].replace('$1', (totalValues<1000000?numberWithCommas(totalValues):"1 million +")) }}</p>
-                <p v-if="displayCount == 0"><i>{{ websiteText.filterTimeout }}</i></p>
+                <p v-if="displayCount == 1 && totalValues!=''" v-html="displayMessage(websiteText.itemCount.split('|')[(totalValues>1?0:1)], (totalValues<1000000?numberWithCommas(totalValues):'1 million +'))"></p>
+                <p v-if="displayCount == 0"><i v-html="displayMessage(websiteText.filterTimeout, currentFilter.valueLabel)"></i></p>
                 <a @click="changePage('view-all-items')">{{ websiteText.viewList }}</a>
-                <p> {{ websiteText.selectValue }} <b>{{currentFilter.valueLabel}}</b>:</p>
+                <p v-html="displayMessage(websiteText.selectValue, currentFilter.valueLabel)"></p>
                 <ul v-if="displayCount == 1">
                     <li v-if="appliedQuantities.findIndex(filter => filter.filterValue == currentFilter.value) ==-1">
                         <i>
@@ -302,6 +302,9 @@ filtervalues = Vue.component('filter-values', {
         },
         pathForView(view) {
             return window.location.href + '&view=' + view;
+        },
+        displayMessage(message, value){
+            return message.replace("$1","<b>"+value+"</b>")
         },
         applyFilter(filter) {
             this.$emit('apply-filter', filter)
@@ -433,7 +436,7 @@ filtervalues = Vue.component('filter-values', {
                 // This, and the other year-based ones, should probably be
                 // done as dates instead of just integers, to handle BC years
                 // correctly.
-                var curYear = iniYear = Math.floor(earliestYear / 100) * 100;
+                var curYear = iniYear = Math.floor((earliestYear-1) / 100) * 100+1;
                 while (curYear <= latestYear) {
                     propertyValues.push({
                         bucketName: this.yearToBCFormat(curYear) + " - " + this.yearToBCFormat(curYear + 99),

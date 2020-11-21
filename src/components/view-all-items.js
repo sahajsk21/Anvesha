@@ -205,7 +205,7 @@ viewallitems = Vue.component('view-all-items', {
                 <a class="classOptions" @click="changePage('filters')">{{ websiteText.addFilter }}</a>
             </div>
             <div><img v-if="totalValues==''" src='images/loading.gif'></div>
-            <div v-if="totalValues>0">{{ websiteText.itemCount.split('|')[(totalValues>1?0:1)].replace('$1', (totalValues<1000000?numberWithCommas(totalValues):"1 million +")) }}</div>
+            <div v-if="totalValues>0" v-html="displayMessage(websiteText.itemCount.split('|')[(totalValues>1?0:1)], (totalValues<1000000?numberWithCommas(totalValues):'1 million +'))"></div>
             <div v-if="totalValues>resultsPerPage" style="text-align: center">
                 <a v-if="currentPage>1" @click="currentPage>1?currentPage--:''">&lt;</a>
                 <input 
@@ -245,6 +245,9 @@ viewallitems = Vue.component('view-all-items', {
         },
         pathForFilter(filter) {
             return window.location.href + '&cf=' + filter.value.value.split('/').slice(-1)[0];
+        },
+        displayMessage(message, value) {
+            return message.replace("$1", "<b>" + value + "</b>")
         },
         changePage(page) {
             this.$emit('change-page', page)
