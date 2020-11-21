@@ -87,9 +87,10 @@ filtervalues = Vue.component('filter-values', {
                 <p>{{ websiteText.filterError }} <b>{{currentFilter.valueLabel}}</b>.</p>
             </div>
             <div v-else-if="itemsType=='Item'">
-                <p v-if="totalValues!=''">{{ websiteText.itemCount.replace('$1', (totalValues<1000000?numberWithCommas(totalValues):"1 million +")) }}</p>
+                <p v-if="totalValues!=''">{{ websiteText.itemCount.split('|')[(totalValues>1?0:1)].replace('$1', (totalValues<1000000?numberWithCommas(totalValues):"1 million +")) }}</p>
                 <a @click="changePage('view-all-items')">{{ websiteText.viewList }}</a>
-                <p> {{ websiteText.selectValue.split('|')[(appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) != -1 ? 1 : 0)] }} <b>{{currentFilter.valueLabel}}</b>:</p>
+                <p v-if="appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) != -1"> {{ websiteText.selectAdditionalValue }} <b>{{currentFilter.valueLabel}}</b>:</p>
+                <p v-else> {{ websiteText.selectValue }} <b>{{currentFilter.valueLabel}}</b>:</p>
                 <div v-if="items.length>resultsPerPage && itemsType=='Item'" style="text-align: center">
                     <a v-if="currentPage>1" @click="currentPage>1?currentPage--:''">&lt;</a>
                     <input 
@@ -120,7 +121,7 @@ filtervalues = Vue.component('filter-values', {
                             {{item.valueLabel.value}}
                         </a> 
                         <span class="result-count">
-                            {{ websiteText.results.replace('$1', numberWithCommas(item.count.value)) }}
+                            {{ websiteText.results.split('|')[((item.count.value)>1?0:1)].replace('$1', numberWithCommas(item.count.value)) }}
                         <span>
                     </li>
                 </ul>
@@ -128,7 +129,7 @@ filtervalues = Vue.component('filter-values', {
             <div v-else-if="itemsType=='ItemFail'">
                 <p><i>{{ websiteText.filterTimeout }}</i></p>
                 <a @click="changePage('view-all-items')">{{ websiteText.viewList }}</a>
-                <p> {{ websiteText.selectValue.split('|')[0] }} <b>{{ currentFilter.valueLabel }}</b>:</p>
+                <p> {{ websiteText.selectValue }} <b>{{ currentFilter.valueLabel }}</b>:</p>
                 <ul>
                     <li>
                         <i>
@@ -152,9 +153,9 @@ filtervalues = Vue.component('filter-values', {
                 </ul>
             </div>
             <div v-else-if="itemsType=='Time'">
-                <p v-if="totalValues!=''">{{ websiteText.itemCount.replace('$1', (totalValues<1000000?numberWithCommas(totalValues):"1 million +")) }}</p>
+                <p v-if="totalValues!=''">{{ websiteText.itemCount.split('|')[(totalValues>1?0:1)].replace('$1', (totalValues<1000000?numberWithCommas(totalValues):"1 million +")) }}</p>
                 <a @click="changePage('view-all-items')">{{ websiteText.viewList }}</a>
-                <p> {{ websiteText.selectValue.split('|')[1] }} <b>{{currentFilter.valueLabel}}</b>:</p>
+                <p> {{ websiteText.selectValue }} <b>{{currentFilter.valueLabel}}</b>:</p>
                 <ul v-if="displayCount == 1">
                     <li v-if="appliedRanges.findIndex(filter => filter.filterValue == currentFilter.value) ==-1">
                         <i>
@@ -176,7 +177,7 @@ filtervalues = Vue.component('filter-values', {
                             {{item.bucketName}} 
                         </a> 
                         <span class="result-count">
-                            {{ websiteText.results.replace('$1',numberWithCommas(item.numValues)) }}
+                            {{ websiteText.results.split('|')[(item.numValues>1?0:1)].replace('$1',numberWithCommas(item.numValues)) }}
                         <span>
                     </li>
                 </ul>
@@ -206,7 +207,7 @@ filtervalues = Vue.component('filter-values', {
             <div v-else-if="itemsType=='TimeFail'">
                 <p><i>{{ websiteText.filterTimeout }}</i></p>
                 <a @click="changePage('view-all-items')">{{ websiteText.viewList }}</a>
-                <p> {{ websiteText.selectValue.split('|')[0] }} <b>{{currentFilter.valueLabel}}</b>:</p>
+                <p> {{ websiteText.selectValue }} <b>{{currentFilter.valueLabel}}</b>:</p>
                 <ul>
                     <li>
                         <i>
@@ -231,10 +232,10 @@ filtervalues = Vue.component('filter-values', {
                 </ul>
             </div>
             <div v-else-if="itemsType=='Quantity'">
-                <p v-if="displayCount == 1 && totalValues!=''">{{ websiteText.itemCount.replace('$1', (totalValues<1000000?numberWithCommas(totalValues):"1 million +")) }}</p>
+                <p v-if="displayCount == 1 && totalValues!=''">{{ websiteText.itemCount.split('|')[(totalValues>1?0:1)].replace('$1', (totalValues<1000000?numberWithCommas(totalValues):"1 million +")) }}</p>
                 <p v-if="displayCount == 0"><i>{{ websiteText.filterTimeout }}</i></p>
                 <a @click="changePage('view-all-items')">{{ websiteText.viewList }}</a>
-                <p> {{ websiteText.selectValue.split('|')[0] }} <b>{{currentFilter.valueLabel}}</b>:</p>
+                <p> {{ websiteText.selectValue }} <b>{{currentFilter.valueLabel}}</b>:</p>
                 <ul v-if="displayCount == 1">
                     <li v-if="appliedQuantities.findIndex(filter => filter.filterValue == currentFilter.value) ==-1">
                         <i>
@@ -256,7 +257,7 @@ filtervalues = Vue.component('filter-values', {
                             {{item.bucketName}} {{item.unit}} 
                         </a> 
                         <span class="result-count">
-                            {{ websiteText.results.replace('$1',numberWithCommas(item.numValues)) }}
+                            {{ websiteText.results.split('|')[(item.numValues>1?0:1)].replace('$1',numberWithCommas(item.numValues)) }}
                         <span>
                     </li>
                 </ul>

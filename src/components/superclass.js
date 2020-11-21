@@ -53,7 +53,7 @@ superclass = Vue.component('superclass-view', {
                             {{item.valueLabel.value}}
                         </a> 
                         <span class="result-count" v-if="displayCount==0">
-                            {{ websiteText.results.replace('$1',item.count.value) }}
+                            {{ websiteText.results.split('|')[(item.count.value>1?0:1)].replace('$1',item.count.value) }}
                         </span>
                     </li>
                 </ul>
