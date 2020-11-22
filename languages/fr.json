@@ -1,9 +1,8 @@
 {
     "itemCount": "Il y a $1 articles qui correspondent à cette description. | Il y a $1 élément qui correspond à cette description.",
-    "about": "Sur",
     "classPlaceholder": "Entrer en classe",
     "browse": "Ou parcourez l'une des classes suivantes:",
-    "filtersCount": "Aucun filtre n'est défini pour cette classe.",
+    "noFiltersDefined": "Aucun filtre n'est défini pour cette classe.",
     "addFilter": "Ajouter un filtre",
     "viewQuery": "Afficher la requête SPARQL",
     "noItems": "Aucun article ne correspond à cette description.",

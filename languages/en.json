@@ -1,9 +1,8 @@
 {
     "itemCount": "There are $1 items that match this description. | There is $1 item that matches this description.",
-    "about": "About",
     "classPlaceholder": "Enter Class",
     "browse": "Or, browse any of the following classes:",
-    "filtersCount": "No filter is defined for this class.",
+    "noFiltersDefined": "No filter is defined for this class.",
     "addFilter": "Add a filter",
     "viewQuery": "View SPARQL query",
     "noItems": "No item matches this description.",
