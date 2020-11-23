@@ -80,7 +80,7 @@ topnav = Vue.component('top-nav', {
                 @click.exact="changePage('class-filter')" 
                 @click.ctrl="window.open(mainPagePath(), '_blank')">
                 {{ siteName }}
-                <img :src="LOGO" class="logo">
+                <img v-if="logo!=''" :src="logo" class="logo">
             </a>
             <div class="topnav-right">
                 <a v-for="(link,title) in linksInTopNav" :href="link">{{ title }}</a>
