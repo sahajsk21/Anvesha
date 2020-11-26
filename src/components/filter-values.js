@@ -303,8 +303,8 @@ filtervalues = Vue.component('filter-values', {
         pathForView(view) {
             return window.location.href + '&view=' + view;
         },
-        displayMessage(message, value){
-            return message.replace("$1","<b>"+value+"</b>")
+        displayMessage(message, value) {
+            return message.replace("$1", "<b>" + value + "</b>")
         },
         applyFilter(filter) {
             this.$emit('apply-filter', filter)
@@ -352,258 +352,197 @@ filtervalues = Vue.component('filter-values', {
             }
             return 'Invalid month - ' + monthNum;
         },
-        monthStringToNumber(monthName) {
-            if (monthName == 'January') {
-                return 1;
-            } else if (monthName == 'February') {
-                return 2;
-            } else if (monthName == 'March') {
-                return 3;
-            } else if (monthName == 'April') {
-                return 4;
-            } else if (monthName == 'May') {
-                return 5;
-            } else if (monthName == 'June') {
-                return 6;
-            } else if (monthName == 'July') {
-                return 7;
-            } else if (monthName == 'August') {
-                return 8;
-            } else if (monthName == 'September') {
-                return 9;
-            } else if (monthName == 'October') {
-                return 10;
-            } else if (monthName == 'November') {
-                return 11;
-            } else if (monthName == 'December') {
-                return 12;
-            }
-            return 'Invalid month - ' + monthName;
-        },
-        parseDate(date) {
-            if (date.split("-")[0] == "") {
-                year = "-" + "0".repeat(6 - date.split("-")[1].length) + date.split("-")[1]
-                return date.replace(/^-(\w+)(?=-)/g, year)
-            }
-            return date
-        },
-        yearToBCFormat(year) {
+        yearsToBCFormat(year) {
             if (Number(year) < 0) {
                 return (Number(year) * -1) + " BC"
             }
             return year
         },
-        getUTCTime(date){
-            localTime = date.getTime()
-            localOffset = date.getTimezoneOffset() * 60000;
-            utc = localTime + localOffset;
-            return new Date(utc)
+        getDateObject(date) {
+            s = date.split("-")
+            if (s.length == 3) {
+                return { year: s[0], month: s[1], day: s[2] }
+            }
+            else {
+                return { year: "-" + "0".repeat(6 - s[1].length) + s[1], month: s[2], day: s[3] }
+            }
         },
-        generateDatePropertyValues(dateArray, range) {
-            var len = dateArray.length,
-                start = 0,
-                end = len - 1;
-            len > 50000 ? val = 0 : val = 1;
-            for (let i = start; i <= end; i++) {
-                dateArray[i].time.value = this.parseDate(dateArray[i].time.value)
+        getTimePrecision(ear, lat) {
+            earliestDate = this.getDateObject(ear)
+            latestDate = this.getDateObject(lat)
+            var earliestYear = earliestDate.year;
+            var earliestMonth = earliestDate.month;
+            var earliestDay = earliestDate.day;
+            var latestYear = latestDate.year;
+            var latestMonth = latestDate.month;
+            var latestDay = latestDate.day;
+            var yearDifference = latestYear - earliestYear;
+            var monthDifference = (12 * yearDifference) + (latestMonth - earliestMonth);
+            var dayDifference = (30 * monthDifference) + (latestDay - earliestDay);
+            if (dayDifference <= 1) return 12
+            else if (monthDifference <= 1) return 11
+            else if (yearDifference <= 1) return 10
+            else if (yearDifference <= 10) return 9
+            else if (yearDifference <= 100) return 8
+            else if (yearDifference <= 1000) return 7
+            else if (yearDifference <= 1e4) return 6
+            else if (yearDifference <= 1e5) return 5
+            else if (yearDifference <= 1e6) return 4
+            else if (yearDifference <= 1e8) return 2
+            return 0
+        },
+        generateDateBuckets(rawData) {
+            dates = []
+            for (let i = 0; i < rawData.length; i++) {
+                if (rawData[i].time.hasOwnProperty("datatype")) {
+                    date = rawData[i].time.value.split("T")[0]
+                    dates.push(this.getDateObject(date))
+                }
             }
-            ll = earliestDate = this.getUTCTime(new Date(dateArray[start].time.value))
-            ul = latestDate = this.getUTCTime(new Date(dateArray[end].time.value))
-            index = this.appliedRanges.findIndex(filter => filter.filterValue == range.value);
-            if (index != -1) {
-                ll = new Date(this.parseDate(String(this.appliedRanges[index].valueLL)));
-                ul = new Date(this.parseDate(String(this.appliedRanges[index].valueUL)));
-            }
-            while (earliestDate < ll || earliestDate == "Invalid Date") {
-                start++;
-                earliestDate = this.getUTCTime(new Date(dateArray[start].time.value));
-            }
-            while (latestDate > ul || latestDate == "Invalid Date") {
-                latestDate = this.getUTCTime(new Date(dateArray[--end].time.value));
-            }
-            var earliestYear = earliestDate.getFullYear();
-            var earliestMonth = earliestDate.getMonth() + 1;
-            var earliestDay = earliestDate.getDate();
-            var latestYear = latestDate.getFullYear();
-            var latestMonth = latestDate.getMonth() + 1;
-            var latestDay = latestDate.getDate();
+            var earliestYear = Number(dates[0].year);
+            var earliestMonth = Number(dates[0].month);
+            var earliestDay = Number(dates[0].day);
+            var latestYear = Number(dates[dates.length - 1].year);
+            var latestMonth = Number(dates[dates.length - 1].month);
+            var latestDay = Number(dates[dates.length - 1].day);
             var yearDifference = latestYear - earliestYear;
             var monthDifference = (12 * yearDifference) + (latestMonth - earliestMonth);
             var dayDifference = (30 * monthDifference) + (latestDay - earliestDay);
             var propertyValues = [];
             if (yearDifference > 300) {
-                // Split into centuries.
-                // This, and the other year-based ones, should probably be
-                // done as dates instead of just integers, to handle BC years
-                // correctly.
-                var curYear = iniYear = Math.floor((earliestYear-1) / 100) * 100+1;
+                curYear = iniYear = Math.floor(earliestYear / 100) * 100;
                 while (curYear <= latestYear) {
-                    if(curYear>0){
+                    if (curYear < 0) {
                         propertyValues.push({
-                            bucketName: curYear + " - " + (curYear + 99),
-                            bucketLL: curYear + '-01-01',
-                            bucketUL: (curYear + 99) + '-12-30',
+                            bucketName: this.yearToBCFormat(curYear) + " - " + this.yearToBCFormat(curYear + 99),
+                            bucketLL: { year: curYear, month: "01", day: "01" },
+                            bucketUL: { year: curYear + 99, month: "12", day: "31" },
                             size: 1,
                             numValues: 0
                         });
                     }
-                    else{
+                    else {
                         propertyValues.push({
-                            bucketName: this.yearToBCFormat(curYear-1) + " - " + this.yearToBCFormat(curYear + 98),
-                            bucketLL: curYear-1 + '-01-01',
-                            bucketUL: (curYear + 98) + '-12-30',
+                            bucketName: (curYear + 1) + " - " + (curYear + 100),
+                            bucketLL: { year: curYear + 1, month: "01", day: "01" },
+                            bucketUL: { year: curYear + 100, month: "12", day: "31" },
                             size: 1,
                             numValues: 0
                         });
                     }
-                    curYear += 100;
+                    curYear = curYear + 100;
                 }
-                for (var i = start; i <= end && val != 0; i++) {
-                    date = this.getUTCTime(new Date(dateArray[i].time.value));
-                    year = Number(date.getFullYear());
-                    index = Math.floor((year - iniYear) / 100);
-                    propertyValues[index].numValues += 1
+                for (let i = 0; i < dates.length; i++) {
+                    index = Math.floor((Number(dates[i].year) - iniYear) / 100);
+                    propertyValues[index].numValues += 1;
                 }
             } else if (yearDifference > 150) {
-                // Split into fifty-year increments.
-                var curYear = iniYear = Math.floor(earliestYear / 50) * 50;
+                curYear = iniYear = Math.floor(earliestYear / 50) * 50;
                 while (curYear <= latestYear) {
-                    propertyValues.push({
-                        bucketName: this.yearToBCFormat(curYear) + " - " + this.yearToBCFormat(curYear + 49),
-                        bucketLL: curYear + '-01-01',
-                        bucketUL: (curYear + 49) + '-12-30',
-                        size: 1,
-                        numValues: 0
-                    });
-                    curYear += 50;
+                    if (curYear < 0) {
+                        propertyValues.push({
+                            bucketName: this.yearToBCFormat(curYear) + " - " + this.yearToBCFormat(curYear + 49),
+                            bucketLL: { year: curYear, month: "01", day: "01" },
+                            bucketUL: { year: curYear + 49, month: "12", day: "31" },
+                            size: 1,
+                            numValues: 0
+                        });
+                    }
+                    else {
+                        propertyValues.push({
+                            bucketName: (curYear + 1) + " - " + (curYear + 50),
+                            bucketLL: { year: curYear + 1, month: "01", day: "01" },
+                            bucketUL: { year: curYear + 50, month: "12", day: "31" },
+                            size: 1,
+                            numValues: 0
+                        });
+                    }
+                    curYear = curYear + 50
                 }
-                for (var i = start; i <= end && val != 0; i++) {
-                    date = this.getUTCTime(new Date(dateArray[i].time.value));
-                    year = Number(date.getFullYear());
-                    index = Math.floor((year - iniYear) / 50);
-                    propertyValues[index].numValues += 1
-                }
-            } else if (yearDifference > 50) {
-                // Split into decades.
-                var curYear = iniYear = Math.floor(earliestYear / 10) * 10;
-                while (curYear <= latestYear) {
-                    propertyValues.push({
-                        bucketName: this.yearToBCFormat(curYear) + " - " + this.yearToBCFormat(curYear + 9),
-                        bucketLL: curYear + '-01-01',
-                        bucketUL: (curYear + 9) + '-12-30',
-                        size: 1,
-                        numValues: 0
-                    });
-                    curYear += 10;
-                }
-                for (var i = start; i <= end && val != 0; i++) {
-                    date = this.getUTCTime(new Date(dateArray[i].time.value));
-                    year = Number(date.getFullYear());
-                    index = Math.floor((year - iniYear) / 10);
-                    propertyValues[index].numValues += 1
+                for (let i = 0; i < dates.length; i++) {
+                    index = Math.floor((Number(dates[i].year) - iniYear) / 50);
+                    propertyValues[index].numValues += 1;
                 }
             } else if (yearDifference > 15) {
-                // Split into five-year increments.
-                var curYear = iniYear = Math.floor(earliestYear / 5) * 5;
+                curYear = iniYear = Math.floor(earliestYear / 5) * 5;
                 while (curYear <= latestYear) {
                     propertyValues.push({
                         bucketName: this.yearToBCFormat(curYear) + " - " + this.yearToBCFormat(curYear + 4),
-                        bucketLL: curYear + '-01-01',
-                        bucketUL: (curYear + 4) + '-12-30',
+                        bucketLL: { year: curYear, month: "01", day: "01" },
+                        bucketUL: { year: curYear + 4, month: "12", day: "31" },
                         size: 1,
                         numValues: 0
                     });
-                    curYear += 5;
+                    curYear = curYear + 5
                 }
-                for (var i = start; i <= end && val != 0; i++) {
-                    date = this.getUTCTime(new Date(dateArray[i].time.value));
-                    year = Number(date.getFullYear());
-                    index = Math.floor((year - iniYear) / 5);
-                    propertyValues[index].numValues += 1
+                for (let i = 0; i < dates.length; i++) {
+                    index = Math.floor((Number(dates[i].year) - iniYear) / 5);
+                    propertyValues[index].numValues += 1;
                 }
             } else if (yearDifference > 2) {
-                // Split into years.
-                var curYear = iniYear = earliestYear;
+                curYear = earliestYear;
                 while (curYear <= latestYear) {
                     propertyValues.push({
                         bucketName: this.yearToBCFormat(curYear),
-                        bucketLL: curYear + '-01-01',
-                        bucketUL: curYear + '-12-30',
+                        bucketLL: { year: curYear, month: "01", day: "01" },
+                        bucketUL: { year: curYear, month: "12", day: "31" },
                         size: 2,
                         numValues: 0
                     });
                     curYear++;
                 }
-                for (var i = start; i <= end && val != 0; i++) {
-                    date = this.getUTCTime(new Date(dateArray[i].time.value));
-                    year = Number(date.getFullYear());
-                    index = Math.floor(year - iniYear);
-                    propertyValues[index].numValues += 1
+                for (let i = 0; i < dates.length; i++) {
+                    index = Math.floor(Number(dates[i].year) - earliestYear);
+                    propertyValues[index].numValues += 1;
                 }
             } else if (monthDifference > 1) {
-                // Split into months.
-                var curYear = iniYear = earliestYear;
-                var curMonth = iniMonth = earliestMonth;
-                // Add in year filter values as well, to handle year-only
-                // values.
+                var curYear = earliestYear;
+                var curMonth = earliestMonth;
                 while (curYear < latestYear || (curYear == latestYear && curMonth <= latestMonth)) {
                     propertyValues.push({
                         bucketName: this.monthNumberToString(curMonth) + " " + this.yearToBCFormat(curYear),
-                        bucketLL: curYear + "-" + curMonth + "-01",
-                        bucketUL: curYear + "-" + curMonth + "-30",
+                        bucketLL: { year: curYear, month: curMonth, day: "01" },
+                        bucketUL: { year: curYear, month: curMonth, day: "30" },
                         size: 3,
                         numValues: 0
                     });
                     if (curMonth == 12) {
                         curMonth = 1;
                         curYear++;
-                        // Year-only filter value.
-                        // propertyValues.push(curYear);
                     } else {
                         curMonth++;
                     }
                 }
-                for (var i = start; i <= end && val != 0; i++) {
-                    date = this.getUTCTime(new Date(dateArray[i].time.value));
-                    year = date.getFullYear();
-                    month = date.getMonth();
-                    index = Math.floor(((year - iniYear) * 12 + month - iniMonth + 1));
-                    propertyValues[index].numValues += 1
+                for (let i = 0; i < dates.length; i++) {
+                    index = Math.floor((Number(dates[i].year) - earliestYear) * 12 + Number(dates[i].month) - earliestMonth);
+                    propertyValues[index].numValues += 1;
                 }
             } else if (dayDifference > 1) {
-                // Split into days.
                 var curDay = iniDay = earliestDay
                 while (curDay <= latestDay) {
                     propertyValues.push({
                         bucketName: this.monthNumberToString(earliestMonth) + " " + curDay + ", " + earliestYear,
-                        bucketLL: earliestYear + "-" + earliestMonth + "-" + curDay,
-                        bucketUL: earliestYear + "-" + earliestMonth + "-" + (curDay + 1),
+                        bucketLL: { year: earliestYear, month: earliestMonth, day: curDay },
+                        bucketUL: { year: earliestYear, month: earliestMonth, day: curDay+1 },
                         size: 4,
                         numValues: 0
                     });
                     curDay += 1;
                 }
-                for (var i = start; i <= end && val != 0; i++) {
-                    date = this.getUTCTime(new Date(dateArray[i].time.value));
-                    day = Number(date.getDate());
-                    index = Math.floor(day - iniDay);
+                for (let i = 0; i < dates.length; i++) {
+                    index = Math.floor(Number(dates[i].day) - iniDay);
                     propertyValues[index].numValues += 1
                 }
             } else if (dayDifference == 0) {
-
-                var curDate = new Date();
-                curDate.setTime(earliestDate.getTime());
                 propertyValues.push({
-                    bucketName: this.monthNumberToString(curDate.getMonth() + 1) + " " + curDate.getDate() + ", " + curDate.getFullYear(),
-                    bucketLL: curDate.getFullYear() + "-" + (curDate.getMonth() + 1) + "-" + curDate.getDate(),
-                    bucketUL: curDate.getFullYear() + "-" + (curDate.getMonth() + 1) + "-" + (curDate.getDate() + 1),
+                    bucketName: this.monthNumberToString(earliestMonth) + " " + earliestDay + ", " + earliestYear,
+                    bucketLL: { year: earliestYear, month: earliestMonth, day: earliestDay },
+                    bucketUL: { year: earliestYear, month: earliestMonth, day: earliestDay+1 },
                     size: 5,
-                    numValues: len
-
+                    numValues: dates.length
                 });
             }
-            this.displayCount = val;
-            return propertyValues;
+            return propertyValues
         },
         getNearestNiceNumber(num, previousNum, nextNum) {
             if (previousNum == null) {
@@ -742,28 +681,6 @@ filtervalues = Vue.component('filter-values', {
                 propertyValues[curSeparator]['numValues']++;
             }
             return propertyValues;
-        },
-        getTimePrecision(earliestDate, latestDate) {
-            var earliestYear = earliestDate.getFullYear();
-            var earliestMonth = earliestDate.getMonth() + 1;
-            var earliestDay = earliestDate.getDate();
-            var latestYear = latestDate.getFullYear();
-            var latestMonth = latestDate.getMonth() + 1;
-            var latestDay = latestDate.getDate();
-            var yearDifference = latestYear - earliestYear;
-            var monthDifference = (12 * yearDifference) + (latestMonth - earliestMonth);
-            var dayDifference = (30 * monthDifference) + (latestDay - earliestDay);
-            if (dayDifference <= 1) return 11
-            else if (monthDifference <= 1) return 10
-            else if (yearDifference <= 1) return 9
-            else if (yearDifference <= 10) return 8
-            else if (yearDifference <= 100) return 7
-            else if (yearDifference <= 1000) return 6
-            else if (yearDifference <= 1e4) return 5
-            else if (yearDifference <= 1e5) return 4
-            else if (yearDifference <= 1e6) return 3
-            else if (yearDifference <= 1e8) return 1
-            return 0
         }
     },
     mounted() {
@@ -783,16 +700,16 @@ filtervalues = Vue.component('filter-values', {
             if (this.appliedRanges[i].valueLL == "novalue") {
                 noValueString += " FILTER(NOT EXISTS { ?item wdt:" + this.appliedRanges[i].filterValue + " ?no. }).\n"
             }
-            else if(this.appliedRanges[i].filterValue != this.currentFilter.value) {
-                timePrecision = this.getTimePrecision(new Date(this.parseDate(this.appliedRanges[i].valueLL)), new Date(this.parseDate(this.appliedRanges[i].valueUL)))
+            else if (this.appliedRanges[i].filterValue != this.currentFilter.value) {
+                timePrecision = this.getTimePrecision(this.appliedRanges[i].valueLL, this.appliedRanges[i].valueUL)
                 filterRanges += "?item (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
                     "  ?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
                     "  ?timenode" + i + " wikibase:timePrecision ?timeprecision" + i + ".\n" +
                     "  FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?time" + i + " && ?time" + i + " <= '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n" +
                     "  FILTER(?timeprecision" + i + ">=" + timePrecision + ")\n";
             }
-            else{
-                timePrecision = this.getTimePrecision(new Date(this.appliedRanges[i].valueLL), new Date(this.appliedRanges[i].valueUL))
+            else {
+                timePrecision = this.getTimePrecision(this.appliedRanges[i].valueLL, this.appliedRanges[i].valueUL)
                 timeString = "?item (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode.\n" +
                     "  ?timenode wikibase:timeValue ?time.\n" +
                     "  ?timenode wikibase:timePrecision ?timeprecision.\n" +
@@ -844,19 +761,19 @@ filtervalues = Vue.component('filter-values', {
                     axios.get(fullUrl)
                         .then(response => {
                             if (response.data['results']['bindings'].length) {
-                                arr = this.generateDatePropertyValues(response.data['results']['bindings'], this.currentFilter)
+                                arr = this.generateDateBuckets(response.data['results']['bindings'])
                                 for (var i = 0; i < arr.length; i++) {
                                     var q = window.location.search;
                                     parameters = new URLSearchParams(q)
                                     parameters.delete("cf")
-                                    if (arr[i].size == 1) parameters.set("r." + this.currentFilter.value, (new Date(this.parseDate(arr[i].bucketLL))).getFullYear() + "~" + (new Date(this.parseDate(arr[i].bucketUL))).getFullYear())
-                                    else if (arr[i].size == 2) parameters.set("r." + this.currentFilter.value, (new Date(this.parseDate(arr[i].bucketLL))).getFullYear())
-                                    else if (arr[i].size == 3) parameters.set("r." + this.currentFilter.value, (new Date(this.parseDate(arr[i].bucketLL))).getFullYear() + "-" + (Number((new Date(arr[i].bucketLL)).getMonth()) + 1))
-                                    else if (arr[i].size == 4) parameters.set("r." + this.currentFilter.value, arr[i].bucketLL)
-                                    else if (arr[i].size == 5) parameters.set("r." + this.currentFilter.value, arr[i].bucketLL)
+                                    if (arr[i].size == 1) parameters.set("r." + this.currentFilter.value, arr[i].bucketLL.year + "~" + arr[i].bucketUL.year)
+                                    else if (arr[i].size == 2) parameters.set("r." + this.currentFilter.value, arr[i].bucketLL.year)
+                                    else if (arr[i].size == 3) parameters.set("r." + this.currentFilter.value, arr[i].bucketLL.year + "-" + arr[i].bucketLL.month)
+                                    else if (arr[i].size == 4) parameters.set("r." + this.currentFilter.value, arr[i].bucketLL.year + "-" + arr[i].bucketLL.month + "-" + arr[i].bucketLL.day)
+                                    else if (arr[i].size == 5) parameters.set("r." + this.currentFilter.value, arr[i].bucketLL.year + "-" + arr[i].bucketLL.month + "-" + arr[i].bucketLL.day)
                                     arr[i]['href'] = window.location.pathname + "?" + parameters
                                 }
-                                if(arr.length) {
+                                if (arr.length) {
                                     vm.items = arr;
                                     this.itemsType = 'Time'
                                 }
@@ -886,16 +803,16 @@ filtervalues = Vue.component('filter-values', {
                             axios.get(fullUrl)
                                 .then(res => {
                                     if (res.data['results']['bindings'].length) {
-                                        arr = vm.generateDatePropertyValues(res.data['results']['bindings'], vm.currentFilter)
+                                        arr = vm.generateDateBuckets(res.data['results']['bindings'], vm.currentFilter)
                                         for (var i = 0; i < arr.length; i++) {
                                             var q = window.location.search;
                                             parameters = new URLSearchParams(q)
                                             parameters.delete("cf")
-                                            if (arr[i].size == 1) parameters.set("r." + this.currentFilter.value, (new Date(this.parseDate(arr[i].bucketLL))).getFullYear() + "~" + (new Date(this.parseDate(arr[i].bucketUL))).getFullYear())
-                                            else if (arr[i].size == 2) parameters.set("r." + this.currentFilter.value, (new Date(this.parseDate(arr[i].bucketLL))).getFullYear())
-                                            else if (arr[i].size == 3) parameters.set("r." + this.currentFilter.value, (new Date(this.parseDate(arr[i].bucketLL))).getFullYear() + "-" + (Number((new Date(arr[i].bucketLL)).getMonth()) + 1))
-                                            else if (arr[i].size == 4) parameters.set("r." + this.currentFilter.value, arr[i].bucketLL)
-                                            else if (arr[i].size == 5) parameters.set("r." + this.currentFilter.value, arr[i].bucketLL)
+                                            if (arr[i].size == 1) parameters.set("r." + vm.currentFilter.value, arr[i].bucketLL.year + "~" + arr[i].bucketUL.year)
+                                            else if (arr[i].size == 2) parameters.set("r." + vm.currentFilter.value, arr[i].bucketLL.year)
+                                            else if (arr[i].size == 3) parameters.set("r." + vm.currentFilter.value, arr[i].bucketLL.year + "-" + arr[i].bucketLL.month)
+                                            else if (arr[i].size == 4) parameters.set("r." + vm.currentFilter.value, arr[i].bucketLL.year + "-" + arr[i].bucketLL.month + "-" + arr[i].bucketLL.day)
+                                            else if (arr[i].size == 5) parameters.set("r." + vm.currentFilter.value, arr[i].bucketLL.year + "-" + arr[i].bucketLL.month + "-" + arr[i].bucketLL.day)
                                             arr[i]['href'] = window.location.pathname + "?" + parameters
                                         }
                                         vm.items = arr

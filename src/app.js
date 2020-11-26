@@ -164,15 +164,14 @@ var app = new Vue({
                         filterValue: this.currentFilter.value,
                         filterValueLabel: this.currentFilter.valueLabel,
                         valueLabel: range.bucketName,
-                        valueLL: range.bucketLL,
-                        valueUL: range.bucketUL
+                        valueLL: Object.values(range.bucketLL).join("-"),
+                        valueUL: Object.values(range.bucketUL).join("-")
                     }
-                    if (range.size == 1) urlParams.set("r." + this.currentFilter.value, (new Date(this.parseDate(range.bucketLL))).getUTCFullYear() + "~" + (new Date(this.parseDate(range.bucketUL))).getUTCFullYear())
-                    else if (range.size == 2) urlParams.set("r." + this.currentFilter.value, (new Date(this.parseDate(range.bucketLL))).getUTCFullYear())
-                    else if (range.size == 3) urlParams.set("r." + this.currentFilter.value, (new Date(this.parseDate(range.bucketLL))).getUTCFullYear() + "-" + (Number((new Date(range.bucketLL)).getUTCMonth()) + 1))
-                    else if (range.size == 4) urlParams.set("r." + this.currentFilter.value, range.bucketLL)
-                    else if (range.size == 5) urlParams.set("r." + this.currentFilter.value, range.bucketLL)
-
+                    if (range.size == 1) urlParams.set("r." + this.currentFilter.value, range.bucketLL.year + "~" + range.bucketUL.year)
+                    else if (range.size == 2) urlParams.set("r." + this.currentFilter.value, range.bucketLL.year)
+                    else if (range.size == 3) urlParams.set("r." + this.currentFilter.value, range.bucketLL.year + "-" + range.bucketLL.month)
+                    else if (range.size == 4) urlParams.set("r." + this.currentFilter.value, range.bucketLL.year + "-" + range.bucketLL.month + "-" + range.bucketLL.day)
+                    else if (range.size == 5) urlParams.set("r." + this.currentFilter.value, range.bucketLL.year + "-" + range.bucketLL.month + "-" + range.bucketLL.day)
                 }
             }
             else {
@@ -191,14 +190,14 @@ var app = new Vue({
                         filterValue: this.currentFilter.value,
                         filterValueLabel: this.currentFilter.valueLabel,
                         valueLabel: range.bucketName,
-                        valueLL: range.bucketLL,
-                        valueUL: range.bucketUL
+                        valueLL: Object.values(range.bucketLL).join("-"),
+                        valueUL: Object.values(range.bucketUL).join("-")
                     });
-                    if (range.size == 1) urlParams.set("r." + this.currentFilter.value, (new Date(this.parseDate(range.bucketLL))).getUTCFullYear() + "~" + (new Date(this.parseDate(range.bucketUL))).getUTCFullYear())
-                    else if (range.size == 2) urlParams.set("r." + this.currentFilter.value, (new Date(this.parseDate(range.bucketLL))).getUTCFullYear())
-                    else if (range.size == 3) urlParams.set("r." + this.currentFilter.value, (new Date(this.parseDate(range.bucketLL))).getUTCFullYear() + "~" + (Number((new Date(range.bucketLL)).getUTCMonth()) + 1))
-                    else if (range.size == 4) urlParams.set("r." + this.currentFilter.value, range.bucketLL)
-                    else if (range.size == 5) urlParams.set("r." + this.currentFilter.value, range.bucketLL)
+                    if (range.size == 1) urlParams.set("r." + this.currentFilter.value, range.bucketLL.year + "~" + range.bucketUL.year)
+                    else if (range.size == 2) urlParams.set("r." + this.currentFilter.value, range.bucketLL.year)
+                    else if (range.size == 3) urlParams.set("r." + this.currentFilter.value, range.bucketLL.year + "-" + range.bucketLL.month)
+                    else if (range.size == 4) urlParams.set("r." + this.currentFilter.value, range.bucketLL.year + "-" + range.bucketLL.month + "-" + range.bucketLL.day)
+                    else if (range.size == 5) urlParams.set("r." + this.currentFilter.value, range.bucketLL.year + "-" + range.bucketLL.month + "-" + range.bucketLL.day)
                 }
 
             }
@@ -330,13 +329,6 @@ var app = new Vue({
             }
             return 'Invalid month - ' + monthNum;
         },
-        parseDate(date) {
-            if (date.split("-")[0] == "") {
-                year = "-" + "0".repeat(6 - date.split("-")[1].length) + date.split("-")[1]
-                return date.replace(/^-(\w+)(?=-)/g, year)
-            }
-            return date
-        },
         yearToBCFormat(year) {
             if (Number(year) < 0) {
                 return (Number(year) * -1) + " BC"
@@ -352,7 +344,7 @@ var app = new Vue({
                     label2 = dateParts[1]
                     return [dateParts[0] + "-01-01", dateParts[1] + "-12-30", label1 + " - " + label2]
                 }
-                else if (dateParts[0].split("-").length == 2 && dateParts[1].split("-").length == 2) {
+                else if (dateParts[0].split("-").length == 2 || dateParts[1].split("-").length == 2) {
                     if (dateParts[0].split("-")[0] == "") {
                         // Negative year
                         label1 = this.yearToBCFormat(dateParts[0])
@@ -398,13 +390,24 @@ var app = new Vue({
                 }
             }
         },
-        getTimePrecision(earliestDate, latestDate) {
-            var earliestYear = earliestDate.getUTCFullYear();
-            var earliestMonth = earliestDate.getUTCMonth() + 1;
-            var earliestDay = earliestDate.getUTCDate();
-            var latestYear = latestDate.getUTCFullYear();
-            var latestMonth = latestDate.getUTCMonth() + 1;
-            var latestDay = latestDate.getUTCDate();
+        getDateObject(date) {
+            s = date.split("-")
+            if (s.length == 3) {
+                return { year: s[0], month: s[1], day: s[2] }
+            }
+            else {
+                return { year: "-" + "0".repeat(6 - s[1].length) + s[1], month: s[2], day: s[3] }
+            }
+        },
+        getTimePrecision(ear, lat) {
+            earliestDate = this.getDateObject(ear)
+            latestDate = this.getDateObject(lat)
+            var earliestYear = earliestDate.year;
+            var earliestMonth = earliestDate.month;
+            var earliestDay = earliestDate.day;
+            var latestYear = latestDate.year;
+            var latestMonth = latestDate.month;
+            var latestDay = latestDate.day;
             var yearDifference = latestYear - earliestYear;
             var monthDifference = (12 * yearDifference) + (latestMonth - earliestMonth);
             var dayDifference = (30 * monthDifference) + (latestDay - earliestDay);
@@ -685,7 +688,7 @@ var app = new Vue({
                     noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedRanges[i].filterValue + " ?no. }).\n"
                 }
                 else {
-                    timePrecision = this.getTimePrecision(new Date(this.parseDate(this.appliedRanges[i].valueLL)), new Date(this.parseDate(this.appliedRanges[i].valueUL)))
+                    timePrecision = this.getTimePrecision(this.appliedRanges[i].valueLL, this.appliedRanges[i].valueUL)
                     filterRanges += "?value (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
                         "  ?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
                         "  ?timenode" + i + " wikibase:timePrecision ?timeprecision" + i + ".\n" +

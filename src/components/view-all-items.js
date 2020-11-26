@@ -21,20 +21,24 @@ results = Vue.component('items-results', {
     </div>
     `,
     methods: {
-        parseDate(date) {
-            if (date.split("-")[0] == "") {
-                year = "-" + "0".repeat(6 - date.split("-")[1].length) + date.split("-")[1]
-                return date.replace(/^-(\w+)(?=-)/g, year)
+        getDateObject(date) {
+            s = date.split("-")
+            if (s.length == 3) {
+                return { year: s[0], month: s[1], day: s[2] }
             }
-            return date
+            else {
+                return { year: "-" + "0".repeat(6 - s[1].length) + s[1], month: s[2], day: s[3] }
+            }
         },
-        getTimePrecision(earliestDate, latestDate) {
-            var earliestYear = earliestDate.getUTCFullYear();
-            var earliestMonth = earliestDate.getUTCMonth() + 1;
-            var earliestDay = earliestDate.getUTCDate();
-            var latestYear = latestDate.getUTCFullYear();
-            var latestMonth = latestDate.getUTCMonth() + 1;
-            var latestDay = latestDate.getUTCDate();
+        getTimePrecision(ear, lat) {
+            earliestDate = this.getDateObject(ear)
+            latestDate = this.getDateObject(lat)
+            var earliestYear = earliestDate.year;
+            var earliestMonth = earliestDate.month;
+            var earliestDay = earliestDate.day;
+            var latestYear = latestDate.year;
+            var latestMonth = latestDate.month;
+            var latestDay = latestDate.day;
             var yearDifference = latestYear - earliestYear;
             var monthDifference = (12 * yearDifference) + (latestMonth - earliestMonth);
             var dayDifference = (30 * monthDifference) + (latestDay - earliestDay);
@@ -71,7 +75,7 @@ results = Vue.component('items-results', {
                 noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedRanges[i].filterValue + " ?no. }).\n"
             }
             else {
-                timePrecision = this.getTimePrecision(new Date(this.parseDate(this.appliedRanges[i].valueLL)), new Date(this.parseDate(this.appliedRanges[i].valueUL)))
+                timePrecision = this.getTimePrecision(this.appliedRanges[i].valueLL, this.appliedRanges[i].valueUL)
                 filterRanges += "?value (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
                     "  ?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
                     "  ?timenode" + i + " wikibase:timePrecision ?timeprecision" + i + ".\n" +
@@ -264,13 +268,24 @@ viewallitems = Vue.component('view-all-items', {
         showFilter(filter) {
             this.$emit('update-filter', filter)
         },
-        getTimePrecision(earliestDate, latestDate) {
-            var earliestYear = earliestDate.getUTCFullYear();
-            var earliestMonth = earliestDate.getUTCMonth() + 1;
-            var earliestDay = earliestDate.getUTCDate();
-            var latestYear = latestDate.getUTCFullYear();
-            var latestMonth = latestDate.getUTCMonth() + 1;
-            var latestDay = latestDate.getUTCDate();
+        getDateObject(date) {
+            s = date.split("-")
+            if (s.length == 3) {
+                return { year: s[0], month: s[1], day: s[2] }
+            }
+            else {
+                return { year: "-" + "0".repeat(6 - s[1].length) + s[1], month: s[2], day: s[3] }
+            }
+        },
+        getTimePrecision(ear, lat) {
+            earliestDate = this.getDateObject(ear)
+            latestDate = this.getDateObject(lat)
+            var earliestYear = earliestDate.year;
+            var earliestMonth = earliestDate.month;
+            var earliestDay = earliestDate.day;
+            var latestYear = latestDate.year;
+            var latestMonth = latestDate.month;
+            var latestDay = latestDate.day;
             var yearDifference = latestYear - earliestYear;
             var monthDifference = (12 * yearDifference) + (latestMonth - earliestMonth);
             var dayDifference = (30 * monthDifference) + (latestDay - earliestDay);
@@ -286,13 +301,6 @@ viewallitems = Vue.component('view-all-items', {
             else if (yearDifference <= 1e8) return 1
             return 0
         },
-        parseDate(date) {
-            if (date.split("-")[0] == "") {
-                year = "-" + "0".repeat(6 - date.split("-")[1].length) + date.split("-")[1]
-                return date.replace(/^-(\w+)(?=-)/g, year)
-            }
-            return date
-        }
     },
     mounted() {
         // Check available filters
@@ -326,7 +334,7 @@ viewallitems = Vue.component('view-all-items', {
                 noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedRanges[i].filterValue + " ?no. }).\n"
             }
             else {
-                timePrecision = this.getTimePrecision(new Date(this.parseDate(this.appliedRanges[i].valueLL)), new Date(this.parseDate(this.appliedRanges[i].valueUL)))
+                timePrecision = this.getTimePrecision(this.appliedRanges[i].valueLL,this.appliedRanges[i].valueUL)
                 filterRanges += "?value (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
                     "  ?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
                     "  ?timenode" + i + " wikibase:timePrecision ?timeprecision" + i + ".\n" +
