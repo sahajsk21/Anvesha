@@ -1,5 +1,5 @@
 {
-    "itemCount": "Il y a $1 articles qui correspondent à cette description. | Il y a $1 élément qui correspond à cette description.",
+    "itemCount": "Il {{PLURAL:$1|est un élément qui correspond|sont $1 éléments qui correspondent}} à cette description.",
     "classPlaceholder": "Entrer en classe",
     "browse": "Ou parcourez l'une des classes suivantes:",
     "noFiltersDefined": "Aucun filtre n'est défini pour cette classe.",
@@ -18,5 +18,5 @@
     "specificClass": "Passer à une classe plus spécifique:",
     "generalClass": "Passer à une classe plus générale:",
     "viewList": "Afficher la liste des articles",
-    "results": "($1 résultats) | ($1 résultat)"
+    "results": "({{PLURAL:$1|1 résultat|$1 résultats}})"
 }

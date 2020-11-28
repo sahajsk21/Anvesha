@@ -53,7 +53,7 @@ superclass = Vue.component('superclass-view', {
                             {{item.valueLabel.value}}
                         </a> 
                         <span class="result-count" v-if="displayCount==0">
-                            {{ websiteText.results.split('|')[(item.count.value>1?0:1)].replace('$1',item.count.value) }}
+                            {{ displayPluralCount(websiteText.results,item.count.value) }}
                         </span>
                     </li>
                 </ul>
@@ -62,6 +62,12 @@ superclass = Vue.component('superclass-view', {
     </div>
     `,
     methods: {
+        displayPluralCount(message, totalValues) {
+            matches = message.match('{{PLURAL:\\$1\\|(.*)}}')
+            str = matches[1].split('|')[(totalValues > 1 ? 1 : 0)]
+            str = str.replace("$1", (totalValues < 1000000 ? numberWithCommas(totalValues) : '1 million +'))
+            return message.replace(/{{PLURAL:\$1\|(.*)}}/g, str)
+        },
         pathFor(item) {
             var newURL = window.location.pathname + '?';
             var curLang = urlParams.get('lang');

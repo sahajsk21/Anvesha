@@ -1,5 +1,5 @@
 {
-    "itemCount": "There are $1 items that match this description. | There is $1 item that matches this description.",
+    "itemCount": "There {{PLURAL:$1|is one item that matches|are $1 items that match}} this description.",
     "classPlaceholder": "Enter class",
     "browse": "Or, browse any of the following classes:",
     "noFiltersDefined": "No filter is defined for this class.",
@@ -18,5 +18,5 @@
     "specificClass": "Change to a more specific class:",
     "generalClass": "Change to a more general class:",
     "viewList": "View list of items",
-    "results": "($1 results) | ($1 result)"
+    "results": "({{PLURAL:$1|1 result|$1 results}})"
 }

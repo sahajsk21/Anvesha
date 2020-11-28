@@ -209,7 +209,7 @@ viewallitems = Vue.component('view-all-items', {
                 <a class="classOptions" @click="changePage('filters')">{{ websiteText.addFilter }}</a>
             </div>
             <div><img v-if="totalValues==''" src='images/loading.gif'></div>
-            <div v-if="totalValues>0" v-html="displayMessage(websiteText.itemCount.split('|')[(totalValues>1?0:1)], (totalValues<1000000?numberWithCommas(totalValues):'1 million +'))"></div>
+            <div v-if="totalValues>0" v-html="displayPluralCount(totalValues)"></div>
             <div v-if="totalValues>resultsPerPage" style="text-align: center">
                 <a v-if="currentPage>1" @click="currentPage>1?currentPage--:''">&lt;</a>
                 <input 
@@ -252,6 +252,12 @@ viewallitems = Vue.component('view-all-items', {
         },
         displayMessage(message, value) {
             return message.replace("$1", "<b>" + value + "</b>")
+        },
+        displayPluralCount(totalValues) {
+            matches = this.websiteText.itemCount.match('{{PLURAL:\\$1\\|(.*)}}')
+            str = matches[1].split('|')[(totalValues > 1 ? 1 : 0)]
+            str = str.replace("$1", (totalValues < 1000000 ? numberWithCommas(totalValues) : '1 million +'))
+            return this.websiteText.itemCount.replace(/{{PLURAL:\$1\|(.*)}}/g, str)
         },
         changePage(page) {
             this.$emit('change-page', page)
