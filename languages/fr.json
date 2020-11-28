@@ -1,5 +1,5 @@
 {
-    "itemCount": "Il {{PLURAL:$1|est un élément qui correspond|sont $1 éléments qui correspondent}} à cette description.",
+    "itemCount": "Il y a {{PLURAL:$1|un élément qui correspond|$1 éléments qui correspondent}} à cette description.",
     "classPlaceholder": "Entrer en classe",
     "browse": "Ou parcourez l'une des classes suivantes:",
     "noFiltersDefined": "Aucun filtre n'est défini pour cette classe.",
