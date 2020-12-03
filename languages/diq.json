@@ -1,0 +1,12 @@
+{
+	"@metadata": {
+		"authors": [
+			"1917 Ekim Devrimi"
+		]
+	},
+	"classPlaceholder": "Sınıf cı kerê",
+	"addFilter": "Parzûnê cı kerê",
+	"viewQuery": "Persê SPARQL bıvinê",
+	"noValue": "Erc çıniyo",
+	"results": "({{PLURAL:$1|1 netice|$1 neticeyi}})"
+}

@@ -1,22 +1,28 @@
 {
-    "itemCount": "Il y a {{PLURAL:$1|un élément qui correspond|$1 éléments qui correspondent}} à cette description.",
-    "classPlaceholder": "Entrer en classe",
-    "browse": "Ou parcourez l'une des classes suivantes:",
-    "noFiltersDefined": "Aucun filtre n'est défini pour cette classe.",
-    "addFilter": "Ajouter un filtre",
-    "viewQuery": "Afficher la requête SPARQL",
-    "noItems": "Aucun article ne correspond à cette description.",
-    "displayItemsError": "La tentative d'afficher la liste des éléments a pris trop de temps; veuillez envisager d'ajouter plus de filtres.",
-    "gettingValues": "Obtenir des valeurs pour le filtre $1 ...",
-    "noAdditionalValues": "Il n'y a pas de valeurs supplémentaires pour le filtre $1.",
-    "filterError": "Essayer d'obtenir des valeurs a pris trop de temps pour le filtre $1.",
-    "filterTimeout": "(Obtenir un ensemble complet de valeurs pour le filtre $1 a pris trop de temps; à la place, voici un ensemble éventuellement incomplet.)",
-    "selectValue": "Sélectionnez une valeur pour $1:",
-    "selectAdditionalValue":"Sélectionnez une valeur supplémentaire pour $1:",
-    "noValue": "Aucune valeur",
-    "changeClassNote": "(Remarque: si vous changez de classe, vous perdrez l'ensemble de filtres actuel.)",
-    "specificClass": "Passer à une classe plus spécifique:",
-    "generalClass": "Passer à une classe plus générale:",
-    "viewList": "Afficher la liste des articles",
-    "results": "({{PLURAL:$1|1 résultat|$1 résultats}})"
+	"@metadata": {
+		"authors": [
+			"Thibaut120094",
+			"Wladek92"
+		]
+	},
+	"itemCount": "Il y a {{PLURAL:$1|un élément qui correspond|$1 éléments qui correspondent}} à cette description.",
+	"classPlaceholder": "Entrez une classe",
+	"browse": "Ou parcourez l’une des classes suivantes :",
+	"noFiltersDefined": "Aucun filtre n'est défini pour cette classe.",
+	"addFilter": "Ajouter un filtre",
+	"viewQuery": "Afficher la requête SPARQL",
+	"noItems": "Aucun article ne correspond à cette description.",
+	"displayItemsError": "La tentative d'afficher la liste des éléments a pris trop de temps ; essayez d'ajouter d'autres filtres.",
+	"gettingValues": "Obtenir des valeurs pour le filtre $1 ...",
+	"noAdditionalValues": "Il n'y a pas de valeurs supplémentaires pour le filtre $1.",
+	"filterError": "Essayer d'obtenir des valeurs a pris trop de temps pour le filtre $1.",
+	"filterTimeout": "(Obtenir un ensemble complet de valeurs pour le filtre $1 a pris trop de temps; à la place, voici un ensemble éventuellement incomplet).",
+	"selectValue": "Sélectionnez une valeur pour $1 :",
+	"selectAdditionalValue": "Sélectionnez une valeur supplémentaire pour $1 :",
+	"noValue": "Aucune valeur",
+	"changeClassNote": "(Remarque : si vous changez de classe, vous perdrez l'ensemble de filtres actuel.)",
+	"specificClass": "Passer à une classe plus spécifique :",
+	"generalClass": "Passer à une classe plus générale :",
+	"viewList": "Afficher la liste des articles",
+	"results": "({{PLURAL:$1|1 résultat|$1 résultats}})"
 }
