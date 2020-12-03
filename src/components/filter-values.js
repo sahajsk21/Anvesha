@@ -9,7 +9,8 @@ filtervalues = Vue.component('filter-values', {
             currentPage: 1,
             filterProperty: "",
             query: "",
-            noValueURL: ""
+            noValueURL: "",
+            secondaryFilters:[]
         }
     },
     template: `
@@ -71,6 +72,16 @@ filtervalues = Vue.component('filter-values', {
                 {{quantity.unit}}
                 ( <a @click="removeQuantity(quantity)">X</a> )
             </p>
+            <div v-if="secondaryFilters.length>0" class="filter-box">
+                <span v-for="filter in secondaryFilters">
+                    <a 
+                        @click.exact="showSecondaryFilter(filter)"
+                        onclick="return false;"> 
+                        {{filter.valueLabel.value}}
+                    </a>
+                    <b v-if="secondaryFilters[secondaryFilters.length-1].valueLabel.value != filter.valueLabel.value">&middot; </b>
+                </span>
+            </div>
         </div>
         <div class="content">
             <div v-if="itemsType==''">
@@ -299,6 +310,9 @@ filtervalues = Vue.component('filter-values', {
     methods: {
         changePage(page) {
             this.$emit('change-page', page)
+        },
+        showSecondaryFilter(filter) {
+            this.$emit('update-secondary', filter)
         },
         pathForView(view) {
             return window.location.href + '&view=' + view;
@@ -690,6 +704,17 @@ filtervalues = Vue.component('filter-values', {
         }
     },
     mounted() {
+        var sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
+            "  wd:" + this.currentFilter.value +" p:P2302 ?constraint_statement.\n" +
+            "  ?constraint_statement pq:P2308 ?class.\n" +
+            "  ?class wdt:P1687 ?value.\n" +
+            "  FILTER(?value != wd:" + this.currentFilter.value +")\n" +
+            "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }\n" +
+            "}";
+        const url = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+        axios.get(url)
+            .then(response => (response.data['results']['bindings'] ? (this.secondaryFilters = [...response.data['results']['bindings']]) : this.secondaryFilters.push({ value: "Empty", valueLabel: "No data" })))
+
         var filterString = "";
         var noValueString = "";
         for (let i = 0; i < this.appliedFilters.length; i++) {
@@ -740,7 +765,7 @@ filtervalues = Vue.component('filter-values', {
 
             }
         }
-        var sparqlQuery = "SELECT ?property WHERE {\n" +
+        sparqlQuery = "SELECT ?property WHERE {\n" +
             "  wd:" + this.currentFilter.value + " wikibase:propertyType ?property.\n" +
             "}";
         const fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);

@@ -8,6 +8,8 @@ var app = new Vue({
         page: '',
         currentFilterLabel: '',
         currentFilterValue: '',
+        secondaryFilterLabel: '',
+        secondaryFilterValue: '',
         currentFilterPropertyType: '',
         appFilters: [],
         appRanges: [],
@@ -115,6 +117,13 @@ var app = new Vue({
             urlParams.set('cf', this.currentFilterValue)
             urlParams.delete('view')
             this.updatePage('filter-values')
+        },
+        updateSecondaryFilter: function (filter) {
+            this.secondaryFilterLabel = filter.valueLabel.value
+            this.secondaryFilterValue = filter.value.value.split('/').slice(-1)[0]
+            urlParams.set('sf', this.secondaryFilterValue)
+            urlParams.delete('view')
+            this.updatePage('secondary-filter-values')
         },
         applyFilter: function (filter) {
             if (filter == "novalue") {
@@ -438,6 +447,9 @@ var app = new Vue({
                 else if (urlParams.has("c") && !urlParams.has("cf") && !urlParams.has("view")) {
                     return 'view-all-items'
                 }
+                else if (urlParams.has("c") && urlParams.has("cf") && urlParams.has("sf")) {
+                    return 'secondary-filter-values'
+                }
                 else if (urlParams.has("c") && urlParams.has("cf") && !urlParams.has("view")) {
                     return 'filter-values'
                 }
@@ -489,6 +501,22 @@ var app = new Vue({
             axios.get(fullUrl)
                 .then(response => (this.currentFilterLabel = response.data['results']['bindings'][0].valueLabel.value))
             return { value: val, valueLabel: this.currentFilterLabel }
+        },
+        secondaryFilter: function () {
+            if (this.secondaryFilterValue == '') {
+                val = urlParams.has('sf') ? urlParams.get('sf') : ''
+            }
+            else {
+                val = this.secondaryFilterValue
+            }
+            var sparqlQuery = "SELECT ?valueLabel WHERE {\n" +
+                "  VALUES ?value { wd:" + val + " }\n" +
+                "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
+                "}";
+            const fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+            axios.get(fullUrl)
+                .then(response => (this.currentFilterLabel = response.data['results']['bindings'][0].valueLabel.value))
+            return { value: val, valueLabel: this.secondaryFilterLabel }
         },
         appliedFilters: function () {
             if (this.appFilters.length == 0 && this.getFiltersFromURL == 1) {

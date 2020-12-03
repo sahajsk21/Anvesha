@@ -69,7 +69,7 @@ filtersview = Vue.component('filters-view', {
                     </li>
                 </ul>
             </div>
-            <div><a :href="query">{{ websiteText.viewQuery') }}</a></div>
+            <div><a :href="query">{{ websiteText.viewQuery }}</a></div>
         </div>
     </div>`,
     methods: {
@@ -82,7 +82,7 @@ filtersview = Vue.component('filters-view', {
         displayPluralCount(totalValues) {
             matches = this.websiteText.itemCount.match('{{PLURAL:\\$1\\|(.*)}}')
             str = matches[1].split('|')[(totalValues > 1 ? 1 : 0)]
-            str = str.replace("$1", (totalValues < 1000000 ? numberWithCommas(totalValues) : '1 million +'))
+            str = str.replace("$1", "<b>" + (totalValues < 1000000 ? numberWithCommas(totalValues) : '1 million +') + "</b>")
             return this.websiteText.itemCount.replace(/{{PLURAL:\$1\|(.*)}}/g, str)
         },
         showFilter(filter) {
