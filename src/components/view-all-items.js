@@ -62,7 +62,11 @@ results = Vue.component('items-results', {
         var filterString = "";
         var noValueString = "";
         for (let i = 0; i < this.appliedFilters.length; i++) {
-            if (this.appliedFilters[i].value == "novalue") {
+            if (this.appliedFilters[i].parentFilterValue) {
+                filterString += "?value wdt:" + this.appliedFilters[i].parentFilterValue + " ?temp.\n" +
+                    "?temp wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n";
+            }
+            else if (this.appliedFilters[i].value == "novalue") {
                 noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedFilters[i].filterValue + " ?no. }).\n"
             }
             else {
@@ -327,7 +331,11 @@ viewallitems = Vue.component('view-all-items', {
         var filterString = "";
         var noValueString = "";
         for (let i = 0; i < this.appliedFilters.length; i++) {
-            if (this.appliedFilters[i].value == "novalue") {
+            if(this.appliedFilters[i].parentFilterValue){
+                filterString += "?value wdt:" + this.appliedFilters[i].parentFilterValue + " ?temp.\n" +
+                                 "?temp wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value +".\n";
+            }
+            else if (this.appliedFilters[i].value == "novalue") {
                 noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedFilters[i].filterValue + " ?no. }).\n"
             }
             else {
@@ -367,7 +375,7 @@ viewallitems = Vue.component('view-all-items', {
                 maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
             }
         }
-        sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
+        sparqlQuery = "SELECT DISTINCT ?value ?valueLabel WHERE {\n" +
             "  {\n" +
             "    SELECT ?value ?valueLabel " + maxString + " WHERE {\n" +
             "      ?value wdt:" + instanceOf + " wd:" + this.classValue + ".  \n" +

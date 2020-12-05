@@ -316,7 +316,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
             return message.replace(/{{PLURAL:\$1\|(.*)}}/g, str)
         },
         applyFilter(filter) {
-            this.$emit('apply-filter', filter)
+            this.$emit('apply-secondary-filter', filter)
         },
         applyRange(range) {
             this.$emit('apply-range', range)
@@ -325,7 +325,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
             this.$emit('apply-quantity', range)
         },
         removeFilter(value) {
-            this.$emit("remove-filter", value, 'filter-values');
+            this.$emit("remove-filter", value, 'secondary-filter-values');
         },
         removeRange(range) {
             this.$emit("remove-range", range, 'filter-values');
@@ -1005,14 +1005,14 @@ secondayFilterValues = Vue.component('secondary-filters', {
                 else {
                     var q = window.location.search;
                     parameters = new URLSearchParams(q)
-                    parameters.set("f." + this.secondaryFilter.value, "novalue")
+                    parameters.set("f." + this.currentFilter.value + "." + this.secondaryFilter.value, "novalue")
                     this.noValueURL = window.location.pathname + "?" + parameters
                     var sparqlQuery = "SELECT ?value ?valueLabel ?count WHERE {\n" +
                         "  {\n" +
                         "    SELECT ?value (COUNT(?value) AS ?count) WHERE {\n" +
                         "      ?item wdt:" + instanceOf + " wd:" + this.classValue +".\n" +
-                        "      ?item wdt:" + this.currentFilter.value+" ?temp.\n" +
-                        "      ?temp wdt:" + this.secondaryFilter.value+" ?value.\n" +
+                        "      ?item wdt:" + this.currentFilter.value + " ?temp.\n" +
+                        "      ?temp wdt:" + this.secondaryFilter.value + " ?value.\n" +
                         filterString +
                         filterRanges +
                         filterQuantities +
@@ -1020,7 +1020,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                         "    }\n" +
                         "    GROUP BY ?value\n" +
                         "  }\n" +
-                        "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"en,en,fr,ceb,sv,de,nl,ru,it,es,pl,war,vi,ja,zh,arz,ar,uk,pt,fa,ca,sr,id,no,ko,fi,hu,cs,sh,ro,nan,tr,eu,ms,ce,eo,he,hy,bg,da,azb,sk,kk,min,hr,et,lt,be,el,az,sl,gl,ur,nn,nb,hi,ka,th,tt,uz,la,cy,ta,vo,mk,ast,lv,yue,tg,bn,af,mg,oc,bs,sq,ky,nds,new,be-tarask,ml,te,br,tl,vec,pms,mr,su,ht,sw,lb,jv,sco,pnb,ba,ga,szl,is,my,fy,cv,lmo,wuu\". }\n" +
+                        "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
                         "}\n" +
                         "ORDER BY DESC (?count)";
                     this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
@@ -1047,13 +1047,14 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                     var q = window.location.search;
                                     parameters = new URLSearchParams(q)
                                     parameters.delete("cf")
+                                    parameters.delete("sf")
                                     var existingValues = ""
                                     for (let i = 0; i < vm.appliedFilters.length; i++) {
                                         if (vm.appliedFilters[i].filterValue == this.secondaryFilter.value) {
                                             existingValues = existingValues + vm.appliedFilters[i].value + "-";
                                         }
                                     }
-                                    parameters.set("f." + this.secondaryFilter.value, existingValues + arr[i].value.value.split('/').slice(-1)[0])
+                                    parameters.set("f." + this.currentFilter.value + "." + this.secondaryFilter.value, existingValues + arr[i].value.value.split('/').slice(-1)[0])
                                     arr[i]['href'] = window.location.pathname + "?" + parameters
                                 }
                             }
@@ -1064,25 +1065,24 @@ secondayFilterValues = Vue.component('secondary-filters', {
                             }
                         })
                         .catch(error => {
-                            sparqlQuery = "SELECT ?value ?valueLabel WHERE{\n" +
-                                "{\n" +
-                                "  SELECT DISTINCT ?value\n" +
-                                "{\n" +
-                                "  SELECT ?value WHERE {\n" +
-                                "    hint:Query hint:optimizer \"None\".\n" +
-                                "  ?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
-                                " ?item wdt:" + vm.secondaryFilter.value + " ?value.\n" +
+                            sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
+                                "  {\n" +
+                                "    SELECT DISTINCT ?value WHERE {\n" +
+                                "      SELECT ?value WHERE {\n" +
+                                "        hint:Query hint:optimizer \"None\".\n" +
+                                "        ?item wdt:" + instanceOf + " wd:Q5398426.\n" +
+                                "        ?item wdt:" + vm.currentFilter.value + " ?temp.\n" +
+                                "        ?temp wdt:" + vm.secondaryFilter.value + " ?value.\n" +
                                 filterString +
                                 filterRanges +
                                 filterQuantities +
-                                "}\n" +
-                                "LIMIT 300\n" +
                                 "      }\n" +
-                                "\n" +
-                                "}\n" +
-                                "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
+                                "      LIMIT 300\n" +
+                                "    }\n" +
                                 "  }\n" +
-                                "ORDER BY ?valueLabel";
+                                "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
+                                "}\n" +
+                                "ORDER BY (?valueLabel)";
                             const fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
                             axios.get(fullUrl)
                                 .then((res) => {
@@ -1098,7 +1098,8 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                         var q = window.location.search;
                                         parameters = new URLSearchParams(q)
                                         parameters.delete("cf")
-                                        parameters.set("f." + this.secondaryFilter.value, arr[i].value.value.split('/').slice(-1)[0])
+                                        parameters.delete("sf")
+                                        parameters.set("f." + this.currentFilter.value + "." + this.secondaryFilter.value, arr[i].value.value.split('/').slice(-1)[0])
                                         arr[i]['href'] = window.location.pathname + "?" + parameters
                                     }
                                     vm.items = arr

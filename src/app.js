@@ -155,6 +155,41 @@ var app = new Vue({
             urlParams.delete("cf")
             this.updatePage('view-all-items')
         },
+        applySecondaryFilter:function(filter){
+            if (filter == "novalue") {
+                if (this.appFilters.findIndex(filter => filter.filterValue == this.secondaryFilter.value) == -1) {
+                    this.appFilters.push({
+                        parentFilterValue: this.currentFilter.value,
+                        parentFilterValueLabel: this.currentFilter.valueLabel,
+                        filterValue: this.secondaryFilter.value,
+                        filterValueLabel: this.secondaryFilter.valueLabel,
+                        value: "novalue",
+                        valueLabel: "No Value"
+                    });
+                    urlParams.set("f." + this.currentFilter.value + "." + this.secondaryFilter.value, "novalue")
+                }
+            }
+            else {
+                var existingValues = ""
+                for (let i = 0; i < this.appFilters.length; i++) {
+                    if (this.appFilters[i].filterValue == this.secondaryFilter.value) {
+                        existingValues = existingValues + this.appFilters[i].value + "-";
+                    }
+                }
+                this.appFilters.push({
+                    parentFilterValue: this.currentFilter.value,
+                    parentFilterValueLabel: this.currentFilter.valueLabel,
+                    filterValue: this.secondaryFilter.value,
+                    filterValueLabel: this.secondaryFilter.valueLabel,
+                    value: filter.value.value.split('/').slice(-1)[0],
+                    valueLabel: filter.valueLabel.value
+                });
+                urlParams.set("f." + this.currentFilter.value + "." + this.secondaryFilter.value, existingValues + filter.value.value.split('/').slice(-1)[0])
+            }
+            urlParams.delete("cf")
+            urlParams.delete("sf")
+            this.updatePage('view-all-items')
+        },
         applyRange: function (range) {
             const i = this.appRanges.findIndex(_item => _item.filterValue == this.currentFilter.value);
             if (i > -1) {
@@ -276,14 +311,29 @@ var app = new Vue({
             this.filterscomponentKey += 1;
         },
         removeFilter: function (filter, page) {
-            values = urlParams.get("f." + filter.filterValue).split("-")
+            if(filter.parentFilterValue){
+                values = urlParams.get("f." + filter.parentFilterValue + "." + filter.filterValue).split("-")
+            }
+            else{
+                values = urlParams.get("f." + filter.filterValue).split("-")
+            }
             if (values.length > 1) {
                 i = values.indexOf(filter.value)
                 values.splice(i, 1)
-                urlParams.set("f." + filter.filterValue, values.join("-"))
+                if (filter.parentFilterValue){
+                    urlParams.set("f." + filter.filterValue, values.join("-"))
+                }
+                else{
+                    urlParams.set("f." + filter.parentFilterValue + "." + filter.filterValue, values.join("-"))
+                }
             }
             else {
-                urlParams.delete("f." + filter.filterValue)
+                if (filter.parentFilterValue) {
+                    urlParams.delete("f." + filter.parentFilterValue + "." + filter.filterValue)
+                }
+                else {
+                    urlParams.delete("f." + filter.filterValue)
+                }
             }
             index = this.appFilters.findIndex(i => (i.filterValue == filter.filterValue && i.value == filter.value));
             this.appFilters.splice(index, 1)
@@ -515,42 +565,72 @@ var app = new Vue({
                 "}";
             const fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
             axios.get(fullUrl)
-                .then(response => (this.currentFilterLabel = response.data['results']['bindings'][0].valueLabel.value))
+                .then(response => (this.secondaryFilterLabel = response.data['results']['bindings'][0].valueLabel.value))
             return { value: val, valueLabel: this.secondaryFilterLabel }
         },
         appliedFilters: function () {
             if (this.appFilters.length == 0 && this.getFiltersFromURL == 1) {
                 /*  
-                 Find all keys with "f.filterValue" from the URL. 
+                 Find all keys with "f.filterValue" or "f.filterValue.secondaryFilter" from the URL.
                  Split the key about "." to get filter and
                  split the result about "-" to get all the values for that particular filter.
                 */
                 url = decodeURI(urlParams);
-                var res = url.match(/[fF]\.[Pp]((\d+))/g);
+                var res = url.match(/[fF]\.[Pp](\d+)((\.[Pp](\d+))?)/g);
                 var filters = values = "";
                 let filterSet = new Set()
                 if (res != null) {
                     for (var i = 0; i < res.length; i++) {
+                        arr = res[i].split(".")
                         if (urlParams.get(res[i]) == "novalue") {
-                            this.appFilters.push({
-                                filterValue: res[i].split(".")[1],
-                                filterValueLabel: res[i].split(".")[1],
-                                value: "novalue",
-                                valueLabel: "No Value"
-                            })
-                        }
-                        else {
-                            for (const v of urlParams.get(res[i]).split("-")) {
+                            if(arr[2]){
                                 this.appFilters.push({
-                                    filterValue: res[i].split(".")[1],
-                                    filterValueLabel: res[i].split(".")[1],
-                                    value: v,
-                                    valueLabel: v
+                                    parentFilterValue:arr[1],
+                                    parentFilterValueLabel:arr[1],
+                                    filterValue: arr[2],
+                                    filterValueLabel: arr[2],
+                                    value: "novalue",
+                                    valueLabel: "No Value"
                                 })
-                                values += " wd:" + v
+                                filterSet.add(arr[2])
+                            }
+                            else{
+                                this.appFilters.push({
+                                    filterValue: arr[1],
+                                    filterValueLabel: arr[1],
+                                    value: "novalue",
+                                    valueLabel: "No Value"
+                                })
                             }
                         }
-                        filterSet.add(res[i].split(".")[1])
+                        else {
+                            if(arr[2]){
+                                for (const v of urlParams.get(res[i]).split("-")) {
+                                    this.appFilters.push({
+                                        parentFilterValue: arr[1],
+                                        parentFilterValueLabel: arr[1],
+                                        filterValue: arr[2],
+                                        filterValueLabel: arr[2],
+                                        value: v,
+                                        valueLabel: v
+                                    })
+                                    values += " wd:" + v
+                                }
+                                filterSet.add(arr[2])
+                            }
+                            else{
+                                for (const v of urlParams.get(res[i]).split("-")) {
+                                    this.appFilters.push({
+                                        filterValue: arr[1],
+                                        filterValueLabel: arr[1],
+                                        value: v,
+                                        valueLabel: v
+                                    })
+                                    values += " wd:" + v
+                                }
+                            }
+                        }
+                        filterSet.add(arr[1])
                     }
                     for (let item of filterSet) {
                         filters += " wdt:" + item
@@ -568,6 +648,9 @@ var app = new Vue({
                                 for (let j = 0; j < this.appFilters.length; j++) {
                                     if (this.appFilters[j].filterValue == response.data['results']['bindings'][i].prop.value.split("/").slice(-1)[0]) {
                                         this.appFilters[j].filterValueLabel = response.data['results']['bindings'][i].propLabel.value
+                                    }
+                                    if (this.appFilters[j].parentFilterValue == response.data['results']['bindings'][i].prop.value.split("/").slice(-1)[0]) {
+                                        this.appFilters[j].parentFilterValueLabel = response.data['results']['bindings'][i].propLabel.value
                                     }
                                 }
                             }
@@ -703,7 +786,11 @@ var app = new Vue({
             var filterString = "";
             var noValueString = "";
             for (let i = 0; i < this.appliedFilters.length; i++) {
-                if (this.appliedFilters[i].value == "novalue") {
+                if (this.appliedFilters[i].parentFilterValue) {
+                    filterString += "?value wdt:" + this.appliedFilters[i].parentFilterValue + " ?temp.\n" +
+                        "?temp wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n";
+                }
+                else if (this.appliedFilters[i].value == "novalue") {
                     noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedFilters[i].filterValue + " ?no. }).\n"
                 }
                 else {

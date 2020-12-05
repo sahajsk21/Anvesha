@@ -73,7 +73,7 @@ filtervalues = Vue.component('filter-values', {
                 ( <a @click="removeQuantity(quantity)">X</a> )
             </p>
             <div v-if="secondaryFilters.length>0" class="filter-box">
-                <span v-for="filter in secondaryFilters">
+                <span v-for="filter in secondaryFilters" v-if="currentFilter.value != filter.value.value.split('/').slice(-1)[0]">
                     <a 
                         @click.exact="showSecondaryFilter(filter)"
                         onclick="return false;"> 
@@ -704,13 +704,15 @@ filtervalues = Vue.component('filter-values', {
         }
     },
     mounted() {
-        var sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
-            "  wd:" + this.currentFilter.value +" p:P2302 ?constraint_statement.\n" +
+        var sparqlQuery = "SELECT DISTINCT ?value ?valueLabel ?property WHERE {\n" +
+            "  wd:" + this.currentFilter.value + " p:P2302 ?constraint_statement.\n" +
             "  ?constraint_statement pq:P2308 ?class.\n" +
-            "  ?class wdt:P1687 ?value.\n" +
-            "  FILTER(?value != wd:" + this.currentFilter.value +")\n" +
-            "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }\n" +
-            "}";
+            "  ?class wdt:" + propertiesForThisType + " ?value.\n" +
+            "  ?value wikibase:propertyType ?property.\n" +
+            "  FILTER (?property in (wikibase:WikibaseItem))\n" +
+            "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
+            "}"+
+            "ORDER BY ?valueLabel";
         const url = sparqlEndpoint + encodeURIComponent(sparqlQuery);
         axios.get(url)
             .then(response => (response.data['results']['bindings'] ? (this.secondaryFilters = [...response.data['results']['bindings']]) : this.secondaryFilters.push({ value: "Empty", valueLabel: "No data" })))
@@ -718,11 +720,15 @@ filtervalues = Vue.component('filter-values', {
         var filterString = "";
         var noValueString = "";
         for (let i = 0; i < this.appliedFilters.length; i++) {
-            if (this.appliedFilters[i].value == "novalue") {
-                noValueString += " FILTER(NOT EXISTS { ?item wdt:" + this.appliedFilters[i].filterValue + " ?no. }).\n"
+            if (this.appliedFilters[i].parentFilterValue) {
+                filterString += "?item wdt:" + this.appliedFilters[i].parentFilterValue + " ?temp.\n" +
+                    "?temp wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n";
+            }
+            else if (this.appliedFilters[i].value == "novalue") {
+                noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedFilters[i].filterValue + " ?no. }).\n"
             }
             else {
-                filterString += "?item wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n";
+                filterString += "?value wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n";
             }
         }
         var filterRanges = ""
