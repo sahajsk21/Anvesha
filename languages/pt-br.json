@@ -1,0 +1,22 @@
+{
+	"@metadata": {
+		"authors": [
+			"Eduardo Addad de Oliveira"
+		]
+	},
+	"classPlaceholder": "Entrar na classe",
+	"browse": "Ou navegue em qualquer uma das seguintes classes:",
+	"addFilter": "Acrescentar um filtro",
+	"viewQuery": "Ver consulta SPARQL",
+	"noItems": "Nenhum item corresponde a esta descrição.",
+	"gettingValues": "Obtendo valores para o filtro $1 ...",
+	"noAdditionalValues": "Não há valores adicionais para o filtro $1.",
+	"filterError": "A tentativa de obter valores demorou muito para o filtro $1.",
+	"selectValue": "Selecione um valor para $1:",
+	"selectAdditionalValue": "Selecione um valor adicional para $1:",
+	"noValue": "Nenhum valor",
+	"changeClassNote": "(Observação: se você alterar a classe, perderá o conjunto atual de filtros.)",
+	"generalClass": "Mudar para uma classe mais geral:",
+	"viewList": "Ver lista de itens",
+	"results": "({{PLURAL:$1|1 resultado|$1 resultados}})"
+}

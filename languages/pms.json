@@ -1,0 +1,16 @@
+{
+	"@metadata": {
+		"authors": [
+			"Borichèt"
+		]
+	},
+	"itemCount": "A-i é {{PLURAL:$1|un element ch'a corëspond|$1 element ch'a corëspondo}} a sa descrission.",
+	"classPlaceholder": "Anserì na classa",
+	"browse": "O përcore un-a dle classe sì-dapress:",
+	"noFiltersDefined": "Gnun filtr a l'é definèi për costa classa.",
+	"addFilter": "Gionté un filtr",
+	"viewQuery": "Smon-e l'arcesta SPARQL",
+	"noItems": "Gnun element a corëspond a sa descrision.",
+	"displayItemsError": "Ël tentativ dë smon-e la lista dj'element a l'ha pijà tròp temp; ch'a sërca ëd gionté d'àutri filtr.",
+	"gettingValues": "Oteniment dij valor për ël filtr $1 an cors ..."
+}
