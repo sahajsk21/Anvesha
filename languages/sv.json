@@ -1,10 +1,11 @@
 {
 	"@metadata": {
 		"authors": [
-			"Sabelöga"
+			"Sabelöga",
+			"WikiPhoenix"
 		]
 	},
-	"itemCount": "Det finns {{PLURAL:$1|ett|$1} objekt som matchar den här beskrivningen.",
+	"itemCount": "Det finns {{PLURAL:$1|ett|$1}} objekt som matchar den här beskrivningen.",
 	"classPlaceholder": "Skriv in klass",
 	"browse": "Eller, bläddra bland följande klasser:",
 	"noFiltersDefined": "Inget filter har definierats för den här klassen.",
