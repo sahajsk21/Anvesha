@@ -90,20 +90,41 @@ results = Vue.component('items-results', {
         }
         var filterQuantities = "";
         for (let i = 0; i < this.appliedQuantities.length; i++) {
-            if (this.appliedQuantities[i].valueLL == "novalue") {
-                noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedQuantities[i].filterValue + " ?no. }).\n"
-            }
-            else if (this.appliedQuantities[i].unit == "") {
-                filterQuantities += "?value (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
-                    "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
-                    "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
-                maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
+            if (this.appliedQuantities[i].parentFilterValue) {
+                if (this.appliedQuantities[i].valueLL == "novalue") {
+                    noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedQuantities[i].filterValue + " ?no. }).\n"
+                }
+                else if (this.appliedQuantities[i].unit == "") {
+                    filterQuantities += "?value wdt:" + this.appliedQuantities[i].parentFilterValue + " ?temp.\n" +
+                        "?temp (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                        "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
+                        "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
+                    maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
+                }
+                else {
+                    filterQuantities += "?value wdt:" + this.appliedQuantities[i].parentFilterValue + " ?temp.\n" +
+                        "?temp (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                        "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
+                        "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
+                    maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
+                }
             }
             else {
-                filterQuantities += "?value (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
-                    "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
-                    "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
-                maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
+                if (this.appliedQuantities[i].valueLL == "novalue") {
+                    noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedQuantities[i].filterValue + " ?no. }).\n"
+                }
+                else if (this.appliedQuantities[i].unit == "") {
+                    filterQuantities += "?value (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                        "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
+                        "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
+                    maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
+                }
+                else {
+                    filterQuantities += "?value (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                        "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
+                        "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
+                    maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
+                }
             }
         }
         // Fetch results
@@ -168,14 +189,30 @@ viewallitems = Vue.component('view-all-items', {
             </p>
             <div>
                 <p v-for="filter in appliedFilters">
-                    <b>{{filter.filterValueLabel}}</b>: 
+                    <b>
+                        <span v-if="filter.parentFilterValue">
+                            {{filter.parentFilterValueLabel}} &rarr; {{filter.filterValueLabel}}
+                        </span>
+                        <span v-else>
+                            {{filter.filterValueLabel}}
+                        </span>
+                    </b>
+                    :
                     <span v-if="filter.value == 'novalue'" :style="{ fontStyle: 'italic' }">
                         {{ filter.valueLabel }}</span><span v-else>{{ filter.valueLabel }}
                     </span> 
                     ( <a @click="removeFilter(filter)">&#x2715;</a> )
                 </p>
                 <p v-for="range in appliedRanges">
-                    <b>{{range.filterValueLabel}}</b>: 
+                    <b>
+                        <span v-if="range.parentFilterValue">
+                            {{range.parentFilterValueLabel}} &rarr; {{range.filterValueLabel}}
+                        </span>
+                        <span v-else>
+                            {{quantity.filterValueLabel}}
+                        </span>
+                    </b>
+                    : 
                     <span v-if="range.valueLL == 'novalue'" :style="{ fontStyle: 'italic' }">
                         {{ range.valueLabel }}
                     </span>
@@ -185,7 +222,15 @@ viewallitems = Vue.component('view-all-items', {
                     ( <a @click="removeRange(range)">&#x2715;</a> )
                 </p>
                 <p v-for="quantity in appliedQuantities">
-                    <b>{{quantity.filterValueLabel}}</b>: 
+                    <b>
+                        <span v-if="quantity.parentFilterValue">
+                            {{quantity.parentFilterValueLabel}} &rarr; {{quantity.filterValueLabel}}
+                        </span>
+                        <span v-else>
+                            {{quantity.filterValueLabel}}
+                        </span>
+                    </b>
+                    : 
                     <span v-if="quantity.valueLL == 'novalue'" :style="{ fontStyle: 'italic' }">
                         {{ quantity.valueLabel }}</span><span v-else>{{ quantity.valueLabel }}
                     </span> 
@@ -359,20 +404,41 @@ viewallitems = Vue.component('view-all-items', {
         }
         var filterQuantities = "";
         for (let i = 0; i < this.appliedQuantities.length; i++) {
-            if (this.appliedQuantities[i].valueLL == "novalue") {
-                noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedQuantities[i].filterValue + " ?no. }).\n"
+            if(this.appliedQuantities[i].parentFilterValue){
+                if (this.appliedQuantities[i].valueLL == "novalue") {
+                    noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedQuantities[i].filterValue + " ?no. }).\n"
+                }
+                else if (this.appliedQuantities[i].unit == "") {
+                    filterQuantities += "?value wdt:"+this.appliedQuantities[i].parentFilterValue+" ?temp.\n" +
+                        "?temp (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                        "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
+                        "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
+                    maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
+                }
+                else {
+                    filterQuantities += "?value wdt:" + this.appliedQuantities[i].parentFilterValue + " ?temp.\n" +
+                        "?temp (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                        "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
+                        "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
+                    maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
+                }
             }
-            else if (this.appliedQuantities[i].unit == "") {
-                filterQuantities += "?value (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+            else{
+                if (this.appliedQuantities[i].valueLL == "novalue") {
+                    noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedQuantities[i].filterValue + " ?no. }).\n"
+                }
+                else if (this.appliedQuantities[i].unit == "") {
+                    filterQuantities += "?value (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
                     "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
                     "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
-                maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
-            }
-            else {
-                filterQuantities += "?value (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                    maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
+                }
+                else {
+                    filterQuantities += "?value (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
                     "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
                     "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
-                maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
+                    maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
+                }
             }
         }
         sparqlQuery = "SELECT DISTINCT ?value ?valueLabel WHERE {\n" +

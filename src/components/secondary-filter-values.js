@@ -37,39 +37,52 @@ secondayFilterValues = Vue.component('secondary-filters', {
                 </a>
             </p>
             <p v-for="filter in appliedFilters">
-                <b>{{filter.filterValueLabel}}</b>: 
-                <span 
-                    v-if="filter.value == 'novalue'" 
-                    :style="{ fontStyle: 'italic' }">{{ filter.valueLabel }}
-                </span>
-                <span v-else>
-                    {{ filter.valueLabel }}
+                <b>
+                    <span v-if="filter.parentFilterValue">
+                        {{filter.parentFilterValueLabel}} &rarr; {{filter.filterValueLabel}}
+                    </span>
+                    <span v-else>
+                        {{filter.filterValueLabel}}
+                    </span>
+                </b>
+                :
+                <span v-if="filter.value == 'novalue'" :style="{ fontStyle: 'italic' }">
+                    {{ filter.valueLabel }}</span><span v-else>{{ filter.valueLabel }}
                 </span> 
-                ( <a @click="removeFilter(filter)">X</a> )
+                ( <a @click="removeFilter(filter)">&#x2715;</a> )
             </p>
             <p v-for="range in appliedRanges">
-                <b>{{range.filterValueLabel}}</b>: 
-                <span
-                    v-if="range.valueLL == 'novalue'" 
-                    :style="{ fontStyle: 'italic' }">
+                <b>
+                    <span v-if="range.parentFilterValue">
+                        {{range.parentFilterValueLabel}} &rarr; {{range.filterValueLabel}}
+                    </span>
+                    <span v-else>
+                        {{quantity.filterValueLabel}}
+                    </span>
+                </b>
+                : 
+                <span v-if="range.valueLL == 'novalue'" :style="{ fontStyle: 'italic' }">
                     {{ range.valueLabel }}
                 </span>
                 <span v-else>
                     {{ range.valueLabel }}
                 </span> 
-                ( <a @click="removeRange(range)">X</a> )</p>
+                ( <a @click="removeRange(range)">&#x2715;</a> )
+            </p>
             <p v-for="quantity in appliedQuantities">
-                <b>{{quantity.filterValueLabel}}</b>: 
-                <span 
-                    v-if="quantity.valueLL == 'novalue'" 
-                    :style="{ fontStyle: 'italic' }">
-                    {{ quantity.valueLabel }}
-                </span>
-                <span v-else>
-                    {{ quantity.valueLabel }}
+                <b>
+                    <span v-if="quantity.parentFilterValue">
+                        {{quantity.parentFilterValueLabel}} &rarr; {{quantity.filterValueLabel}}
+                    </span>
+                    <span v-else>
+                        {{quantity.filterValueLabel}}
+                    </span>
+                </b>
+                : 
+                <span v-if="quantity.valueLL == 'novalue'" :style="{ fontStyle: 'italic' }">
+                    {{ quantity.valueLabel }}</span><span v-else>{{ quantity.valueLabel }}
                 </span> 
-                {{quantity.unit}}
-                ( <a @click="removeQuantity(quantity)">X</a> )
+                {{quantity.unit}}( <a @click="removeQuantity(quantity)">&#x2715;</a> )
             </p>
         </div>
         <div class="content">
@@ -319,10 +332,10 @@ secondayFilterValues = Vue.component('secondary-filters', {
             this.$emit('apply-secondary-filter', filter)
         },
         applyRange(range) {
-            this.$emit('apply-range', range)
+            this.$emit('apply-secondary-range', range)
         },
         applyQuantityRange(range) {
-            this.$emit('apply-quantity', range)
+            this.$emit('apply-secondary-quantity', range)
         },
         removeFilter(value) {
             this.$emit("remove-filter", value, 'secondary-filter-values');
@@ -331,7 +344,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
             this.$emit("remove-range", range, 'filter-values');
         },
         removeQuantity(quantity) {
-            this.$emit("remove-quantity", quantity, 'filter-values');
+            this.$emit("remove-quantity", quantity, 'secondary-filter-values');
         },
         monthNumberToString(monthNum) {
             if (monthNum == 1) {
@@ -696,11 +709,15 @@ secondayFilterValues = Vue.component('secondary-filters', {
         var filterString = "";
         var noValueString = "";
         for (let i = 0; i < this.appliedFilters.length; i++) {
-            if (this.appliedFilters[i].value == "novalue") {
-                noValueString += " FILTER(NOT EXISTS { ?item wdt:" + this.appliedFilters[i].filterValue + " ?no. }).\n"
+            if (this.appliedFilters[i].parentFilterValue) {
+                filterString += "?item wdt:" + this.appliedFilters[i].parentFilterValue + " ?temp.\n" +
+                    "?temp wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n";
+            }
+            else if (this.appliedFilters[i].value == "novalue") {
+                noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedFilters[i].filterValue + " ?no. }).\n"
             }
             else {
-                filterString += "?item wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n";
+                filterString += "?value wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n";
             }
         }
         var filterRanges = ""
@@ -754,6 +771,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                     var q = window.location.search;
                     parameters = new URLSearchParams(q)
                     parameters.delete("cf")
+                    parameters.delete("sf")
                     parameters.set("r." + this.secondaryFilter.value, "novalue")
                     this.noValueURL = window.location.pathname + "?" + parameters
                     var sparqlQuery = "SELECT ?time WHERE {\n" +
@@ -775,6 +793,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                     var q = window.location.search;
                                     parameters = new URLSearchParams(q)
                                     parameters.delete("cf")
+                                    parameters.delete("sf")
                                     if (arr[i].size == 1) parameters.set("r." + this.secondaryFilter.value, arr[i].bucketLL.year + "~" + arr[i].bucketUL.year)
                                     else if (arr[i].size == 2) parameters.set("r." + this.secondaryFilter.value, arr[i].bucketLL.year)
                                     else if (arr[i].size == 3) parameters.set("r." + this.secondaryFilter.value, arr[i].bucketLL.year + "-" + arr[i].bucketLL.month)
@@ -817,6 +836,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                             var q = window.location.search;
                                             parameters = new URLSearchParams(q)
                                             parameters.delete("cf")
+                                            parameters.delete("sf")
                                             if (arr[i].size == 1) parameters.set("r." + vm.secondaryFilter.value, arr[i].bucketLL.year + "~" + arr[i].bucketUL.year)
                                             else if (arr[i].size == 2) parameters.set("r." + vm.secondaryFilter.value, arr[i].bucketLL.year)
                                             else if (arr[i].size == 3) parameters.set("r." + vm.secondaryFilter.value, arr[i].bucketLL.year + "-" + arr[i].bucketLL.month)
@@ -843,12 +863,13 @@ secondayFilterValues = Vue.component('secondary-filters', {
                     var q = window.location.search;
                     parameters = new URLSearchParams(q)
                     parameters.delete("cf")
+                    parameters.delete("sf")
                     parameters.set("q." + this.secondaryFilter.value, "novalue")
                     this.noValueURL = window.location.pathname + "?" + parameters
                     var sparqlQuery = "SELECT ?item ?amount WHERE {\n" +
                         "    ?item wdt:" + instanceOf + " wd:" + this.classValue + ".\n" +
                         filterString +
-                        "    ?item (p:" + this.secondaryFilter.value + "/psn:" + this.secondaryFilter.value + ") ?v.\n" +
+                        "    ?temp (p:" + this.secondaryFilter.value + "/psn:" + this.secondaryFilter.value + ") ?v.\n" +
                         "    ?v wikibase:quantityAmount ?amount.\n" +
                         filterRanges +
                         filterQuantities +
@@ -865,14 +886,14 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                     var sparqlQuery = "SELECT ?amount WHERE {\n" +
                                         "    ?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
                                         filterString +
-                                        "    ?item (p:" + vm.secondaryFilter.value + "/psv:" + vm.secondaryFilter.value + ") ?v.\n" +
+                                        "    ?temp (p:" + vm.secondaryFilter.value + "/psv:" + vm.secondaryFilter.value + ") ?v.\n" +
                                         "    ?v wikibase:quantityAmount ?amount.\n" +
                                         filterRanges +
                                         filterQuantities +
                                         noValueString +
                                         "}\n" +
                                         "ORDER BY ?amount";
-                                    this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
+                                    vm.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
                                     const fullUr = sparqlEndpoint + encodeURIComponent(sparqlQuery);
                                     axios.get(fullUr)
                                         .then(res => {
@@ -882,6 +903,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                                     var q = window.location.search;
                                                     parameters = new URLSearchParams(q)
                                                     parameters.delete("cf")
+                                                    parameters.delete("sf")
                                                     parameters.set("q." + vm.secondaryFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + (arr[i].unit != "" ? ("~" + arr[i].unit) : ""))
                                                     arr[i]['href'] = window.location.pathname + "?" + parameters
                                                 }
@@ -919,6 +941,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                                             var q = window.location.search;
                                                             parameters = new URLSearchParams(q)
                                                             parameters.delete("cf")
+                                                            parameters.delete("sf")
                                                             parameters.set("q." + vm.secondaryFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + (arr[i].unit != "" ? ("~" + arr[i].unit) : ""))
                                                             arr[i]['href'] = window.location.pathname + "?" + parameters
                                                         }
@@ -949,6 +972,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                                     var q = window.location.search;
                                                     parameters = new URLSearchParams(q)
                                                     parameters.delete("cf")
+                                                    parameters.delete("sf")
                                                     parameters.set("quantity," + vm.secondaryFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + (arr[i].unit != "" ? ("~" + arr[i].unit) : ""))
                                                     arr[i]['href'] = window.location.pathname + "?" + parameters
                                                 }
@@ -990,6 +1014,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                             var q = window.location.search;
                                             parameters = new URLSearchParams(q)
                                             parameters.delete("cf")
+                                            parameters.delete("sf")
                                             parameters.set("q." + vm.secondaryFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + (arr[i].unit != "" ? ("~" + arr[i].unit) : ""))
                                             arr[i]['href'] = window.location.pathname + "?" + parameters
                                         }

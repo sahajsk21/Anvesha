@@ -68,11 +68,12 @@ var app = new Vue({
     methods: {
         updatePage: function (page) {
             if (page == "subclass" || page == "superclass" || page == "filters") {
-                urlParams.set('view', page)
+                urlParams.set("view", page)
             }
             else if (page == "view-all-items") {
-                urlParams.delete('cf')
-                urlParams.delete('view')
+                urlParams.delete("cf")
+                urlParams.delete("sf")
+                urlParams.delete("view")
             }
             if (!urlParams.get("lang")) {
                 urlParams.set("lang", lang.split(",")[0])
@@ -153,6 +154,7 @@ var app = new Vue({
                 urlParams.set("f." + this.currentFilter.value, existingValues + filter.value.value.split('/').slice(-1)[0])
             }
             urlParams.delete("cf")
+            urlParams.delete("sf")
             this.updatePage('view-all-items')
         },
         applySecondaryFilter:function(filter){
@@ -246,13 +248,80 @@ var app = new Vue({
 
             }
             urlParams.delete("cf")
+            urlParams.delete("sf")
+            this.updatePage('view-all-items')
+        },
+        applySecondaryRange: function(range){
+            const i = this.appRanges.findIndex(_item => _item.filterValue == this.currentFilter.value);
+            if (i > -1) {
+                if (range == 'novalue') {
+                    this.appRanges[i] = {
+                        parentFilterValue: this.currentFilter.value,
+                        parentFilterValueLabel: this.currentFilter.valueLabel,
+                        filterValue: this.secondaryFilter.value,
+                        filterValueLabel: this.secondaryFilter.valueLabel,
+                        valueLabel: "No Value",
+                        valueLL: "novalue",
+                        valueUL: "novalue"
+                    }
+                    urlParams.set("r." + this.currentFilter.value + "." + this.secondaryFilter.value, "novalue")
+                }
+                else {
+                    this.appRanges[i] = {
+                        parentFilterValue: this.currentFilter.value,
+                        parentFilterValueLabel: this.currentFilter.valueLabel,
+                        filterValue: this.secondaryFilter.value,
+                        filterValueLabel: this.secondaryFilter.valueLabel,
+                        valueLabel: range.bucketName,
+                        valueLL: Object.values(range.bucketLL).join("-"),
+                        valueUL: Object.values(range.bucketUL).join("-")
+                    }
+                    if (range.size == 1) urlParams.set("r." + this.currentFilter.value + "." + this.secondaryFilter.value, range.bucketLL.year + "~" + range.bucketUL.year)
+                    else if (range.size == 2) urlParams.set("r." + this.currentFilter.value + "." + this.secondaryFilter.value, range.bucketLL.year)
+                    else if (range.size == 3) urlParams.set("r." + this.currentFilter.value + "." + this.secondaryFilter.value, range.bucketLL.year + "-" + range.bucketLL.month)
+                    else if (range.size == 4) urlParams.set("r." + this.currentFilter.value + "." + this.secondaryFilter.value, range.bucketLL.year + "-" + range.bucketLL.month + "-" + range.bucketLL.day)
+                    else if (range.size == 5) urlParams.set("r." + this.currentFilter.value + "." + this.secondaryFilter.value, range.bucketLL.year + "-" + range.bucketLL.month + "-" + range.bucketLL.day)
+                }
+            }
+            else {
+                if (range == 'novalue') {
+                    this.appRanges.push({
+                        parentFilterValue: this.currentFilter.value,
+                        parentFilterValueLabel: this.currentFilter.valueLabel,
+                        filterValue: this.secondaryFilter.value,
+                        filterValueLabel: this.secondaryFilter.valueLabel,
+                        valueLabel: "No Value",
+                        valueLL: "novalue",
+                        valueUL: "novalue"
+                    });
+                    urlParams.set("r." + this.currentFilter.value + "." + this.secondaryFilter.value, "novalue")
+                }
+                else {
+                    this.appRanges.push({
+                        parentFilterValue: this.currentFilter.value,
+                        parentFilterValueLabel: this.currentFilter.valueLabel,
+                        filterValue: this.secondaryFilter.value,
+                        filterValueLabel: this.secondaryFilter.valueLabel,
+                        valueLabel: range.bucketName,
+                        valueLL: Object.values(range.bucketLL).join("-"),
+                        valueUL: Object.values(range.bucketUL).join("-")
+                    });
+                    if (range.size == 1) urlParams.set("r." + this.currentFilter.value + "." + this.secondaryFilter.value, range.bucketLL.year + "~" + range.bucketUL.year)
+                    else if (range.size == 2) urlParams.set("r." + this.currentFilter.value + "." + this.secondaryFilter.value, range.bucketLL.year)
+                    else if (range.size == 3) urlParams.set("r." + this.currentFilter.value + "." + this.secondaryFilter.value, range.bucketLL.year + "-" + range.bucketLL.month)
+                    else if (range.size == 4) urlParams.set("r." + this.currentFilter.value + "." + this.secondaryFilter.value, range.bucketLL.year + "-" + range.bucketLL.month + "-" + range.bucketLL.day)
+                    else if (range.size == 5) urlParams.set("r." + this.currentFilter.value + "." + this.secondaryFilter.value, range.bucketLL.year + "-" + range.bucketLL.month + "-" + range.bucketLL.day)
+                }
+
+            }
+            urlParams.delete("cf")
+            urlParams.delete("sf")
             this.updatePage('view-all-items')
         },
         applyQuantityRange: function (range) {
             const i = this.appQuantities.findIndex(_item => _item.filterValue == this.currentFilter.value);
             if (i > -1) {
                 if (range == 'novalue') {
-                    urlParams.set("q." + this.currentFilter.value, "novalue")
                     this.appQuantities[i] = {
                         filterValue: this.currentFilter.value,
                         filterValueLabel: this.currentFilter.valueLabel,
@@ -277,7 +346,6 @@ var app = new Vue({
             }
             else {
                 if (range == 'novalue') {
-                    urlParams.set("q." + this.currentFilter.value, "novalue")
                     this.appQuantities.push({
                         filterValue: this.currentFilter.value,
                         filterValueLabel: this.currentFilter.valueLabel,
@@ -302,6 +370,70 @@ var app = new Vue({
                 }
             }
             urlParams.delete("cf")
+            urlParams.delete("sf")
+            this.updatePage('view-all-items')
+        },
+        applySecondaryQuantityRange:function(range){
+            const i = this.appQuantities.findIndex(_item => _item.filterValue == this.secondaryFilter.value);
+            if (i > -1) {
+                if (range == 'novalue') {
+                    this.appQuantities[i] = {
+                        parentFilterValue: this.currentFilter.value,
+                        parentFilterValueLabel: this.currentFilter.valueLabel,
+                        filterValue: this.secondaryFilter.value,
+                        filterValueLabel: this.secondaryFilter.valueLabel,
+                        valueLabel: "No Value",
+                        valueLL: "novalue",
+                        valueUL: "novalue",
+                        unit: ""
+                    }
+                    urlParams.set("q." + this.currentFilter.value + "." + this.secondaryFilter.value, "novalue")
+                }
+                else {
+                    this.appQuantities[i] = {
+                        parentFilterValue: this.currentFilter.value,
+                        parentFilterValueLabel: this.currentFilter.valueLabel,
+                        filterValue: this.secondaryFilter.value,
+                        filterValueLabel: this.secondaryFilter.valueLabel,
+                        valueLabel: range.bucketName,
+                        valueLL: range.bucketLL,
+                        valueUL: range.bucketUL,
+                        unit: range.unit
+                    }
+                    urlParams.set("q." + this.currentFilter.value + "." + this.secondaryFilter.value, range.bucketLL + "~" + range.bucketUL + (range.unit != "" ? ("~" + range.unit) : ""))
+                }
+            }
+            else {
+                if (range == 'novalue') {
+                    this.appQuantities.push({
+                        parentFilterValue: this.currentFilter.value,
+                        parentFilterValueLabel: this.currentFilter.valueLabel,
+                        filterValue: this.secondaryFilter.value,
+                        filterValueLabel: this.secondaryFilter.valueLabel,
+                        valueLabel: "No Value",
+                        valueLL: "novalue",
+                        valueUL: "novalue",
+                        unit: ""
+                    })
+                    urlParams.set("q." + this.currentFilter.value + "." + this.secondaryFilter.value, "novalue")
+
+                }
+                else {
+                    this.appQuantities.push({
+                        parentFilterValue: this.currentFilter.value,
+                        parentFilterValueLabel: this.currentFilter.valueLabel,
+                        filterValue: this.secondaryFilter.value,
+                        filterValueLabel: this.secondaryFilter.valueLabel,
+                        valueLabel: range.bucketName,
+                        valueLL: range.bucketLL,
+                        valueUL: range.bucketUL,
+                        unit: range.unit
+                    });
+                    urlParams.set("q." + this.currentFilter.value + "." + this.secondaryFilter.value, range.bucketLL + "~" + range.bucketUL + (range.unit != "" ? ("~" + range.unit) : ""))
+                }
+            }
+            urlParams.delete("cf")
+            urlParams.delete("sf")
             this.updatePage('view-all-items')
         },
         forceAllItemsRerender() {
@@ -344,8 +476,13 @@ var app = new Vue({
         },
         removeRange: function (range, page) {
             index = this.appRanges.findIndex(filter => filter.filterValue == range.filterValue);
+            if (range.parentFilterValue) {
+                urlParams.delete("r." + range.parentFilterValue + "." + range.filterValue)
+            }
+            else {
+                urlParams.delete("r." + range.filterValue)
+            }
             this.appRanges.splice(index, 1)
-            urlParams.delete("r." + range.filterValue)
             this.updatePage(page)
             this.getFiltersFromURL = 0
             this.forceAllItemsRerender()
@@ -353,8 +490,13 @@ var app = new Vue({
         },
         removeQuantity: function (quantity, page) {
             index = this.appQuantities.findIndex(filter => filter.filterValue == quantity.filterValue);
+            if(quantity.parentFilterValue){
+                urlParams.delete("q." + quantity.parentFilterValue + "." + quantity.filterValue)
+            }
+            else{
+                urlParams.delete("q." + quantity.filterValue)
+            }
             this.appQuantities.splice(index, 1)
-            urlParams.delete("q." + quantity.filterValue)
             this.updatePage(page)
             this.getFiltersFromURL = 0
             this.forceAllItemsRerender()
@@ -682,30 +824,59 @@ var app = new Vue({
                  split the result about "~" to get upper and lower limits of the date range.
                 */
                 url = decodeURI(urlParams);
-                var res = url.match(/[rR]\.[Pp]\d+/g);
+                var res = url.match(/[rR]\.[Pp](\d+)((\.[Pp](\d+))?)/g);
                 var filters = "";
                 if (res != null) {
                     for (var i = 0; i < res.length; i++) {
+                        arr = res[i].split(".")
                         if (urlParams.get(res[i]) == "novalue") {
-                            this.appRanges.push({
-                                filterValue: res[i].split(".")[1],
-                                filterValueLabel: res[i].split(".")[1],
-                                valueLL: "novalue",
-                                valueUL: "novalue",
-                                valueLabel: "No Value"
-                            })
+                            if(arr[2]){
+                                this.appRanges.push({
+                                    parentFilterValue: arr[1],
+                                    parentFilterValueLabel: arr[1],
+                                    filterValue: arr[2],
+                                    filterValueLabel: arr[2],
+                                    valueLL: "novalue",
+                                    valueUL: "novalue",
+                                    valueLabel: "No Value"
+                                })
+                                filters += " wdt:" + arr[1]
+                            }
+                            else{
+                                this.appRanges.push({
+                                    filterValue: arr[1],
+                                    filterValueLabel: arr[1],
+                                    valueLL: "novalue",
+                                    valueUL: "novalue",
+                                    valueLabel: "No Value"
+                                })
+                            }
                         }
                         else {
                             dateRangeParts = this.parseDateRange(urlParams.get(res[i]))
-                            this.appRanges.push({
-                                filterValue: res[i].split(".")[1],
-                                filterValueLabel: res[i].split(".")[1],
-                                valueLL: dateRangeParts[0],
-                                valueUL: dateRangeParts[1],
-                                valueLabel: dateRangeParts[2]
-                            })
+                            if(arr[2]){
+                                this.appRanges.push({
+                                    parentFilterValue: arr[1],
+                                    parentFilterValueLabel: arr[1],
+                                    filterValue: arr[2],
+                                    filterValueLabel: arr[2],
+                                    valueLL: dateRangeParts[0],
+                                    valueUL: dateRangeParts[1],
+                                    valueLabel: dateRangeParts[2]
+                                })
+                                filters += " wdt:" + arr[2]
+                            }
+                            else{
+                                this.appRanges.push({
+                                    filterValue: arr[1],
+                                    filterValueLabel: arr[1],
+                                    valueLL: dateRangeParts[0],
+                                    valueUL: dateRangeParts[1],
+                                    valueLabel: dateRangeParts[2]
+                                })
+                            }
                         }
-                        filters += " wdt:" + res[i].split(".")[1]
+                        filters += " wdt:" + arr[1]
                     }
                     var sparqlQuery = "SELECT ?prop ?propLabel WHERE {\n" +
                         "  hint:Query hint:optimizer \"None\".\n" +
@@ -717,9 +888,13 @@ var app = new Vue({
                     axios.get(fullUrl)
                         .then(response => {
                             for (let i = 0; i < response.data['results']['bindings'].length; i++) {
-                                index = this.appRanges.findIndex(filter => filter.filterValue == response.data['results']['bindings'][i].prop.value.split("/").slice(-1)[0]);
-                                if (index != -1) {
-                                    this.appRanges[index].filterValueLabel = response.data['results']['bindings'][i].propLabel.value
+                                for (let j = 0; j < this.appRanges.length; j++) {
+                                    if (this.appRanges[j].filterValue == response.data['results']['bindings'][i].prop.value.split("/").slice(-1)[0]) {
+                                        this.appRanges[j].filterValueLabel = response.data['results']['bindings'][i].propLabel.value
+                                    }
+                                    if (this.appRanges[j].parentFilterValue == response.data['results']['bindings'][i].prop.value.split("/").slice(-1)[0]) {
+                                        this.appRanges[j].parentFilterValueLabel = response.data['results']['bindings'][i].propLabel.value
+                                    }
                                 }
                             }
                         })
@@ -736,31 +911,62 @@ var app = new Vue({
                  lower limit and unit of the quantity.
                 */
                 url = decodeURI(urlParams);
-                var res = url.match(/[qQ]\.[Pp]\d+/g);
+                var res = url.match(/[qQ]\.[Pp](\d+)((\.[Pp](\d+))?)/g);
                 var filters = "";
                 if (res != null) {
                     for (var i = 0; i < res.length; i++) {
+                        arr = res[i].split(".")
                         if (urlParams.get(res[i]) == "novalue") {
-                            this.appQuantities.push({
-                                filterValue: res[i].split(".")[1],
-                                filterValueLabel: res[i].split(".")[1],
-                                valueLL: "novalue",
-                                valueUL: "novalue",
-                                valueLabel: "No Value",
-                                unit: ""
-                            })
+                            if(arr[2]){
+                                this.appQuantities.push({
+                                    parentFilterValue: arr[1],
+                                    parentFilterValueLabel: arr[1],
+                                    filterValue: arr[2],
+                                    filterValueLabel: arr[2],
+                                    valueLL: "novalue",
+                                    valueUL: "novalue",
+                                    valueLabel: "No Value",
+                                    unit: ""
+                                })
+                                filters += " wdt:" + arr[2]
+                            }
+                            else{
+                                this.appQuantities.push({
+                                    filterValue: arr[1],
+                                    filterValueLabel: arr[1],
+                                    valueLL: "novalue",
+                                    valueUL: "novalue",
+                                    valueLabel: "No Value",
+                                    unit: ""
+                                })
+                            }
                         }
                         else {
-                            this.appQuantities.push({
-                                filterValue: res[i].split(".")[1],
-                                filterValueLabel: res[i].split(".")[1],
-                                valueLL: urlParams.get(res[i]).split("~")[0].trim(),
-                                valueUL: urlParams.get(res[i]).split("~")[1].trim(),
-                                valueLabel: numberWithCommas(urlParams.get(res[i]).split("~")[0].trim()) + " - " + numberWithCommas(urlParams.get(res[i]).split("~")[1].trim()),
-                                unit: urlParams.get(res[i]).split("~")[2] ? urlParams.get(res[i]).split("~")[2] : ""
-                            })
+                            if(arr[2]){
+                                this.appQuantities.push({
+                                    parentFilterValue: arr[1],
+                                    parentFilterValueLabel: arr[1],
+                                    filterValue: arr[2],
+                                    filterValueLabel: arr[2],
+                                    valueLL: urlParams.get(res[i]).split("~")[0].trim(),
+                                    valueUL: urlParams.get(res[i]).split("~")[1].trim(),
+                                    valueLabel: numberWithCommas(urlParams.get(res[i]).split("~")[0].trim()) + " - " + numberWithCommas(urlParams.get(res[i]).split("~")[1].trim()),
+                                    unit: urlParams.get(res[i]).split("~")[2] ? urlParams.get(res[i]).split("~")[2] : ""
+                                })
+                                filters += " wdt:" + arr[2]
+                            }
+                            else{
+                                this.appQuantities.push({
+                                    filterValue: arr[1],
+                                    filterValueLabel: arr[1],
+                                    valueLL: urlParams.get(res[i]).split("~")[0].trim(),
+                                    valueUL: urlParams.get(res[i]).split("~")[1].trim(),
+                                    valueLabel: numberWithCommas(urlParams.get(res[i]).split("~")[0].trim()) + " - " + numberWithCommas(urlParams.get(res[i]).split("~")[1].trim()),
+                                    unit: urlParams.get(res[i]).split("~")[2] ? urlParams.get(res[i]).split("~")[2] : ""
+                                })
+                            }
                         }
-                        filters += " wdt:" + res[i].split(".")[1]
+                        filters += " wdt:" + arr[1]
                     }
                     var sparqlQuery = "SELECT ?prop ?propLabel WHERE {\n" +
                         "  hint:Query hint:optimizer \"None\".\n" +
@@ -772,9 +978,13 @@ var app = new Vue({
                     axios.get(fullUrl)
                         .then(response => {
                             for (let i = 0; i < response.data['results']['bindings'].length; i++) {
-                                index = this.appQuantities.findIndex(filter => filter.filterValue == response.data['results']['bindings'][i].prop.value.split("/").slice(-1)[0]);
-                                if (index != -1) {
-                                    this.appQuantities[index].filterValueLabel = response.data['results']['bindings'][i].propLabel.value
+                                for (let j = 0; j < this.appQuantities.length; j++) {
+                                    if (this.appQuantities[j].filterValue == response.data['results']['bindings'][i].prop.value.split("/").slice(-1)[0]) {
+                                        this.appQuantities[j].filterValueLabel = response.data['results']['bindings'][i].propLabel.value
+                                    }
+                                    if (this.appQuantities[j].parentFilterValue == response.data['results']['bindings'][i].prop.value.split("/").slice(-1)[0]) {
+                                        this.appQuantities[j].parentFilterValueLabel = response.data['results']['bindings'][i].propLabel.value
+                                    }
                                 }
                             }
                         })
@@ -813,22 +1023,40 @@ var app = new Vue({
             }
             var filterQuantities = "";
             for (let i = 0; i < this.appliedQuantities.length; i++) {
-                if (this.appliedQuantities[i].valueLL == "novalue") {
-                    noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedQuantities[i].filterValue + " ?no. }).\n"
-                }
-                else if (this.appliedQuantities[i].unit == "") {
-                    filterQuantities += "?value (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
-                        "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
-                        "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
+                if (this.appliedQuantities[i].parentFilterValue) {
+                    if (this.appliedQuantities[i].valueLL == "novalue") {
+                        noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedQuantities[i].filterValue + " ?no. }).\n"
+                    }
+                    else if (this.appliedQuantities[i].unit == "") {
+                        filterQuantities += "?value wdt:" + this.appliedQuantities[i].parentFilterValue + " ?temp.\n" +
+                            "?temp (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                            "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
+                            "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
+                    }
+                    else {
+                        filterQuantities += "?value wdt:" + this.appliedQuantities[i].parentFilterValue + " ?temp.\n" +
+                            "?temp (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                            "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
+                            "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
+                    }
                 }
                 else {
-                    filterQuantities += "?value (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
-                        "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
-                        "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
-
+                    if (this.appliedQuantities[i].valueLL == "novalue") {
+                        noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedQuantities[i].filterValue + " ?no. }).\n"
+                    }
+                    else if (this.appliedQuantities[i].unit == "") {
+                        filterQuantities += "?value (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                            "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
+                            "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
+                    }
+                    else {
+                        filterQuantities += "?value (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                            "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
+                            "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
+                    }
                 }
             }
-            sparqlQuery = "SELECT (COUNT(DISTINCT *) AS ?count) WHERE {\n" +
+            sparqlQuery = "SELECT (COUNT(DISTINCT ?value) AS ?count) WHERE {\n" +
                 "  ?value wdt:" + instanceOf + " wd:" + this.classValue + ".  \n" +
                 filterString +
                 filterRanges +

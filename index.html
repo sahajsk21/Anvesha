@@ -63,6 +63,7 @@
                 @apply-quantity="applyQuantityRange" 
                 @update-filter="updateFilter"
                 @update-secondary="updateSecondaryFilter"
+                @update-class="updateClassValue"
                 @remove-filter="removeFilter"
                 @remove-range="removeRange"
                 @remove-quantity="removeQuantity"            
@@ -81,8 +82,8 @@
             <secondary-filters 
                 @change-page="updatePage"
                 @apply-secondary-filter="applySecondaryFilter"
-                @apply-range="applyRange" 
-                @apply-quantity="applyQuantityRange" 
+                @apply-secondary-range="applySecondaryRange" 
+                @apply-secondary-quantity="applySecondaryQuantityRange" 
                 @remove-filter="removeFilter"
                 @remove-range="removeRange"
                 @remove-quantity="removeQuantity"            

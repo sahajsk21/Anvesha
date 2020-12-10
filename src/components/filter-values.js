@@ -38,48 +38,68 @@ filtervalues = Vue.component('filter-values', {
                 </a>
             </p>
             <p v-for="filter in appliedFilters">
-                <b>{{filter.filterValueLabel}}</b>: 
-                <span 
-                    v-if="filter.value == 'novalue'" 
-                    :style="{ fontStyle: 'italic' }">{{ filter.valueLabel }}
-                </span>
-                <span v-else>
-                    {{ filter.valueLabel }}
-                </span> 
-                ( <a @click="removeFilter(filter)">X</a> )
-            </p>
-            <p v-for="range in appliedRanges">
-                <b>{{range.filterValueLabel}}</b>: 
-                <span
-                    v-if="range.valueLL == 'novalue'" 
-                    :style="{ fontStyle: 'italic' }">
-                    {{ range.valueLabel }}
-                </span>
-                <span v-else>
-                    {{ range.valueLabel }}
-                </span> 
-                ( <a @click="removeRange(range)">X</a> )</p>
-            <p v-for="quantity in appliedQuantities">
-                <b>{{quantity.filterValueLabel}}</b>: 
-                <span 
-                    v-if="quantity.valueLL == 'novalue'" 
-                    :style="{ fontStyle: 'italic' }">
-                    {{ quantity.valueLabel }}
-                </span>
-                <span v-else>
-                    {{ quantity.valueLabel }}
-                </span> 
-                {{quantity.unit}}
-                ( <a @click="removeQuantity(quantity)">X</a> )
-            </p>
-            <div v-if="secondaryFilters.length>0" class="filter-box">
-                <span v-for="filter in secondaryFilters" v-if="currentFilter.value != filter.value.value.split('/').slice(-1)[0]">
+                    <b>
+                        <span v-if="filter.parentFilterValue">
+                            {{filter.parentFilterValueLabel}} &rarr; {{filter.filterValueLabel}}
+                        </span>
+                        <span v-else>
+                            {{filter.filterValueLabel}}
+                        </span>
+                    </b>
+                    :
+                    <span v-if="filter.value == 'novalue'" :style="{ fontStyle: 'italic' }">
+                        {{ filter.valueLabel }}</span><span v-else>{{ filter.valueLabel }}
+                    </span> 
+                    ( <a @click="removeFilter(filter)">&#x2715;</a> )
+                </p>
+                <p v-for="range in appliedRanges">
+                    <b>
+                        <span v-if="range.parentFilterValue">
+                            {{range.parentFilterValueLabel}} &rarr; {{range.filterValueLabel}}
+                        </span>
+                        <span v-else>
+                            {{quantity.filterValueLabel}}
+                        </span>
+                    </b>
+                    : 
+                    <span v-if="range.valueLL == 'novalue'" :style="{ fontStyle: 'italic' }">
+                        {{ range.valueLabel }}
+                    </span>
+                    <span v-else>
+                        {{ range.valueLabel }}
+                    </span> 
+                    ( <a @click="removeRange(range)">&#x2715;</a> )
+                </p>
+                <p v-for="quantity in appliedQuantities">
+                    <b>
+                        <span v-if="quantity.parentFilterValue">
+                            {{quantity.parentFilterValueLabel}} &rarr; {{quantity.filterValueLabel}}
+                        </span>
+                        <span v-else>
+                            {{quantity.filterValueLabel}}
+                        </span>
+                    </b>
+                    : 
+                    <span v-if="quantity.valueLL == 'novalue'" :style="{ fontStyle: 'italic' }">
+                        {{ quantity.valueLabel }}</span><span v-else>{{ quantity.valueLabel }}
+                    </span> 
+                    {{quantity.unit}}( <a @click="removeQuantity(quantity)">&#x2715;</a> )
+                </p>
+            <div v-for="(cls,clsLabel) in secondaryFilters" class="filter-box">
+                <b><a 
+                    :href="linkToClass(cls)"
+                    @click.exact="updateClass(cls)"
+                    onclick="return false;"> 
+                    {{clsLabel}}:
+                </a>
+                </b>
+                <span v-for="filter in cls">
                     <a 
                         @click.exact="showSecondaryFilter(filter)"
                         onclick="return false;"> 
                         {{filter.valueLabel.value}}
                     </a>
-                    <b v-if="secondaryFilters[secondaryFilters.length-1].valueLabel.value != filter.valueLabel.value">&middot; </b>
+                    <b v-if="cls[cls.length-1].valueLabel.value != filter.valueLabel.value">&middot; </b>
                 </span>
             </div>
         </div>
@@ -313,6 +333,12 @@ filtervalues = Vue.component('filter-values', {
         },
         showSecondaryFilter(filter) {
             this.$emit('update-secondary', filter)
+        },
+        linkToClass(cls){
+            return window.location.pathname + "?c=" + cls[0].class.value.split('/').slice(-1)[0]
+        },
+        updateClass(cls) {
+            this.$emit('update-class', cls[0].class.value.split('/').slice(-1)[0], cls[0].class.value.split('/').slice(-1)[0])
         },
         pathForView(view) {
             return window.location.href + '&view=' + view;
@@ -704,18 +730,35 @@ filtervalues = Vue.component('filter-values', {
         }
     },
     mounted() {
-        var sparqlQuery = "SELECT DISTINCT ?value ?valueLabel ?property WHERE {\n" +
+        var sparqlQuery = "SELECT DISTINCT ?value ?valueLabel ?class ?classLabel ?property WHERE {\n" +
             "  wd:" + this.currentFilter.value + " p:P2302 ?constraint_statement.\n" +
             "  ?constraint_statement pq:P2308 ?class.\n" +
             "  ?class wdt:" + propertiesForThisType + " ?value.\n" +
             "  ?value wikibase:propertyType ?property.\n" +
-            "  FILTER (?property in (wikibase:WikibaseItem))\n" +
+            "  FILTER (?property in (wikibase:Time, wikibase:Quantity, wikibase:WikibaseItem))\n" +
             "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
             "}"+
-            "ORDER BY ?valueLabel";
+            "ORDER BY ?classLabel ?valueLabel";
         const url = sparqlEndpoint + encodeURIComponent(sparqlQuery);
         axios.get(url)
-            .then(response => (response.data['results']['bindings'] ? (this.secondaryFilters = [...response.data['results']['bindings']]) : this.secondaryFilters.push({ value: "Empty", valueLabel: "No data" })))
+            .then(response =>{
+                var filtersByClass = {};
+                if(response.data['results']['bindings']){
+                    var arr = response.data['results']['bindings'];
+                    for (let i = 0; i < arr.length; i++) {
+                        if(filtersByClass.hasOwnProperty(arr[i].classLabel.value)){
+                            filtersByClass[arr[i].classLabel.value].push(arr[i])
+                        }
+                        else{
+                            filtersByClass[arr[i].classLabel.value] = [arr[i]]
+                        }
+                    }
+                    this.secondaryFilters = filtersByClass
+                }
+                else{
+                    this.secondaryFilters.push({ value: "Empty", valueLabel: "No data" })
+                }
+            })
 
         var filterString = "";
         var noValueString = "";
@@ -756,19 +799,39 @@ filtervalues = Vue.component('filter-values', {
         }
         var filterQuantities = "";
         for (let i = 0; i < this.appliedQuantities.length; i++) {
-            if (this.appliedQuantities[i].valueLL == "novalue") {
-                noValueString += " FILTER(NOT EXISTS { ?item wdt:" + this.appliedQuantities[i].filterValue + " ?no. }).\n"
-            }
-            else if (this.appliedQuantities[i].unit == "") {
-                filterQuantities += "?item (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+            if(this.appliedQuantities[i].parentFilterValue){
+                if (this.appliedQuantities[i].valueLL == "novalue") {
+                    noValueString += " FILTER(NOT EXISTS { ?item wdt:" + this.appliedQuantities[i].filterValue + " ?no. }).\n"
+                }
+                else if (this.appliedQuantities[i].unit == "") {
+                    filterQuantities += "?item wdt:" + this.appliedQuantities[i].parentFilterValue + " ?temp.\n" +
+                    "?temp (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
                     "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
                     "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >" + this.appliedQuantities[i].valueLL + ")\n"
-            }
-            else {
-                filterQuantities += "?item (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                }
+                else {
+                    filterQuantities += "?item wdt:" + this.appliedQuantities[i].parentFilterValue + " ?temp.\n" +
+                    "?temp (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
                     "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
                     "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >" + this.appliedQuantities[i].valueLL + ")\n"
+                    
+                }
+            }
+            else{
+                if (this.appliedQuantities[i].valueLL == "novalue") {
+                    noValueString += " FILTER(NOT EXISTS { ?item wdt:" + this.appliedQuantities[i].filterValue + " ?no. }).\n"
+                }
+                else if (this.appliedQuantities[i].unit == "") {
+                    filterQuantities += "?item (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                        "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
+                        "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >" + this.appliedQuantities[i].valueLL + ")\n"
+                }
+                else {
+                    filterQuantities += "?item (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                        "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
+                        "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >" + this.appliedQuantities[i].valueLL + ")\n"
 
+                }
             }
         }
         sparqlQuery = "SELECT ?property WHERE {\n" +
@@ -782,6 +845,7 @@ filtervalues = Vue.component('filter-values', {
                     var q = window.location.search;
                     parameters = new URLSearchParams(q)
                     parameters.delete("cf")
+                    parameters.delete("sf")
                     parameters.set("r." + this.currentFilter.value, "novalue")
                     this.noValueURL = window.location.pathname + "?" + parameters
                     var sparqlQuery = "SELECT ?time WHERE {\n" +
@@ -803,6 +867,7 @@ filtervalues = Vue.component('filter-values', {
                                     var q = window.location.search;
                                     parameters = new URLSearchParams(q)
                                     parameters.delete("cf")
+                                    parameters.delete("sf")
                                     if (arr[i].size == 1) parameters.set("r." + this.currentFilter.value, arr[i].bucketLL.year + "~" + arr[i].bucketUL.year)
                                     else if (arr[i].size == 2) parameters.set("r." + this.currentFilter.value, arr[i].bucketLL.year)
                                     else if (arr[i].size == 3) parameters.set("r." + this.currentFilter.value, arr[i].bucketLL.year + "-" + arr[i].bucketLL.month)
@@ -845,6 +910,7 @@ filtervalues = Vue.component('filter-values', {
                                             var q = window.location.search;
                                             parameters = new URLSearchParams(q)
                                             parameters.delete("cf")
+                                            parameters.delete("sf")
                                             if (arr[i].size == 1) parameters.set("r." + vm.currentFilter.value, arr[i].bucketLL.year + "~" + arr[i].bucketUL.year)
                                             else if (arr[i].size == 2) parameters.set("r." + vm.currentFilter.value, arr[i].bucketLL.year)
                                             else if (arr[i].size == 3) parameters.set("r." + vm.currentFilter.value, arr[i].bucketLL.year + "-" + arr[i].bucketLL.month)
@@ -871,6 +937,7 @@ filtervalues = Vue.component('filter-values', {
                     var q = window.location.search;
                     parameters = new URLSearchParams(q)
                     parameters.delete("cf")
+                    parameters.delete("sf")
                     parameters.set("q." + this.currentFilter.value, "novalue")
                     this.noValueURL = window.location.pathname + "?" + parameters
                     var sparqlQuery = "SELECT ?item ?amount WHERE {\n" +
@@ -910,6 +977,7 @@ filtervalues = Vue.component('filter-values', {
                                                     var q = window.location.search;
                                                     parameters = new URLSearchParams(q)
                                                     parameters.delete("cf")
+                                                    parameters.delete("sf")
                                                     parameters.set("q." + vm.currentFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + (arr[i].unit != "" ? ("~" + arr[i].unit) : ""))
                                                     arr[i]['href'] = window.location.pathname + "?" + parameters
                                                 }
@@ -947,6 +1015,7 @@ filtervalues = Vue.component('filter-values', {
                                                             var q = window.location.search;
                                                             parameters = new URLSearchParams(q)
                                                             parameters.delete("cf")
+                                                            parameters.delete("sf")
                                                             parameters.set("q." + vm.currentFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + (arr[i].unit != "" ? ("~" + arr[i].unit) : ""))
                                                             arr[i]['href'] = window.location.pathname + "?" + parameters
                                                         }
@@ -977,6 +1046,7 @@ filtervalues = Vue.component('filter-values', {
                                                     var q = window.location.search;
                                                     parameters = new URLSearchParams(q)
                                                     parameters.delete("cf")
+                                                    parameters.delete("sf")
                                                     parameters.set("quantity," + vm.currentFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + (arr[i].unit != "" ? ("~" + arr[i].unit) : ""))
                                                     arr[i]['href'] = window.location.pathname + "?" + parameters
                                                 }
@@ -1018,6 +1088,7 @@ filtervalues = Vue.component('filter-values', {
                                             var q = window.location.search;
                                             parameters = new URLSearchParams(q)
                                             parameters.delete("cf")
+                                            parameters.delete("sf")
                                             parameters.set("q." + vm.currentFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + (arr[i].unit != "" ? ("~" + arr[i].unit) : ""))
                                             arr[i]['href'] = window.location.pathname + "?" + parameters
                                         }
@@ -1045,7 +1116,7 @@ filtervalues = Vue.component('filter-values', {
                         filterQuantities +
                         noValueString +
                         "}\n" +
-                        "GROUP BY ?value    \n" +
+                        "GROUP BY ?value\n" +
                         "  }\n" +
                         "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
                         "}\n" +
@@ -1074,6 +1145,7 @@ filtervalues = Vue.component('filter-values', {
                                     var q = window.location.search;
                                     parameters = new URLSearchParams(q)
                                     parameters.delete("cf")
+                                    parameters.delete("sf")
                                     var existingValues = ""
                                     for (let i = 0; i < vm.appliedFilters.length; i++) {
                                         if (vm.appliedFilters[i].filterValue == this.currentFilter.value) {
@@ -1125,6 +1197,7 @@ filtervalues = Vue.component('filter-values', {
                                         var q = window.location.search;
                                         parameters = new URLSearchParams(q)
                                         parameters.delete("cf")
+                                        parameters.delete("sf")
                                         parameters.set("f." + this.currentFilter.value, arr[i].value.value.split('/').slice(-1)[0])
                                         arr[i]['href'] = window.location.pathname + "?" + parameters
                                     }
