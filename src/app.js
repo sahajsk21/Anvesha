@@ -502,40 +502,6 @@ var app = new Vue({
             this.forceAllItemsRerender()
             this.forceFiltersRerender()
         },
-        monthNumberToString(monthNum) {
-            if (monthNum == 1) {
-                return 'January';
-            } else if (monthNum == 2) {
-                return 'February';
-            } else if (monthNum == 3) {
-                return 'March';
-            } else if (monthNum == 4) {
-                return 'April';
-            } else if (monthNum == 5) {
-                return 'May';
-            } else if (monthNum == 6) {
-                return 'June';
-            } else if (monthNum == 7) {
-                return 'July';
-            } else if (monthNum == 8) {
-                return 'August';
-            } else if (monthNum == 9) {
-                return 'September';
-            } else if (monthNum == 10) {
-                return 'October';
-            } else if (monthNum == 11) {
-                return 'November';
-            } else if (monthNum == 12) {
-                return 'December';
-            }
-            return 'Invalid month - ' + monthNum;
-        },
-        yearToBCFormat(year) {
-            if (Number(year) < 0) {
-                return (Number(year) * -1) + " BC"
-            }
-            return year
-        },
         parseDateRange(dateString) {
             dateParts = dateString.split("~")
             if (dateParts.length == 2) {// Date interval
@@ -548,21 +514,21 @@ var app = new Vue({
                 else if (dateParts[0].split("-").length == 2 || dateParts[1].split("-").length == 2) {
                     if (dateParts[0].split("-")[0] == "") {
                         // Negative year
-                        label1 = this.yearToBCFormat(dateParts[0])
-                        label2 = this.yearToBCFormat(dateParts[1])
+                        label1 = yearToBCFormat(dateParts[0])
+                        label2 = yearToBCFormat(dateParts[1])
                         return [dateParts[0] + "-01-01", dateParts[1] + "-12-30", label1 + " - " + label2]
                     }
                     else {
                         // YYYY-MM
-                        label1 = this.monthNumberToString(dateParts[0].split("-")[1]) + " " + dateParts[0].split("-")[0]
-                        label2 = this.monthNumberToString(dateParts[1].split("-")[1]) + " " + dateParts[1].split("-")[0]
+                        label1 = monthNumberToString(dateParts[0].split("-")[1]) + " " + dateParts[0].split("-")[0]
+                        label2 = monthNumberToString(dateParts[1].split("-")[1]) + " " + dateParts[1].split("-")[0]
                         return [dateParts[0] + "-01", dateParts[1] + "-30", label1 + " - " + label2]
                     }
                 }
                 else if (dateParts[0].split("-").length > 2 && dateParts[1].split("-").length > 2) {
                     // YYYY-MM-DD
-                    label1 = this.monthNumberToString(dateParts[0].split("-")[1]) + " " + dateParts[0].split("-")[2] + ", " + dateParts[0].split("-")[0]
-                    label2 = this.monthNumberToString(dateParts[1].split("-")[1]) + " " + dateParts[1].split("-")[2] + ", " + dateParts[1].split("-")[0]
+                    label1 = monthNumberToString(dateParts[0].split("-")[1]) + " " + dateParts[0].split("-")[2] + ", " + dateParts[0].split("-")[0]
+                    label2 = monthNumberToString(dateParts[1].split("-")[1]) + " " + dateParts[1].split("-")[2] + ", " + dateParts[1].split("-")[0]
                     return [dateParts[0], dateParts[1], label1 + " - " + label2]
                 }
             }
@@ -574,55 +540,22 @@ var app = new Vue({
                 else if (dateParts[0].split("-").length == 2) {
                     if (dateParts[0].split("-")[0] == "") {
                         // Negative year
-                        return [dateParts[0] + "-01-01", dateParts[0] + "-12-30", this.yearToBCFormat(dateParts[0])]
+                        return [dateParts[0] + "-01-01", dateParts[0] + "-12-30", yearToBCFormat(dateParts[0])]
                     }
                     else {
                         // YYYY-MM
-                        label = this.monthNumberToString(dateParts[0].split("-")[1]) + " " + dateParts[0].split("-")[0]
+                        label = monthNumberToString(dateParts[0].split("-")[1]) + " " + dateParts[0].split("-")[0]
                         return [dateParts[0] + "-01", dateParts[0] + "-30", label]
                     }
                 }
                 else if (dateParts[0].split("-").length > 2) {
                     // YYYY-MM-DD
-                    label = this.monthNumberToString(dateParts[0].split("-")[1]) + " " + dateParts[0].split("-")[2] + ", " + dateParts[0].split("-")[0]
+                    label = monthNumberToString(dateParts[0].split("-")[1]) + " " + dateParts[0].split("-")[2] + ", " + dateParts[0].split("-")[0]
                     nextDateArray = dateParts[0].split("-")
                     nextDateArray[nextDateArray.length - 1] = Number(nextDateArray[nextDateArray.length - 1]) + 1
                     return [dateParts[0], nextDateArray.join("-"), label]
                 }
             }
-        },
-        getDateObject(date) {
-            s = date.split("-")
-            if (s.length == 3) {
-                return { year: s[0], month: s[1], day: s[2] }
-            }
-            else {
-                return { year: "-" + "0".repeat(6 - s[1].length) + s[1], month: s[2], day: s[3] }
-            }
-        },
-        getTimePrecision(ear, lat) {
-            earliestDate = this.getDateObject(ear)
-            latestDate = this.getDateObject(lat)
-            var earliestYear = earliestDate.year;
-            var earliestMonth = earliestDate.month;
-            var earliestDay = earliestDate.day;
-            var latestYear = latestDate.year;
-            var latestMonth = latestDate.month;
-            var latestDay = latestDate.day;
-            var yearDifference = latestYear - earliestYear;
-            var monthDifference = (12 * yearDifference) + (latestMonth - earliestMonth);
-            var dayDifference = (30 * monthDifference) + (latestDay - earliestDay);
-            if (dayDifference <= 1) return 11
-            else if (monthDifference <= 1) return 10
-            else if (yearDifference <= 1) return 9
-            else if (yearDifference <= 10) return 8
-            else if (yearDifference <= 100) return 7
-            else if (yearDifference <= 1000) return 6
-            else if (yearDifference <= 1e4) return 5
-            else if (yearDifference <= 1e5) return 4
-            else if (yearDifference <= 1e6) return 3
-            else if (yearDifference <= 1e8) return 1
-            return 0
         },
         changeLanguage(lang) {
             urlParams.set("lang", lang)
@@ -1013,7 +946,7 @@ var app = new Vue({
                     noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedRanges[i].filterValue + " ?no. }).\n"
                 }
                 else {
-                    timePrecision = this.getTimePrecision(this.appliedRanges[i].valueLL, this.appliedRanges[i].valueUL)
+                    timePrecision = getTimePrecision(this.appliedRanges[i].valueLL, this.appliedRanges[i].valueUL)
                     filterRanges += "?value (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
                         "  ?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
                         "  ?timenode" + i + " wikibase:timePrecision ?timeprecision" + i + ".\n" +

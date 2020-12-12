@@ -38,7 +38,7 @@ subclass = Vue.component('subclass-view', {
                             {{range.parentFilterValueLabel}} &rarr; {{range.filterValueLabel}}
                         </span>
                         <span v-else>
-                            {{quantity.filterValueLabel}}
+                            {{range.filterValueLabel}}
                         </span>
                     </b>
                     :

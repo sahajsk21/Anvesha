@@ -8,55 +8,16 @@ filtersview = Vue.component('filters-view', {
     },
     template: `
     <div v-if="websiteText!=''">
-        <div class="header">
-            <p class="heading"> 
-                {{ classLabel }} 
-                <a 
-                    title="superclass" 
-                    :href="pathForView('superclass')" 
-                    onclick="return false;" 
-                    class="classOptions" 
-                    @click.exact="changePage('superclass')" 
-                    @click.ctrl="window.open(pathForView('superclass'))">
-                    &uarr;
-                </a>
-                <a 
-                    title="subclass" 
-                    :href="pathForView('subclass')" 
-                    onclick="return false;" 
-                    class="classOptions" 
-                    @click.exact="changePage('subclass')" 
-                    @click.ctrl="window.open(pathForView('subclass'))">
-                    &darr;
-                </a>
-            </p>
-            <div>
-                <p v-for="filter in appliedFilters">
-                    <b>{{filter.filterValueLabel}}</b>: 
-                    <span v-if="filter.value == 'novalue'" :style="{ fontStyle: 'italic' }">
-                        {{ filter.valueLabel }}</span><span v-else>{{ filter.valueLabel }}
-                    </span> 
-                    ( <a @click="removeFilter(filter)">&#x2715;</a> )
-                </p>
-                <p v-for="range in appliedRanges">
-                    <b>{{range.filterValueLabel}}</b>: 
-                    <span v-if="range.valueLL == 'novalue'" :style="{ fontStyle: 'italic' }">
-                        {{ range.valueLabel }}
-                    </span>
-                    <span v-else>
-                        {{ range.valueLabel }}
-                    </span> 
-                    ( <a @click="removeRange(range)">&#x2715;</a> )
-                </p>
-                <p v-for="quantity in appliedQuantities">
-                    <b>{{quantity.filterValueLabel}}</b>: 
-                    <span v-if="quantity.valueLL == 'novalue'" :style="{ fontStyle: 'italic' }">
-                        {{ quantity.valueLabel }}</span><span v-else>{{ quantity.valueLabel }}
-                    </span> 
-                    {{quantity.unit}}( <a @click="removeQuantity(quantity)">&#x2715;</a> )
-                </p>
-            </div>
-        </div>
+        <header-view
+            :class-label="classLabel"
+            :applied-filters="appliedFilters"
+            :applied-ranges="appliedRanges"
+            :applied-quantities="appliedQuantities"
+            @remove-filter="removeFilter"
+            @remove-range="removeRange"
+            @remove-quantity="removeQuantity"
+        >
+        </header-view>
         <div class="content">
             <img v-if="!filters.length" src='images/loading.gif'>
             <p v-else-if="filters[0].value=='Empty'">No filters available</p>
@@ -76,9 +37,6 @@ filtersview = Vue.component('filters-view', {
         changePage(page,) {
             this.$emit('change-page', page)
         },
-        displayMessage(message, value) {
-            return message.replace("$1", "<b>" + value + "</b>")
-        },
         displayPluralCount(totalValues) {
             matches = this.websiteText.itemCount.match('{{PLURAL:\\$1\\|(.*)}}')
             str = matches[1].split('|')[(totalValues > 1 ? 1 : 0)]
@@ -87,12 +45,6 @@ filtersview = Vue.component('filters-view', {
         },
         showFilter(filter) {
             this.$emit('update-filter', filter)
-        },
-        pathForView(view) {
-            return window.location.href + '&view=' + view;
-        },
-        pathForFilter(filter) {
-            return window.location.href + '&cf=' + filter.value.value.split('/').slice(-1)[0];
         },
         removeFilter(value) {
             this.$emit("remove-filter", value, 'filters');

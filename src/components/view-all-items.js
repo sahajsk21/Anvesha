@@ -1,163 +1,10 @@
-
-results = Vue.component('items-results', {
-    props: ['websiteText','classValue', 'classLabel', 'totalValues', 'currentPage', 'appliedFilters', 'appliedRanges', 'appliedQuantities'],
-    data() {
-        return {
-            items: [],
-        }
-    },
-    template: `
-    <div v-if="websiteText!=''">
-        <img v-if="!items.length" src='images/loading.gif'>
-        <p v-else-if="items[0].value=='Empty'">{{ websiteText.noItems }}</p>
-        <p v-else-if="items[0].value=='Error'">{{ websiteText.displayItemsError }}</p>
-        <div v-else>
-                <ul>
-                    <li v-for="item in items">
-                        <a :href="linkToWikidata(item.value.value)">{{item.valueLabel.value}}</a>
-                    </li>
-                </ul>
-        </div>
-    </div>
-    `,
-    methods: {
-        getDateObject(date) {
-            s = date.split("-")
-            if (s.length == 3) {
-                return { year: s[0], month: s[1], day: s[2] }
-            }
-            else {
-                return { year: "-" + "0".repeat(6 - s[1].length) + s[1], month: s[2], day: s[3] }
-            }
-        },
-        getTimePrecision(ear, lat) {
-            earliestDate = this.getDateObject(ear)
-            latestDate = this.getDateObject(lat)
-            var earliestYear = earliestDate.year;
-            var earliestMonth = earliestDate.month;
-            var earliestDay = earliestDate.day;
-            var latestYear = latestDate.year;
-            var latestMonth = latestDate.month;
-            var latestDay = latestDate.day;
-            var yearDifference = latestYear - earliestYear;
-            var monthDifference = (12 * yearDifference) + (latestMonth - earliestMonth);
-            var dayDifference = (30 * monthDifference) + (latestDay - earliestDay);
-            if (dayDifference <= 1) return 11
-            else if (monthDifference <= 1) return 10
-            else if (yearDifference <= 1) return 9
-            else if (yearDifference <= 10) return 8
-            else if (yearDifference <= 100) return 7
-            else if (yearDifference <= 1000) return 6
-            else if (yearDifference <= 1e4) return 5
-            else if (yearDifference <= 1e5) return 4
-            else if (yearDifference <= 1e6) return 3
-            else if (yearDifference <= 1e8) return 1
-            return 0
-        },
-        linkToWikidata(item){
-            return "https://www.wikidata.org/wiki/" + item.split('/').slice(-1)[0] + "?uselang=" +  (urlParams.get('lang') ? urlParams.get('lang') : (defaultLanguages[0] ? defaultLanguages[0] : 'en'))
-        }
-    },
-    mounted() {
-        var filterString = "";
-        var noValueString = "";
-        for (let i = 0; i < this.appliedFilters.length; i++) {
-            if (this.appliedFilters[i].parentFilterValue) {
-                filterString += "?value wdt:" + this.appliedFilters[i].parentFilterValue + " ?temp.\n" +
-                    "?temp wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n";
-            }
-            else if (this.appliedFilters[i].value == "novalue") {
-                noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedFilters[i].filterValue + " ?no. }).\n"
-            }
-            else {
-                filterString += "?value wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n";
-            }
-        }
-        var filterRanges = "", maxString = "";
-        for (let i = 0; i < this.appliedRanges.length; i++) {
-            if (this.appliedRanges[i].valueLL == "novalue") {
-                noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedRanges[i].filterValue + " ?no. }).\n"
-            }
-            else {
-                timePrecision = this.getTimePrecision(this.appliedRanges[i].valueLL, this.appliedRanges[i].valueUL)
-                filterRanges += "?value (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
-                    "  ?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
-                    "  ?timenode" + i + " wikibase:timePrecision ?timeprecision" + i + ".\n" +
-                    "  FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?time" + i + " && ?time" + i + " < '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n" +
-                    "  FILTER(?timeprecision" + i + ">=" + timePrecision + ")\n";
-                maxString += "(MAX(?time" + i + ") AS ?tim" + i + ") ";
-            }
-        }
-        var filterQuantities = "";
-        for (let i = 0; i < this.appliedQuantities.length; i++) {
-            if (this.appliedQuantities[i].parentFilterValue) {
-                if (this.appliedQuantities[i].valueLL == "novalue") {
-                    noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedQuantities[i].filterValue + " ?no. }).\n"
-                }
-                else if (this.appliedQuantities[i].unit == "") {
-                    filterQuantities += "?value wdt:" + this.appliedQuantities[i].parentFilterValue + " ?temp.\n" +
-                        "?temp (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
-                        "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
-                        "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
-                    maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
-                }
-                else {
-                    filterQuantities += "?value wdt:" + this.appliedQuantities[i].parentFilterValue + " ?temp.\n" +
-                        "?temp (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
-                        "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
-                        "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
-                    maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
-                }
-            }
-            else {
-                if (this.appliedQuantities[i].valueLL == "novalue") {
-                    noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedQuantities[i].filterValue + " ?no. }).\n"
-                }
-                else if (this.appliedQuantities[i].unit == "") {
-                    filterQuantities += "?value (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
-                        "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
-                        "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
-                    maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
-                }
-                else {
-                    filterQuantities += "?value (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
-                        "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
-                        "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
-                    maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
-                }
-            }
-        }
-        // Fetch results
-        sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
-            "  {\n" +
-            "    SELECT ?value  " + maxString + " WHERE {\n" +
-            "      ?value wdt:" + instanceOf + " wd:" + this.classValue + ".  \n" +
-            filterString +
-            filterRanges +
-            filterQuantities +
-            noValueString +
-            "  } \n" +
-            (maxString == "" ? "" : "GROUP BY ?value \n") +
-            "LIMIT " + resultsPerPage + " OFFSET " + ((this.currentPage - 1) * resultsPerPage) +
-            "  }\n" +
-            "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
-            "}\n" +
-            (this.totalValues > resultsPerPage ? "" : "ORDER BY ?valueLabel\n");
-        fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
-        axios.get(fullUrl)
-            .then(response => response.data['results']['bindings'].length ? this.items = [...response.data['results']['bindings']] : this.items.push({ value: "Empty" }))
-            .catch(error => {
-                this.items.push({ value: "Error" })
-            })
-    }
-})
-
 viewallitems = Vue.component('view-all-items', {
-    props: ['websiteText', 'classValue', 'classLabel', 'appliedFilters', 'totalValues', 'appliedRanges', 'appliedQuantities'],
+    props: ['websiteText', 'classValue', 'classLabel', 'totalValues', 'appliedFilters', 'appliedRanges', 'appliedQuantities'],
     data() {
         return {
             filtersCount: -1,
             filters: [],
+            items:[],
             itemsCount: '',
             currentPage: 1,
             query: ""
@@ -165,79 +12,16 @@ viewallitems = Vue.component('view-all-items', {
     },
     template: `
     <div v-if="websiteText!=''">
-        <div class="header">
-            <p class="heading"> 
-                {{ classLabel }} 
-                <a 
-                    title="superclass" 
-                    :href="pathForView('superclass')" 
-                    onclick="return false;" 
-                    class="classOptions" 
-                    @click.exact="changePage('superclass')" 
-                    @click.ctrl="window.open(pathForView('superclass'))">
-                    &uarr;
-                </a>
-                <a 
-                    title="subclass" 
-                    :href="pathForView('subclass')" 
-                    onclick="return false;" 
-                    class="classOptions" 
-                    @click.exact="changePage('subclass')" 
-                    @click.ctrl="window.open(pathForView('subclass'))">
-                    &darr;
-                </a>
-            </p>
-            <div>
-                <p v-for="filter in appliedFilters">
-                    <b>
-                        <span v-if="filter.parentFilterValue">
-                            {{filter.parentFilterValueLabel}} &rarr; {{filter.filterValueLabel}}
-                        </span>
-                        <span v-else>
-                            {{filter.filterValueLabel}}
-                        </span>
-                    </b>
-                    :
-                    <span v-if="filter.value == 'novalue'" :style="{ fontStyle: 'italic' }">
-                        {{ filter.valueLabel }}</span><span v-else>{{ filter.valueLabel }}
-                    </span> 
-                    ( <a @click="removeFilter(filter)">&#x2715;</a> )
-                </p>
-                <p v-for="range in appliedRanges">
-                    <b>
-                        <span v-if="range.parentFilterValue">
-                            {{range.parentFilterValueLabel}} &rarr; {{range.filterValueLabel}}
-                        </span>
-                        <span v-else>
-                            {{quantity.filterValueLabel}}
-                        </span>
-                    </b>
-                    : 
-                    <span v-if="range.valueLL == 'novalue'" :style="{ fontStyle: 'italic' }">
-                        {{ range.valueLabel }}
-                    </span>
-                    <span v-else>
-                        {{ range.valueLabel }}
-                    </span> 
-                    ( <a @click="removeRange(range)">&#x2715;</a> )
-                </p>
-                <p v-for="quantity in appliedQuantities">
-                    <b>
-                        <span v-if="quantity.parentFilterValue">
-                            {{quantity.parentFilterValueLabel}} &rarr; {{quantity.filterValueLabel}}
-                        </span>
-                        <span v-else>
-                            {{quantity.filterValueLabel}}
-                        </span>
-                    </b>
-                    : 
-                    <span v-if="quantity.valueLL == 'novalue'" :style="{ fontStyle: 'italic' }">
-                        {{ quantity.valueLabel }}</span><span v-else>{{ quantity.valueLabel }}
-                    </span> 
-                    {{quantity.unit}}( <a @click="removeQuantity(quantity)">&#x2715;</a> )
-                </p>
-            </div>
-        </div>
+        <header-view
+            :class-label="classLabel"
+            :applied-filters="appliedFilters"
+            :applied-ranges="appliedRanges"
+            :applied-quantities="appliedQuantities"
+            @remove-filter="removeFilter"
+            @remove-range="removeRange"
+            @remove-quantity="removeQuantity"
+        >
+        </header-view>
         <div class="content" id="viewallitems">
             <div v-if="filtersCount==-1"></div>
             <p v-else-if="filtersCount==0">{{ websiteText.filtersCount }}</p>
@@ -257,50 +41,151 @@ viewallitems = Vue.component('view-all-items', {
             <div v-else>
                 <a class="classOptions" @click="changePage('filters')">{{ websiteText.addFilter }}</a>
             </div>
-            <div><img v-if="totalValues==''" src='images/loading.gif'></div>
             <div v-if="totalValues>0" v-html="displayPluralCount(totalValues)"></div>
             <div v-if="totalValues>resultsPerPage" style="text-align: center">
-                <a v-if="currentPage>1" @click="currentPage>1?currentPage--:''">&lt;</a>
+                <a v-if="currentPage>1" @click="displayData('back')">&lt;</a>
                 <input 
                     v-model.lazy="currentPage" 
+                    @keyup.enter="displayData"
                     type="text" 
                     style="margin-bottom: 15px;width: 48px;text-align: center"> 
                 {{totalValues<1000000?" / " + Math.ceil(totalValues/resultsPerPage):''}}
-                <a v-if="currentPage<totalValues/resultsPerPage" @click="currentPage<totalValues/resultsPerPage?currentPage++:''">&gt;</a>
+                <a v-if="currentPage<totalValues/resultsPerPage" @click="displayData('next')">&gt;</a>
             </div>
-            <items-results 
-                v-if="totalValues!=''"
-                :total-values="totalValues"
-                :website-text="websiteText"
-                :class-label="classLabel"
-                :class-value="classValue"
-                :applied-filters="appliedFilters"
-                :applied-ranges="appliedRanges"
-                :applied-quantities="appliedQuantities"
-                :current-page="currentPage"
-                :key="currentPage">
-            </items-results>
+            <div v-if="websiteText!=''">
+                <img v-if="!items.length" src='images/loading.gif'>
+                <p v-else-if="items[0].value=='Empty'">{{ websiteText.noItems }}</p>
+                <p v-else-if="items[0].value=='Error'">{{ websiteText.displayItemsError }}</p>
+                <div v-else>
+                        <ul>
+                            <li v-for="item in items">
+                                <a :href="linkToWikidata(item.value.value)">{{item.valueLabel.value}}</a>
+                            </li>
+                        </ul>
+                </div>
+            </div>
             <div v-if="totalValues>resultsPerPage" style="text-align: center">
-                <a v-if="currentPage>1" @click="currentPage>1?currentPage--:''">&lt;</a>
+                <a v-if="currentPage>1" @click="displayData('back')">&lt;</a>
                 <input 
                     v-model.lazy="currentPage" 
+                    @keyup.enter="displayData"
                     type="text" 
                     style="margin-bottom: 15px;width: 48px;text-align: center"> 
-                    {{totalValues<1000000?" / " + Math.ceil(totalValues/resultsPerPage):''}}
-                <a v-if="currentPage<totalValues/resultsPerPage" @click="currentPage<totalValues/resultsPerPage?currentPage++:''">&gt;</a>
+                {{totalValues<1000000?" / " + Math.ceil(totalValues/resultsPerPage):''}}
+                <a v-if="currentPage<totalValues/resultsPerPage" @click="displayData('next')">&gt;</a>
             </div>
             <div><a :href="query">{{ websiteText.viewQuery }}</a></div>
         </div>
     </div>`,
     methods: {
-        pathForView(view) {
-            return window.location.href + '&view=' + view;
+        displayData(action = ''){
+            this.items = []
+            if (action == 'back') {
+                if (this.currentPage > 1) {
+                    this.currentPage--;
+                }
+            }
+            else if (action == 'next') {
+                if (this.currentPage < this.totalValues / resultsPerPage) {
+                    this.currentPage++;
+                }
+            }
+            var filterString = "";
+            var noValueString = "";
+            for (let i = 0; i < this.appliedFilters.length; i++) {
+                if (this.appliedFilters[i].parentFilterValue) {
+                    filterString += "{#filter " + i + "\n?value wdt:" + this.appliedFilters[i].parentFilterValue + " ?temp.\n" +
+                        "?temp wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n}";
+                }
+                else if (this.appliedFilters[i].value == "novalue") {
+                    noValueString += "{#filter " + i + "\n FILTER(NOT EXISTS { ?value wdt:" + this.appliedFilters[i].filterValue + " ?no. }).\n}"
+                }
+                else {
+                    filterString += "{#filter " + i + "\n?value wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n}";
+                }
+            }
+            var filterRanges = "", maxString = "", constraintString = "";
+
+            for (let i = 0; i < this.appliedRanges.length; i++) {
+                if (this.appliedRanges[i].valueLL == "novalue") {
+                    noValueString += "{#date range " + i + "\n FILTER(NOT EXISTS { ?value wdt:" + this.appliedRanges[i].filterValue + " ?no. }).\n}"
+                }
+                else {
+                    timePrecision = getTimePrecision(this.appliedRanges[i].valueLL, this.appliedRanges[i].valueUL)
+                    filterRanges += "{#date range " + i + "\n?value (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
+                        "?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
+                        "?timenode" + i + " wikibase:timePrecision ?timeprecision" + i + ".\n" +
+                        "FILTER(?timeprecision" + i + ">=" + timePrecision + ")\n}";
+                    constraintString += "FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?tim" + i + " && ?tim" + i + " < '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n";
+                    maxString += "(MAX(?time" + i + ") AS ?tim" + i + ") ";
+                }
+            }
+            var filterQuantities = "";
+            for (let i = 0; i < this.appliedQuantities.length; i++) {
+                if (this.appliedQuantities[i].parentFilterValue) {
+                    if (this.appliedQuantities[i].valueLL == "novalue") {
+                        noValueString += "{#quantity range " + i + "\n FILTER(NOT EXISTS { ?value wdt:" + this.appliedQuantities[i].filterValue + " ?no. }).\n}"
+                    }
+                    else if (this.appliedQuantities[i].unit == "") {
+                        filterQuantities += "{#quantity range " + i + "\n?value wdt:" + this.appliedQuantities[i].parentFilterValue + " ?temp.\n" +
+                            "?temp (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                            "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n}";
+                        constraintString += "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?qua" + i + " && ?qua" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n";
+                        maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
+                    }
+                    else {
+                        filterQuantities += "{#quantity range " + i + "\n?value wdt:" + this.appliedQuantities[i].parentFilterValue + " ?temp.\n" +
+                            "?temp (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                            "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n}";
+                        constraintString += "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?qua" + i + " && ?qua" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n";
+                        maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
+                    }
+                }
+                else {
+                    if (this.appliedQuantities[i].valueLL == "novalue") {
+                        noValueString += "{#quantity range " + i + "\n FILTER(NOT EXISTS { ?value wdt:" + this.appliedQuantities[i].filterValue + " ?no. }).\n}"
+                    }
+                    else if (this.appliedQuantities[i].unit == "") {
+                        filterQuantities += "{#quantity range " + i + "\n?value (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                            "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n}";
+                        constraintString += "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?qua" + i + " && ?qua" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n";
+                        maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
+                    }
+                    else {
+                        filterQuantities += "{#quantity range " + i + "\n?value (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                            "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n}";
+                        constraintString += "FILTER(" + this.appliedQuantities[i].valueUL + ">=?qua" + i + " && ?qua" + i + ">=" + this.appliedQuantities[i].valueLL + ")\n";
+                        maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
+                    }
+                }
+            }
+            sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
+                "  {\n" +
+                "    SELECT ?value  " + maxString + " WHERE {\n" +
+                "      ?value wdt:" + instanceOf + " wd:" + this.classValue + ".  \n" +
+                filterString +
+                filterRanges +
+                filterQuantities +
+                noValueString +
+                "  } \n" +
+                (maxString == "" ? "" : "GROUP BY ?value \n") +
+                (constraintString == "" ? "LIMIT " + resultsPerPage + " OFFSET " + ((this.currentPage - 1) * resultsPerPage) : "") +
+                "  }\n" +
+                constraintString +
+                "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
+                "}\n" +
+                (this.totalValues > resultsPerPage ? "" : "ORDER BY ?valueLabel\n") +
+                (constraintString != "" ? "LIMIT " + resultsPerPage + " OFFSET " + ((this.currentPage - 1) * resultsPerPage) : "");
+            this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
+            fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+            axios.get(fullUrl)
+                .then(response => response.data['results']['bindings'].length ? this.items = [...response.data['results']['bindings']] : this.items.push({ value: "Empty" }))
+                .catch(error => {
+                    this.items.push({ value: "Error" })
+                })
         },
         pathForFilter(filter) {
             return window.location.href + '&cf=' + filter.value.value.split('/').slice(-1)[0];
-        },
-        displayMessage(message, value) {
-            return message.replace("$1", "<b>" + value + "</b>")
         },
         displayPluralCount(totalValues) {
             matches = this.websiteText.itemCount.match('{{PLURAL:\\$1\\|(.*)}}')
@@ -323,39 +208,9 @@ viewallitems = Vue.component('view-all-items', {
         showFilter(filter) {
             this.$emit('update-filter', filter)
         },
-        getDateObject(date) {
-            s = date.split("-")
-            if (s.length == 3) {
-                return { year: s[0], month: s[1], day: s[2] }
-            }
-            else {
-                return { year: "-" + "0".repeat(6 - s[1].length) + s[1], month: s[2], day: s[3] }
-            }
-        },
-        getTimePrecision(ear, lat) {
-            earliestDate = this.getDateObject(ear)
-            latestDate = this.getDateObject(lat)
-            var earliestYear = earliestDate.year;
-            var earliestMonth = earliestDate.month;
-            var earliestDay = earliestDate.day;
-            var latestYear = latestDate.year;
-            var latestMonth = latestDate.month;
-            var latestDay = latestDate.day;
-            var yearDifference = latestYear - earliestYear;
-            var monthDifference = (12 * yearDifference) + (latestMonth - earliestMonth);
-            var dayDifference = (30 * monthDifference) + (latestDay - earliestDay);
-            if (dayDifference <= 1) return 11
-            else if (monthDifference <= 1) return 10
-            else if (yearDifference <= 1) return 9
-            else if (yearDifference <= 10) return 8
-            else if (yearDifference <= 100) return 7
-            else if (yearDifference <= 1000) return 6
-            else if (yearDifference <= 1e4) return 5
-            else if (yearDifference <= 1e5) return 4
-            else if (yearDifference <= 1e6) return 3
-            else if (yearDifference <= 1e8) return 1
-            return 0
-        },
+        linkToWikidata(item) {
+            return "https://www.wikidata.org/wiki/" + item.split('/').slice(-1)[0] + "?uselang=" + (urlParams.get('lang') ? urlParams.get('lang') : (defaultLanguages[0] ? defaultLanguages[0] : 'en'))
+        }
     },
     mounted() {
         // Check available filters
@@ -372,90 +227,6 @@ viewallitems = Vue.component('view-all-items', {
             .catch(error => {
                 this.items.push({ value: "Error" })
             })
-
-        var filterString = "";
-        var noValueString = "";
-        for (let i = 0; i < this.appliedFilters.length; i++) {
-            if(this.appliedFilters[i].parentFilterValue){
-                filterString += "?value wdt:" + this.appliedFilters[i].parentFilterValue + " ?temp.\n" +
-                                 "?temp wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value +".\n";
-            }
-            else if (this.appliedFilters[i].value == "novalue") {
-                noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedFilters[i].filterValue + " ?no. }).\n"
-            }
-            else {
-                filterString += "?value wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n";
-            }
-        }
-        var filterRanges = "", maxString = "";
-        for (let i = 0; i < this.appliedRanges.length; i++) {
-            if (this.appliedRanges[i].valueLL == "novalue") {
-                noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedRanges[i].filterValue + " ?no. }).\n"
-            }
-            else {
-                timePrecision = this.getTimePrecision(this.appliedRanges[i].valueLL,this.appliedRanges[i].valueUL)
-                filterRanges += "?value (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
-                    "  ?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
-                    "  ?timenode" + i + " wikibase:timePrecision ?timeprecision" + i + ".\n" +
-                    "  FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?time" + i + " && ?time" + i + " < '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n" +
-                    "  FILTER(?timeprecision" + i + ">=" + timePrecision + ")\n";
-                maxString += "(MAX(?time" + i + ") AS ?tim" + i + ") ";
-            }
-        }
-        var filterQuantities = "";
-        for (let i = 0; i < this.appliedQuantities.length; i++) {
-            if(this.appliedQuantities[i].parentFilterValue){
-                if (this.appliedQuantities[i].valueLL == "novalue") {
-                    noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedQuantities[i].filterValue + " ?no. }).\n"
-                }
-                else if (this.appliedQuantities[i].unit == "") {
-                    filterQuantities += "?value wdt:"+this.appliedQuantities[i].parentFilterValue+" ?temp.\n" +
-                        "?temp (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
-                        "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
-                        "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
-                    maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
-                }
-                else {
-                    filterQuantities += "?value wdt:" + this.appliedQuantities[i].parentFilterValue + " ?temp.\n" +
-                        "?temp (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
-                        "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
-                        "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
-                    maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
-                }
-            }
-            else{
-                if (this.appliedQuantities[i].valueLL == "novalue") {
-                    noValueString += " FILTER(NOT EXISTS { ?value wdt:" + this.appliedQuantities[i].filterValue + " ?no. }).\n"
-                }
-                else if (this.appliedQuantities[i].unit == "") {
-                    filterQuantities += "?value (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
-                    "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
-                    "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
-                    maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
-                }
-                else {
-                    filterQuantities += "?value (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
-                    "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
-                    "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n"
-                    maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
-                }
-            }
-        }
-        sparqlQuery = "SELECT DISTINCT ?value ?valueLabel WHERE {\n" +
-            "  {\n" +
-            "    SELECT ?value ?valueLabel " + maxString + " WHERE {\n" +
-            "      ?value wdt:" + instanceOf + " wd:" + this.classValue + ".  \n" +
-            filterString +
-            filterRanges +
-            filterQuantities +
-            noValueString +
-            "  } \n" +
-            (maxString == "" ? "" : "GROUP BY ?value ?valueLabel\n") +
-            "LIMIT " + resultsPerPage + " OFFSET " + ((this.currentPage - 1) * resultsPerPage) +
-            "  }\n" +
-            "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
-            "}\n" +
-            (this.totalValues > resultsPerPage ? "" : "ORDER BY ?valueLabel\n");
-        this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
+        this.displayData();
     }
 })
