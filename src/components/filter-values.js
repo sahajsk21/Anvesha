@@ -314,7 +314,7 @@ filtervalues = Vue.component('filter-values', {
             "  ?constraint_statement ps:P2302 wd:Q21510865.\n" +
             "  ?class wdt:" + propertiesForThisType + " ?value.\n" +
             "  ?value wikibase:propertyType ?property.\n" +
-            "  FILTER (?property in (wikibase:Time, wikibase:Quantity, wikibase:WikibaseItem))\n" +
+            "  FILTER (?property in (wikibase:Time))\n" +
             "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
             "}"+
             "ORDER BY ?classLabel ?valueLabel";
@@ -359,13 +359,22 @@ filtervalues = Vue.component('filter-values', {
             if (this.appliedRanges[i].valueLL == "novalue") {
                 noValueString += "{#date range " + i +"\n FILTER(NOT EXISTS { ?item wdt:" + this.appliedRanges[i].filterValue + " ?no. }).\n}"
             }
+            else if(this.appliedRanges[i].parentFilterValue){
+                timePrecision = getTimePrecision(this.appliedRanges[i].valueLL, this.appliedRanges[i].valueUL, 1)
+                filterRanges += "{#date range " + i + "\n?item wdt:P166 ?temp.\n"+
+                    "?temp (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
+                    "?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
+                    "?timenode" + i + " wikibase:timePrecision ?timeprecision" + i + ".\n" +
+                    "FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?time" + i + " && ?time" + i + " <= '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n" +
+                    "FILTER(?timeprecision" + i + ">=" + timePrecision + ")\n}";
+            }
             else if (this.appliedRanges[i].filterValue != this.currentFilter.value) {
                 timePrecision = getTimePrecision(this.appliedRanges[i].valueLL, this.appliedRanges[i].valueUL,1)
                 filterRanges += "{#date range " + i +"\n?item (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
-                    "  ?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
-                    "  ?timenode" + i + " wikibase:timePrecision ?timeprecision" + i + ".\n" +
-                    "  FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?time" + i + " && ?time" + i + " <= '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n" +
-                    "  FILTER(?timeprecision" + i + ">=" + timePrecision + ")\n}";
+                    "?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
+                    "?timenode" + i + " wikibase:timePrecision ?timeprecision" + i + ".\n" +
+                    "FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?time" + i + " && ?time" + i + " <= '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n" +
+                    "FILTER(?timeprecision" + i + ">=" + timePrecision + ")\n}";
             }
             else {
                 timePrecision = getTimePrecision(this.appliedRanges[i].valueLL, this.appliedRanges[i].valueUL,1)

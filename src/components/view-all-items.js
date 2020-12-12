@@ -110,6 +110,17 @@ viewallitems = Vue.component('view-all-items', {
                 if (this.appliedRanges[i].valueLL == "novalue") {
                     noValueString += "{#date range " + i + "\n FILTER(NOT EXISTS { ?value wdt:" + this.appliedRanges[i].filterValue + " ?no. }).\n}"
                 }
+                else if(this.appliedRanges[i].parentFilterValue){
+                    timePrecision = getTimePrecision(this.appliedRanges[i].valueLL, this.appliedRanges[i].valueUL)
+                    filterRanges += "{#date range " + i + "\n?value wdt:" + this.appliedRanges[i].parentFilterValue +" ?temp.\n"+
+                        "?temp (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
+                        "?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
+                        "?timenode" + i + " wikibase:timePrecision ?timeprecision" + i + ".\n" +
+                        "FILTER(?timeprecision" + i + ">=" + timePrecision + ")\n}";
+                    constraintString += "FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?tim" + i + " && ?tim" + i + " < '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n";
+                    maxString += "(MAX(?time" + i + ") AS ?tim" + i + ") ";
+
+                }
                 else {
                     timePrecision = getTimePrecision(this.appliedRanges[i].valueLL, this.appliedRanges[i].valueUL)
                     filterRanges += "{#date range " + i + "\n?value (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
