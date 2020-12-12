@@ -314,7 +314,7 @@ filtervalues = Vue.component('filter-values', {
             "  ?constraint_statement ps:P2302 wd:Q21510865.\n" +
             "  ?class wdt:" + propertiesForThisType + " ?value.\n" +
             "  ?value wikibase:propertyType ?property.\n" +
-            "  FILTER (?property in (wikibase:Time))\n" +
+            "  FILTER (?property in (wikibase:Time, wikibase:Quantity, wikibase:WikibaseItem))\n" +
             "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
             "}"+
             "ORDER BY ?classLabel ?valueLabel";
