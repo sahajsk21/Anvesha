@@ -27,7 +27,7 @@ filtervalues = Vue.component('filter-values', {
         >
         </header-view>
         <div class="content">
-            <div class="filter-box">
+            <div v-if="secondaryFilters.length>0" class="filter-box">
                 <div v-for="(cls,clsLabel) in secondaryFilters" class="secondary-filters">
                     <b><a 
                         :href="linkToClass(cls)"

@@ -221,7 +221,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
             }
         }
         var filterRanges = "";
-        timeString = "?item wdt:" + this.secondaryFilter.value + " ?time.\n";
+        timeString = "?temp wdt:" + this.secondaryFilter.value + " ?time.\n";
         for (let i = 0; i < this.appliedRanges.length; i++) {
             if (this.appliedRanges[i].valueLL == "novalue") {
                 noValueString += "{#date range " + i +"\n FILTER(NOT EXISTS { ?item wdt:" + this.appliedRanges[i].filterValue + " ?no. }).\n}"
@@ -302,8 +302,9 @@ secondayFilterValues = Vue.component('secondary-filters', {
                     parameters.delete("sf")
                     parameters.set("r." + this.currentFilter.value + "." + this.secondaryFilter.value, "novalue")
                     this.noValueURL = window.location.pathname + "?" + parameters
-                    var sparqlQuery = "SELECT ?time WHERE {\n" +
+                    var sparqlQuery = "ELECT ?time WHERE {\n" +
                         "?item wdt:" + instanceOf + " wd:" + this.classValue + ".\n" +
+                        "?item wdt:" + this.currentFilter.value +" ?temp.\n" +
                         filterString +
                         filterRanges +
                         timeString +
@@ -347,8 +348,9 @@ secondayFilterValues = Vue.component('secondary-filters', {
                             var sparqlQuery = "SELECT ?time WHERE{SELECT ?time WHERE {\n" +
                                 "  hint:Query hint:optimizer \"None\".\n" +
                                 "?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
+                                "?item wdt:" + vm.currentFilter.value + " ?temp.\n" +
                                 filterString +
-                                "?item wdt:" + vm.secondaryFilter.value + " ?time.\n" +
+                                "?temp wdt:" + vm.secondaryFilter.value + " ?time.\n" +
                                 filterRanges +
                                 filterQuantities +
                                 "}\n" +
