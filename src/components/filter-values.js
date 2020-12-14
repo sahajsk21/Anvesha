@@ -27,7 +27,7 @@ filtervalues = Vue.component('filter-values', {
         >
         </header-view>
         <div class="content">
-            <div v-if="secondaryFilters.length>0" class="filter-box">
+            <div class="filter-box">
                 <div v-for="(cls,clsLabel) in secondaryFilters" class="secondary-filters">
                     <b><a 
                         :href="linkToClass(cls)"
@@ -312,13 +312,13 @@ filtervalues = Vue.component('filter-values', {
     },
     mounted() {
         var sparqlQuery = "SELECT DISTINCT ?value ?valueLabel ?class ?classLabel ?property WHERE {\n" +
-            "  wd:" + this.currentFilter.value + " p:P2302 ?constraint_statement.\n" +
-            "  ?constraint_statement pq:P2308 ?class.\n" +
-            "  ?constraint_statement ps:P2302 wd:Q21510865.\n" +
-            "  ?class wdt:" + propertiesForThisType + " ?value.\n" +
-            "  ?value wikibase:propertyType ?property.\n" +
-            "  FILTER (?property in (wikibase:Time, wikibase:Quantity, wikibase:WikibaseItem))\n" +
-            "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
+            "wd:" + this.currentFilter.value + " p:P2302 ?constraint_statement.\n" +
+            "?constraint_statement pq:P2308 ?class.\n" +
+            "?constraint_statement ps:P2302 wd:Q21510865.\n" +
+            "?class wdt:" + propertiesForThisType + " ?value.\n" +
+            "?value wikibase:propertyType ?property.\n" +
+            "FILTER (?property in (wikibase:Time, wikibase:Quantity, wikibase:WikibaseItem))\n" +
+            "SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
             "}"+
             "ORDER BY ?classLabel ?valueLabel";
         const url = sparqlEndpoint + encodeURIComponent(sparqlQuery);
