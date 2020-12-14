@@ -20,6 +20,7 @@ viewallitems = Vue.component('view-all-items', {
             @remove-filter="removeFilter"
             @remove-range="removeRange"
             @remove-quantity="removeQuantity"
+            @change-page="changePage"
         >
         </header-view>
         <div class="content" id="viewallitems">

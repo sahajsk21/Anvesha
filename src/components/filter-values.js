@@ -23,25 +23,28 @@ filtervalues = Vue.component('filter-values', {
             @remove-filter="removeFilter"
             @remove-range="removeRange"
             @remove-quantity="removeQuantity"
+            @change-page="changePage"
         >
         </header-view>
         <div class="content">
-            <div v-for="(cls,clsLabel) in secondaryFilters" class="filter-box">
-                <b><a 
-                    :href="linkToClass(cls)"
-                    @click.exact="updateClass(cls)"
-                    onclick="return false;"> 
-                    {{clsLabel}}:
-                </a>
-                </b>
-                <span v-for="filter in cls">
-                    <a 
-                        @click.exact="showSecondaryFilter(filter)"
+            <div class="filter-box">
+                <div v-for="(cls,clsLabel) in secondaryFilters" class="secondary-filters">
+                    <b><a 
+                        :href="linkToClass(cls)"
+                        @click.exact="updateClass(cls)"
                         onclick="return false;"> 
-                        {{filter.valueLabel.value}}
+                        {{clsLabel}}:
                     </a>
-                    <b v-if="cls[cls.length-1].valueLabel.value != filter.valueLabel.value">&middot; </b>
-                </span>
+                    </b>
+                    <span v-for="filter in cls">
+                        <a 
+                            @click.exact="showSecondaryFilter(filter)"
+                            onclick="return false;"> 
+                            {{filter.valueLabel.value}}
+                        </a>
+                        <b v-if="cls[cls.length-1].valueLabel.value != filter.valueLabel.value">&middot; </b>
+                    </span>
+                </div>
             </div>
             <div v-if="itemsType==''">
                 <a @click="changePage('view-all-items')">{{ websiteText.viewList }}</a>

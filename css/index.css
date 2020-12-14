@@ -9,11 +9,6 @@ body {
     background-color: #fff;
 }
 
-.content div{
-    margin-block-start: 1em;
-    margin-block-end: 1em;
-}
-
 .container{
     width: auto;
     padding: 0px 8%;
@@ -103,6 +98,9 @@ a:hover {
     padding: 10px;
 }
 
+.secondary-filter{
+  margin: 0px;
+}
 /* Navbar */
 .topnav {
   overflow: hidden;
