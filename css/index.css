@@ -5,7 +5,6 @@ body {
     font-weight: 400;
     line-height: 1.5;
     color: #212529;
-    text-align: left;
     background-color: #fff;
 }
 
@@ -101,6 +100,7 @@ a:hover {
 .secondary-filter{
   margin: 0px;
 }
+
 /* Navbar */
 .topnav {
   overflow: hidden;
@@ -110,7 +110,6 @@ a:hover {
 
 .topnav a {
   float: left;
-  text-align: center;
   padding: 14px 16px;
   text-decoration: none;
   font-size: 1.5em;
@@ -182,7 +181,6 @@ a:hover {
   padding: 2px 16px;
   text-decoration: none;
   display: block;
-  text-align: left;
   font-weight: 400;
   border-radius: 0px;
 }

@@ -33,6 +33,10 @@ var languages = ["en","ceb","sv","de","fr","nl","ru","it","es","pl","war","vi","
 var langArray = defaultLanguages.concat(languages.filter(x => !defaultLanguages.includes(x)))
 var lang = urlParams.get('lang') ? urlParams.get('lang') + "," + langArray.join(",") : langArray.join(",");
 var primaryLang = urlParams.get('lang') ? urlParams.get('lang') : langArray[0];
+const rtlLanguages = ["ar", "arz", "azb", "fa", "he", "ur"];
+if(rtlLanguages.includes(primaryLang)){
+    document.getElementsByTagName("body")[0].setAttribute("dir", "rtl");
+}
 // History logging
 (function (history) {
     var pushState = history.pushState;
