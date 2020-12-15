@@ -34,9 +34,12 @@ var langArray = defaultLanguages.concat(languages.filter(x => !defaultLanguages.
 var lang = urlParams.get('lang') ? urlParams.get('lang') + "," + langArray.join(",") : langArray.join(",");
 var primaryLang = urlParams.get('lang') ? urlParams.get('lang') : langArray[0];
 const rtlLanguages = ["ar", "arz", "azb", "fa", "he", "ur"];
+var arrow = ' &rarr; ';// Arrow Direction
 if(rtlLanguages.includes(primaryLang)){
     document.getElementsByTagName("body")[0].setAttribute("dir", "rtl");
+    arrow = ' &larr; ';
 }
+
 // History logging
 (function (history) {
     var pushState = history.pushState;

@@ -10,7 +10,8 @@ filtervalues = Vue.component('filter-values', {
             filterProperty: "",
             query: "",
             noValueURL: "",
-            secondaryFilters:[]
+            secondaryFilters:[],
+            secondaryFiltersCount: -1
         }
     },
     template: `
@@ -27,7 +28,7 @@ filtervalues = Vue.component('filter-values', {
         >
         </header-view>
         <div class="content">
-            <div class="filter-box">
+            <div v-if="secondaryFiltersCount>0" class="filter-box">
                 <div v-for="(cls,clsLabel) in secondaryFilters" class="secondary-filters">
                     <b><a 
                         :href="linkToClass(cls)"
@@ -336,6 +337,7 @@ filtervalues = Vue.component('filter-values', {
                         }
                     }
                     this.secondaryFilters = filtersByClass
+                    this.secondaryFiltersCount = Object.keys(this.secondaryFilters).length
                 }
                 else{
                     this.secondaryFilters.push({ value: "Empty", valueLabel: "No data" })
