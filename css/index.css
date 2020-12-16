@@ -8,6 +8,10 @@ body {
     background-color: #fff;
 }
 
+* {
+  transition: all .2s ease;
+}
+
 .container{
     width: auto;
     padding: 0px 8%;
@@ -214,4 +218,35 @@ a:hover {
 	.dropdown-content {
 		column-count: 2;
 	}
+}
+
+/* Info tag */
+.extra-info {
+  display: none;
+  line-height: 30px;
+  font-size: 12px;
+}
+
+.info:hover .extra-info {
+  display: inline;
+}
+
+.info {
+  position: relative;
+  float:right;
+  font-size: 20px;
+  padding-left: 5px;
+  width: 20px;
+  border-radius: 5px;
+}
+
+.info:hover {
+  background-color: white;
+  padding: 0 5px 0 5px;
+  width: fit-content;
+}
+
+.info-icon {
+  float: left;
+  margin: 0px 5px 0px 0px;
 }

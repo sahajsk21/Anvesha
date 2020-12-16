@@ -105,7 +105,6 @@ var app = new Vue({
             this.appFilters = [];
             this.appRanges = [];
             this.appQuantities = [];
-            // this.getFiltersFromURL = 1;
             this.allItemscomponentKey = 0;
             this.filterscomponentKey = 0;
             this.totalValues = ''

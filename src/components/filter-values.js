@@ -29,7 +29,13 @@ filtervalues = Vue.component('filter-values', {
         </header-view>
         <div class="content">
             <div v-if="secondaryFiltersCount>0" class="filter-box">
-                <div v-for="(cls,clsLabel) in secondaryFilters" class="secondary-filters">
+                <div class="info">
+                    <div class="info-icon">&#9432;</div>
+                    <div class="extra-info">
+                        Apply a filter on range of values/classes linked with <b>{{currentFilter.valueLabel}}</b>
+                    </div>
+                </div>
+                <div v-for="(cls,clsLabel) in secondaryFilters" class="secondary-filter">
                     <b><a 
                         :href="linkToClass(cls)"
                         @click.exact="updateClass(cls)"
