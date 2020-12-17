@@ -21,9 +21,9 @@
 	"selectValue": "Sélectionnez une valeur pour $1 :",
 	"selectAdditionalValue": "Sélectionnez une valeur supplémentaire pour $1 :",
 	"noValue": "Aucune valeur",
-	"changeClassNote": "(Remarque : si vous changez de classe, vous perdrez l’ensemble actuel de filtres.)",
+	"changeClassNote": "(Remarque : si vous changez de classe, vous perdrez l’ensemble actuel des filtres.)",
 	"specificClass": "Passer à une classe plus spécifique :",
 	"generalClass": "Passer à une classe plus générale :",
-	"viewList": "Afficher la liste d’éléments",
+	"viewList": "Afficher la liste des éléments",
 	"results": "({{PLURAL:$1|un résultat|$1 résultats}})"
 }
