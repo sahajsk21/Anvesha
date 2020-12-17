@@ -30,28 +30,28 @@ filtervalues = Vue.component('filter-values', {
         <div class="content">
             <div v-if="secondaryFiltersCount>0" class="filter-box">
                 <div class="info">
-                    <div class="info-icon">&#9432;</div>
-                    <div class="extra-info">
-                        Apply a filter on range of values/classes linked with <b>{{currentFilter.valueLabel}}</b>
-                    </div>
+                    Apply a filter linked with <b>{{currentFilter.valueLabel}}</b> from the following classes:-
                 </div>
-                <div v-for="(cls,clsLabel) in secondaryFilters" class="secondary-filter">
-                    <b><a 
-                        :href="linkToClass(cls)"
-                        @click.exact="updateClass(cls)"
-                        onclick="return false;"> 
-                        {{clsLabel}}:
-                    </a>
-                    </b>
-                    <span v-for="filter in cls">
-                        <a 
-                            @click.exact="showSecondaryFilter(filter)"
-                            onclick="return false;"> 
-                            {{filter.valueLabel.value}}
-                        </a>
-                        <b v-if="cls[cls.length-1].valueLabel.value != filter.valueLabel.value">&middot; </b>
-                    </span>
-                </div>
+                <ul class="secondary-filter">
+                    <li v-for="(cls,clsLabel) in secondaryFilters">
+                        <b>
+                            <a 
+                                :href="linkToClass(cls)"
+                                @click.exact="updateClass(cls)"
+                                onclick="return false;"> 
+                                {{clsLabel}}:
+                            </a>
+                        </b>
+                        <span v-for="filter in cls">
+                            <a 
+                                @click.exact="showSecondaryFilter(filter)"
+                                onclick="return false;"> 
+                                {{filter.valueLabel.value}}
+                            </a>
+                            <b v-if="cls[cls.length-1].valueLabel.value != filter.valueLabel.value">&middot; </b>
+                        </span>
+                    </li>
+                </ul>
             </div>
             <div v-if="itemsType==''">
                 <a @click="changePage('view-all-items')">{{ websiteText.viewList }}</a>

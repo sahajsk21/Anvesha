@@ -367,11 +367,11 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                             parameters = new URLSearchParams(q)
                                             parameters.delete("cf")
                                             parameters.delete("sf")
-                                            if (arr[i].size == 1) parameters.set("r." + vm.secondaryFilter.value, arr[i].bucketLL.year + "~" + arr[i].bucketUL.year)
-                                            else if (arr[i].size == 2) parameters.set("r." + vm.secondaryFilter.value, arr[i].bucketLL.year)
-                                            else if (arr[i].size == 3) parameters.set("r." + vm.secondaryFilter.value, arr[i].bucketLL.year + "-" + arr[i].bucketLL.month)
-                                            else if (arr[i].size == 4) parameters.set("r." + vm.secondaryFilter.value, arr[i].bucketLL.year + "-" + arr[i].bucketLL.month + "-" + arr[i].bucketLL.day)
-                                            else if (arr[i].size == 5) parameters.set("r." + vm.secondaryFilter.value, arr[i].bucketLL.year + "-" + arr[i].bucketLL.month + "-" + arr[i].bucketLL.day)
+                                            if (arr[i].size == 1) parameters.set("r." + vm.currentFilter.value + "." + vm.secondaryFilter.value, arr[i].bucketLL.year + "~" + arr[i].bucketUL.year)
+                                            else if (arr[i].size == 2) parameters.set("r." + vm.currentFilter.value + "." + vm.secondaryFilter.value, arr[i].bucketLL.year)
+                                            else if (arr[i].size == 3) parameters.set("r." + vm.currentFilter.value + "." + vm.secondaryFilter.value, arr[i].bucketLL.year + "-" + arr[i].bucketLL.month)
+                                            else if (arr[i].size == 4) parameters.set("r." + vm.currentFilter.value + "." + vm.secondaryFilter.value, arr[i].bucketLL.year + "-" + arr[i].bucketLL.month + "-" + arr[i].bucketLL.day)
+                                            else if (arr[i].size == 5) parameters.set("r." + vm.currentFilter.value + "." + vm.secondaryFilter.value, arr[i].bucketLL.year + "-" + arr[i].bucketLL.month + "-" + arr[i].bucketLL.day)
                                             arr[i]['href'] = window.location.pathname + "?" + parameters
                                         }
                                         vm.items = arr
@@ -437,7 +437,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                                     parameters = new URLSearchParams(q)
                                                     parameters.delete("cf")
                                                     parameters.delete("sf")
-                                                    parameters.set("q." + vm.secondaryFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + (arr[i].unit != "" ? ("~" + arr[i].unit) : ""))
+                                                    parameters.set("q." + vm.currentFilter.value + "." + vm.secondaryFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + (arr[i].unit != "" ? ("~" + arr[i].unit) : ""))
                                                     arr[i]['href'] = window.location.pathname + "?" + parameters
                                                 }
                                                 vm.items = arr
@@ -476,7 +476,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                                             parameters = new URLSearchParams(q)
                                                             parameters.delete("cf")
                                                             parameters.delete("sf")
-                                                            parameters.set("q." + vm.secondaryFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + (arr[i].unit != "" ? ("~" + arr[i].unit) : ""))
+                                                            parameters.set("q." + vm.currentFilter.value + "." + vm.secondaryFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + (arr[i].unit != "" ? ("~" + arr[i].unit) : ""))
                                                             arr[i]['href'] = window.location.pathname + "?" + parameters
                                                         }
                                                         vm.items = arr
@@ -508,7 +508,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                                     parameters = new URLSearchParams(q)
                                                     parameters.delete("cf")
                                                     parameters.delete("sf")
-                                                    parameters.set("quantity," + vm.secondaryFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + (arr[i].unit != "" ? ("~" + arr[i].unit) : ""))
+                                                    parameters.set("q." + vm.currentFilter.value + "." + vm.secondaryFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + (arr[i].unit != "" ? ("~" + arr[i].unit) : ""))
                                                     arr[i]['href'] = window.location.pathname + "?" + parameters
                                                 }
                                                 vm.items = arr
@@ -550,7 +550,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                             parameters = new URLSearchParams(q)
                                             parameters.delete("cf")
                                             parameters.delete("sf")
-                                            parameters.set("q." + vm.secondaryFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + (arr[i].unit != "" ? ("~" + arr[i].unit) : ""))
+                                            parameters.set("q." + vm.currentFilter.value + "." + vm.secondaryFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + (arr[i].unit != "" ? ("~" + arr[i].unit) : ""))
                                             arr[i]['href'] = window.location.pathname + "?" + parameters
                                         }
                                         vm.items = arr
