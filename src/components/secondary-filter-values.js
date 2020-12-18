@@ -8,7 +8,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
             displayCount: 1,
             currentPage: 1,
             filterProperty: "",
-            query: "",
+            query: "#",
             noValueURL: "",
         }
     },
@@ -210,8 +210,8 @@ secondayFilterValues = Vue.component('secondary-filters', {
         var noValueString = "";
         for (let i = 0; i < this.appliedFilters.length; i++) {
             if (this.appliedFilters[i].parentFilterValue) {
-                filterString += "{#filter " + i +"\n?item wdt:" + this.appliedFilters[i].parentFilterValue + " ?temp.\n" +
-                    "?temp wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n}";
+                filterString += "{#filter " + i + "\n?item wdt:" + this.appliedFilters[i].parentFilterValue + " ?temp" + i + ".\n" +
+                    "?temp" + i + " wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n}";
             }
             else if (this.appliedFilters[i].value == "novalue") {
                 noValueString += "{#filter " + i +"\n FILTER(NOT EXISTS { ?value wdt:" + this.appliedFilters[i].filterValue + " ?no. }).\n}"
@@ -228,8 +228,8 @@ secondayFilterValues = Vue.component('secondary-filters', {
             }
             else if (this.appliedRanges[i].parentFilterValue) {
                 timePrecision = getTimePrecision(this.appliedRanges[i].valueLL, this.appliedRanges[i].valueUL, 1)
-                filterRanges += "{#date range " + i + "\n?item wdt:P166 ?temp.\n" +
-                    "?temp (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
+                filterRanges += "{#date range " + i + "\n?item wdt:P166 ?temp" + i + ".\n" +
+                    "?temp" + i + " (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
                     "?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
                     "?timenode" + i + " wikibase:timePrecision ?timeprecision" + i + ".\n" +
                     "FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?time" + i + " && ?time" + i + " <= '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n" +
@@ -256,17 +256,17 @@ secondayFilterValues = Vue.component('secondary-filters', {
         for (let i = 0; i < this.appliedQuantities.length; i++) {
             if (this.appliedQuantities[i].parentFilterValue) {
                 if (this.appliedQuantities[i].valueLL == "novalue") {
-                    noValueString += "{#quantity range " + i +"\n FILTER(NOT EXISTS { ?temp wdt:" + this.appliedQuantities[i].filterValue + " ?no. }).\n}"
+                    noValueString += "{#quantity range " + i +"\n FILTER(NOT EXISTS { ?temp" + i + " wdt:" + this.appliedQuantities[i].filterValue + " ?no. }).\n}"
                 }
                 else if (this.appliedQuantities[i].unit == "") {
-                    filterQuantities += "{#quantity range " + i +"\n?item wdt:" + this.appliedQuantities[i].parentFilterValue + " ?temp.\n" +
-                        "?temp (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                    filterQuantities += "{#quantity range " + i +"\n?item wdt:" + this.appliedQuantities[i].parentFilterValue + " ?temp" + i + ".\n" +
+                        "?temp" + i + " (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
                         "?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
                         "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >" + this.appliedQuantities[i].valueLL + ")\n}"
                 }
                 else {
-                    filterQuantities += "{#quantity range " + i +"\n?item wdt:" + this.appliedQuantities[i].parentFilterValue + " ?temp.\n" +
-                        "?temp (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                    filterQuantities += "{#quantity range " + i +"\n?item wdt:" + this.appliedQuantities[i].parentFilterValue + " ?temp" + i + ".\n" +
+                        "?temp" + i + " (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
                         "?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
                         "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >" + this.appliedQuantities[i].valueLL + ")\n}"
                 }

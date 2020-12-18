@@ -95,8 +95,8 @@ viewallitems = Vue.component('view-all-items', {
             var noValueString = "";
             for (let i = 0; i < this.appliedFilters.length; i++) {
                 if (this.appliedFilters[i].parentFilterValue) {
-                    filterString += "{#filter " + i + "\n?value wdt:" + this.appliedFilters[i].parentFilterValue + " ?temp.\n" +
-                        "?temp wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n}";
+                    filterString += "{#filter " + i + "\n?value wdt:" + this.appliedFilters[i].parentFilterValue + " ?temp" + i + ".\n" +
+                        "?temp" + i + " wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n}";
                 }
                 else if (this.appliedFilters[i].value == "novalue") {
                     noValueString += "{#filter " + i + "\n FILTER(NOT EXISTS { ?value wdt:" + this.appliedFilters[i].filterValue + " ?no. }).\n}"
@@ -113,8 +113,8 @@ viewallitems = Vue.component('view-all-items', {
                 }
                 else if(this.appliedRanges[i].parentFilterValue){
                     timePrecision = getTimePrecision(this.appliedRanges[i].valueLL, this.appliedRanges[i].valueUL)
-                    filterRanges += "{#date range " + i + "\n?value wdt:" + this.appliedRanges[i].parentFilterValue +" ?temp.\n"+
-                        "?temp (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
+                    filterRanges += "{#date range " + i + "\n?value wdt:" + this.appliedRanges[i].parentFilterValue +" ?temp" + i + ".\n"+
+                        "?temp" + i + " (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
                         "?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
                         "?timenode" + i + " wikibase:timePrecision ?timeprecision" + i + ".\n" +
                         "FILTER(?timeprecision" + i + ">=" + timePrecision + ")\n}";
@@ -139,15 +139,15 @@ viewallitems = Vue.component('view-all-items', {
                         noValueString += "{#quantity range " + i + "\n FILTER(NOT EXISTS { ?value wdt:" + this.appliedQuantities[i].filterValue + " ?no. }).\n}"
                     }
                     else if (this.appliedQuantities[i].unit == "") {
-                        filterQuantities += "{#quantity range " + i + "\n?value wdt:" + this.appliedQuantities[i].parentFilterValue + " ?temp.\n" +
-                            "?temp (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                        filterQuantities += "{#quantity range " + i + "\n?value wdt:" + this.appliedQuantities[i].parentFilterValue + " ?temp" + i + ".\n" +
+                            "?temp" + i + " (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
                             "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n}";
                         constraintString += "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?qua" + i + " && ?qua" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n";
                         maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
                     }
                     else {
-                        filterQuantities += "{#quantity range " + i + "\n?value wdt:" + this.appliedQuantities[i].parentFilterValue + " ?temp.\n" +
-                            "?temp (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                        filterQuantities += "{#quantity range " + i + "\n?value wdt:" + this.appliedQuantities[i].parentFilterValue + " ?temp" + i + ".\n" +
+                            "?temp" + i + " (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
                             "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n}";
                         constraintString += "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?qua" + i + " && ?qua" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n";
                         maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
