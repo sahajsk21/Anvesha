@@ -38,10 +38,10 @@ filtersview = Vue.component('filters-view', {
             this.$emit('change-page', page)
         },
         displayPluralCount(totalValues) {
-            matches = this.websiteText.itemCount.match('{{PLURAL:\\$1\\|(.*)}}')
+            matches = this.websiteText.itemCount.match('{{PLURAL:[\\s]*\\$1\\|(.*)}}')
             str = matches[1].split('|')[(totalValues > 1 ? 1 : 0)]
             str = str.replace("$1", "<b>" + (totalValues < 1000000 ? numberWithCommas(totalValues) : '1 million +') + "</b>")
-            return this.websiteText.itemCount.replace(/{{PLURAL:\$1\|(.*)}}/g, str)
+            return this.websiteText.itemCount.replace(/{{PLURAL:[\s]*\$1\|(.*)}}/g, str)
         },
         showFilter(filter) {
             this.$emit('update-filter', filter)

@@ -81,10 +81,10 @@ subclass = Vue.component('subclass-view', {
     `,
     methods: {
         displayPluralCount(message, totalValues) {
-            matches = message.match('{{PLURAL:\\$1\\|(.*)}}')
+            matches = message.match('{{PLURAL:[\\s]*\\$1\\|(.*)}}')
             str = matches[1].split('|')[(totalValues > 1 ? 1 : 0)]
             str = str.replace("$1", (totalValues < 1000000 ? numberWithCommas(totalValues) : '1 million +'))
-            return message.replace(/{{PLURAL:\$1\|(.*)}}/g, str)
+            return message.replace(/{{PLURAL:[\s]*\$1\|(.*)}}/g, str)
         },
         pathFor(item) {
             var newURL = window.location.pathname + '?';

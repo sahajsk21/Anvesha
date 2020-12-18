@@ -181,10 +181,10 @@ secondayFilterValues = Vue.component('secondary-filters', {
             return message.replace("$1", "<b>" + value + "</b>")
         },
         displayPluralCount(message, totalValues) {
-            matches = message.match('{{PLURAL:\\$1\\|(.*)}}')
+            matches = message.match('{{PLURAL:[\\s]*\\$1\\|(.*)}}')
             str = matches[1].split('|')[(totalValues > 1 ? 1 : 0)]
             str = str.replace("$1", (totalValues < 1000000 ? numberWithCommas(totalValues) : '1 million +'))
-            return message.replace(/{{PLURAL:\$1\|(.*)}}/g, str)
+            return message.replace(/{{PLURAL:[\s]*\$1\|(.*)}}/g, str)
         },
         applyFilter(filter) {
             this.$emit('apply-secondary-filter', filter)
