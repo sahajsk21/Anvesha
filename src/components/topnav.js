@@ -1,7 +1,7 @@
 topnav = Vue.component('top-nav', {
     data() {
         return {
-            dropdownDisplay: 'none',
+            dropdownDisplay: false,
             languages: [
                 ["ar", "&#1575;&#1604;&#1593;&#1585;&#1576;&#1610;&#1577;"],
                 ["arz", "&#1605;&#1589;&#1585;&#1609;"],
@@ -85,8 +85,12 @@ topnav = Vue.component('top-nav', {
             <div class="topnav-right">
                 <a v-for="(link,title) in linksInTopNav" :href="link">{{ title }}</a>
                 <div class="dropdown">
-                    <button class="dropbtn" @click="toggleDropdown">{{ urlParams.get('lang')?urlParams.get('lang'): (defaultLanguages[0]?defaultLanguages[0]:'en') }} <span style="font-size: 0.5em;">&#x25BC;</span></button>
-                    <div class="dropdown-content" v-bind:style="{ display: dropdownDisplay }">
+                    <button class="dropbtn" @click="toggleDropdown">{{ urlParams.get('lang')?urlParams.get('lang'): (defaultLanguages[0]?defaultLanguages[0]:'en') }} 
+                        <span>
+                            <img v-bind:style="{ transform:'rotate('+ dropdownDisplay*180 + 'deg)' }" src="../images/down-arrow.svg" height="14px"/>
+                        </span>
+                    </button>
+                    <div class="dropdown-content" v-bind:style="{ display: (dropdownDisplay?'block':'none') }">
                         <a v-for="language in languages" v-html="language[1]" @click="changeLanguage(language[0])" :class="lang.split(',')[0] == language[0] ? 'active' : 'notActive' ">{{ language[0] }}</a>
                     </div>
                 </div>
@@ -98,7 +102,7 @@ topnav = Vue.component('top-nav', {
             this.$emit('change-language', lang)
         },
         toggleDropdown() {
-            this.dropdownDisplay = (this.dropdownDisplay == 'none') ? 'block' : 'none';
+            this.dropdownDisplay = (this.dropdownDisplay == false) ? true : false;
         },
         mainPagePath() {
             var curPath = window.location.pathname;

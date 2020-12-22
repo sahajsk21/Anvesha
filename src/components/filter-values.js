@@ -12,7 +12,7 @@ filtervalues = Vue.component('filter-values', {
             noValueURL: "",
             secondaryFilters:[],
             secondaryFiltersCount: -1,
-            secondaryFiltersDropdownDisplay: 'none'
+            secondaryFiltersDropdownDisplay: false
         }
     },
     template: `
@@ -31,11 +31,11 @@ filtervalues = Vue.component('filter-values', {
         <div class="content">
             <div v-if="secondaryFiltersCount>0" class="filter-box" style="cursor:pointer"  @click="toggleDropdown">
                 <div class="info">
-                <span v-if="secondaryFiltersDropdownDisplay!='none'">Apply a filter linked with <b>{{currentFilter.valueLabel}}</b> from one of the following classes:</span>
-                <span v-else>Apply a filter on <b>{{currentFilter.valueLabel}}</b></span>
-                    <span style="font-size: 1em;float:right">&#x25BC;</span>
+                    <img v-bind:style="{ transform:'rotate('+ secondaryFiltersDropdownDisplay*180 + 'deg)' }" src="../images/down-arrow.svg" height="14px">
+                    <span v-if="secondaryFiltersDropdownDisplay">Apply a filter linked with <b>{{currentFilter.valueLabel}}</b> from one of the following classes:</span>
+                    <span v-else>Apply a filter on <b>{{currentFilter.valueLabel}}</b></span>
                 </div>
-                <ul class="secondary-filter" v-bind:style="{ display: secondaryFiltersDropdownDisplay }">
+                <ul class="secondary-filter" v-bind:style="{ display: (secondaryFiltersDropdownDisplay?'block':'none') }">
                     <li v-for="(cls,clsLabel) in secondaryFilters">
                         <b>
                             <a 
@@ -281,7 +281,7 @@ filtervalues = Vue.component('filter-values', {
     </div>`,
     methods: {
         toggleDropdown() {
-            this.secondaryFiltersDropdownDisplay = (this.secondaryFiltersDropdownDisplay == 'none') ? 'block' : 'none';
+            this.secondaryFiltersDropdownDisplay = (this.secondaryFiltersDropdownDisplay == false) ? true : false;
         },
         changePage(page) {
             this.$emit('change-page', page)
