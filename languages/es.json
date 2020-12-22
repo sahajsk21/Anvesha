@@ -5,7 +5,7 @@
 			"Jesusmc"
 		]
 	},
-	"itemCount": "Hay {{PLURAL: $1|hay un elemento que coincide | hay $1 elementos que coinciden con}} esta descripción.",
+	"itemCount": "Hay {{PLURAL: $1|un elemento que coincide con|$1 elementos que coinciden con}} esta descripción.",
 	"classPlaceholder": "Introduce clase",
 	"browse": "O explora cualquiera de las siguientes clases:",
 	"noFiltersDefined": "No se define ningún filtro para esta clase.",
