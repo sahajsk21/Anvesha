@@ -29,7 +29,7 @@ var languages = ["en","ceb","sv","de","fr","nl","ru","it","es","pl","war","vi","
                 "tr","eu","ms","ce","eo","he","hy","bg","da","azb","sk","kk","min","hr","et","lt","be","el","az",
                 "sl","gl","ur","nn","nb","hi","ka","th","tt","uz","la","cy","ta","vo","mk","ast","lv","yue","tg",
                 "bn","af","mg","oc","bs","sq","ky","nds","new","be-tarask","ml","te","br","tl","vec","pms","mr",
-                "su","ht","sw","lb","jv","sco","pnb","ba","ga","szl","is","my","fy","cv","lmo","wuu"]
+                "su","ht","sw","lb","jv","sco","pnb","ba","ga","szl","is","my","fy","cv","lmo","wuu","bn"]
 var langArray = defaultLanguages.concat(languages.filter(x => !defaultLanguages.includes(x)))
 var lang = urlParams.get('lang') ? urlParams.get('lang') + "," + langArray.join(",") : langArray.join(",");
 var primaryLang = urlParams.get('lang') ? urlParams.get('lang') : langArray[0];
