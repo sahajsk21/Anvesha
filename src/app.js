@@ -3,17 +3,17 @@ var app = new Vue({
         classfilter, viewallitems, filtersview, filtervalues
     },
     data: {
+        page: '',
         clsValue: '',
         classLabel: '',
-        page: '',
+        appFilters: [],
+        appRanges: [],
+        appQuantities: [],
         currentFilterLabel: '',
         currentFilterValue: '',
         secondaryFilterLabel: '',
         secondaryFilterValue: '',
         currentFilterPropertyType: '',
-        appFilters: [],
-        appRanges: [],
-        appQuantities: [],
         getFiltersFromURL: 1,
         allItemscomponentKey: 0,
         filterscomponentKey: 0,
@@ -31,9 +31,11 @@ var app = new Vue({
                 ranges: this.appliedRanges,
                 currentFilterLabel: this.currentFilterLabel,
                 currentFilterValue: urlParams.has('cf') ? urlParams.get('cf') : '',
+                secondaryFilterLabel: this.secondaryFilterLabel,
+                secondaryFilterValue: urlParams.has('sf') ? urlParams.get('sf') : '',
                 fromURL: 0,
                 allItemscomponentKey: this.allItemscomponentKey,
-                filterscomponentKey: this.filterscomponentKey
+                filterscomponentKey: this.filterscomponentKey,
             }, '',
                 window.location.pathname + "?" + urlParams
             );
@@ -88,9 +90,11 @@ var app = new Vue({
                 ranges: this.appliedRanges,
                 currentFilterLabel: this.currentFilterLabel,
                 currentFilterValue: this.currentFilterValue,
+                secondaryFilterLabel: this.secondaryFilterLabel,
+                secondaryFilterValue: this.secondaryFilterValue,
                 fromURL: 0,
                 allItemscomponentKey: this.allItemscomponentKey,
-                filterscomponentKey: this.filterscomponentKey
+                filterscomponentKey: this.filterscomponentKey,
             }, '',
                 window.location.pathname + "?" + urlParams
             );
@@ -446,7 +450,7 @@ var app = new Vue({
                 values = urlParams.get("f." + filter.parentFilterValue + "." + filter.filterValue).split("-")
             }
             else{
-                values = urlParams.get("f." + filter.filterValue).split("-")
+                values = filter.value.split("-")
             }
             if (values.length > 1) {
                 i = values.indexOf(filter.value)
@@ -1002,24 +1006,6 @@ var app = new Vue({
                     this.total = 1000000
                 })
             return this.total
-        }
-    },
-    watch: {
-        classLabel: function () {
-            window.history.pushState({
-                page: this.view,
-                classValue: this.classValue,
-                filters: this.appliedFilters,
-                quantities: this.appliedQuantities,
-                ranges: this.appliedRanges,
-                currentFilterLabel: this.currentFilterLabel,
-                currentFilterValue: urlParams.has('cf') ? urlParams.get('cf') : '',
-                fromURL: 0,
-                allItemscomponentKey: this.allItemscomponentKey,
-                filterscomponentKey: this.filterscomponentKey
-            }, '',
-                window.location.pathname + "?" + urlParams
-            );
         }
     }
 }).$mount('#app')
