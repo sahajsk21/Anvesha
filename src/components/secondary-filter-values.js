@@ -217,7 +217,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                 noValueString += "{#filter " + i +"\n FILTER(NOT EXISTS { ?value wdt:" + this.appliedFilters[i].filterValue + " ?no. }).\n}"
             }
             else {
-                filterString += "{#filter " + i +"\n?value wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n}";
+                filterString += "{#filter " + i +"\n?item wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n}";
             }
         }
         var filterRanges = "";

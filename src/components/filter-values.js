@@ -32,8 +32,8 @@ filtervalues = Vue.component('filter-values', {
             <div v-if="secondaryFiltersCount>0" class="filter-box" style="cursor:pointer"  @click="toggleDropdown">
                 <div class="info">
                     <img v-bind:style="{ transform:'rotate('+ secondaryFiltersDropdownDisplay*180 + 'deg)' }" src="images/down-arrow.svg" height="14px">
-                    <span v-if="secondaryFiltersDropdownDisplay">Apply a filter linked with <b>{{currentFilter.valueLabel}}</b> from one of the following classes:</span>
-                    <span v-else>Apply a filter on <b>{{currentFilter.valueLabel}}</b></span>
+                    <span> Apply filter on {{currentFilter.valueLabel}}</span>
+                    <p v-if="secondaryFiltersDropdownDisplay">Apply a filter linked with <b>{{currentFilter.valueLabel}}</b> from one of the following classes:</p>
                 </div>
                 <ul class="secondary-filter" v-bind:style="{ display: (secondaryFiltersDropdownDisplay?'block':'none') }">
                     <li v-for="(cls,clsLabel) in secondaryFilters">
