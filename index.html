@@ -10,7 +10,8 @@
         <top-nav
             @change-page="updatePage"
             @change-language="changeLanguage"
-            :website-text="siteText">
+            :website-text="siteText"
+            :fallback-text="fallbackSiteText">
         </top-nav>
 
         <div class="container">
@@ -19,6 +20,7 @@
                 @change-class="updateClassValue"
                 v-if="view == 'class-filter'"
                 :website-text="siteText"
+                :fallback-text="fallbackSiteText"
                 :class-value="classValue"
                 :class-label="classLabel">
             </class-filter>
@@ -31,6 +33,7 @@
                 @update-filter="updateFilter"
                 v-if="view =='view-all-items'"
                 :website-text="siteText"
+                :fallback-text="fallbackSiteText"
                 :total-values="totalValues"
                 :class-label="classLabel"
                 :class-value="classValue"
@@ -48,6 +51,7 @@
                 @remove-quantity="removeQuantity"  
                 v-if="view =='filters'"
                 :website-text="siteText"
+                :fallback-text="fallbackSiteText"
                 :total-values="totalValues"
                 :class-label="classLabel"
                 :class-value="classValue"
@@ -69,6 +73,7 @@
                 @remove-quantity="removeQuantity"            
                 v-if="view =='filter-values'" 
                 :website-text="siteText"
+                :fallback-text="fallbackSiteText"
                 :key="filterscomponentKey"
                 :total-values="totalValues"
                 :class-label="classLabel"
@@ -89,6 +94,7 @@
                 @remove-quantity="removeQuantity"            
                 v-if="view =='secondary-filter-values'" 
                 :website-text="siteText"
+                :fallback-text="fallbackSiteText"
                 :key="filterscomponentKey"
                 :total-values="totalValues"
                 :class-label="classLabel"
@@ -105,6 +111,7 @@
                 @update-class="updateClassValue"
                 v-if="view =='subclass'" 
                 :website-text="siteText"
+                :fallback-text="fallbackSiteText"
                 :class-label="classLabel"
                 :class-value="classValue"
                 :applied-filters="appliedFilters"
@@ -117,6 +124,7 @@
                 @update-class="updateClassValue"
                 v-if="view =='superclass'" 
                 :website-text="siteText"
+                :fallback-text="fallbackSiteText"
                 :class-label="classLabel"
                 :class-value="classValue"
                 :applied-filters="appliedFilters"

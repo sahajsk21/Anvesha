@@ -1,5 +1,5 @@
 subclass = Vue.component('subclass-view', {
-    props: ['websiteText', 'classValue', 'classLabel', 'appliedFilters', 'appliedRanges', 'appliedQuantities'],
+    props: ['websiteText', 'fallbackText', 'classValue', 'classLabel', 'appliedFilters', 'appliedRanges', 'appliedQuantities'],
     data() {
         return { items: [], displayCount: 0 }
     },
@@ -54,12 +54,12 @@ subclass = Vue.component('subclass-view', {
                 </li>
             </ul>
         </div>
-        <p><i>{{ websiteText.changeClassNote }}</i></p>
-        <a @click="changePage('view-all-items')">{{ websiteText.viewList }}</a>
-        <p><b>{{ websiteText.specificClass }}</b><p>
+        <p><i>{{ websiteText.changeClassNote||fallbackText.changeClassNote }}</i></p>
+        <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
+        <p><b>{{ websiteText.specificClass||fallbackText.specificClass }}</b><p>
         <div class="content">
             <img v-if="!items.length" src='images/loading.gif'>
-            <p v-else-if="items[0].value=='Empty'">{{ websiteText.noItems }}</p>
+            <p v-else-if="items[0].value=='Empty'">{{ websiteText.noItems||fallbackText.noItems }}</p>
             <div v-else>
                 <ul>
                     <li v-for="item in items">
@@ -71,7 +71,7 @@ subclass = Vue.component('subclass-view', {
                             {{item.valueLabel.value}}
                         </a>
                         <span class="result-count" v-if="displayCount==0">
-                            {{ displayPluralCount(websiteText.results,item.count.value) }}
+                            {{ displayPluralCount(websiteText.results||fallbackText.results,item.count.value) }}
                         </span>
                     </li>
                 </ul>
@@ -81,10 +81,13 @@ subclass = Vue.component('subclass-view', {
     `,
     methods: {
         displayPluralCount(message, totalValues) {
-            matches = message.match('{{PLURAL:[\\s]*\\$1\\|(.*)}}')
-            str = matches[1].split('|')[(totalValues > 1 ? 1 : 0)]
-            str = str.replace("$1", (totalValues < 1000000 ? numberWithCommas(totalValues) : '1 million +'))
-            return message.replace(/{{PLURAL:[\s]*\$1\|(.*)}}/g, str)
+            if(message){
+
+                matches = message.match('{{PLURAL:[\\s]*\\$1\\|(.*)}}')
+                str = matches[1].split('|')[(totalValues > 1 ? 1 : 0)]
+                str = str.replace("$1", (totalValues < 1000000 ? numberWithCommas(totalValues) : '1 million +'))
+                return message.replace(/{{PLURAL:[\s]*\$1\|(.*)}}/g, str)
+            }
         },
         pathFor(item) {
             var newURL = window.location.pathname + '?';

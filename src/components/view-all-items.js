@@ -1,5 +1,5 @@
 viewallitems = Vue.component('view-all-items', {
-    props: ['websiteText', 'classValue', 'classLabel', 'totalValues', 'appliedFilters', 'appliedRanges', 'appliedQuantities'],
+    props: ['websiteText', 'fallbackText', 'classValue', 'classLabel', 'totalValues', 'appliedFilters', 'appliedRanges', 'appliedQuantities'],
     data() {
         return {
             filtersCount: -1,
@@ -25,7 +25,7 @@ viewallitems = Vue.component('view-all-items', {
         </header-view>
         <div class="content" id="viewallitems">
             <div v-if="filtersCount==-1"></div>
-            <p v-else-if="filtersCount==0">{{ websiteText.filtersCount }}</p>
+            <p v-else-if="filtersCount==0">{{ websiteText.filtersCount||fallbackText.filtersCount }}</p>
             <div v-else-if="filtersCount<40" class="filter-box">
                 <img src="images/filter-icon.svg" height="14px" />
                 <span v-for="filter in filters">
@@ -40,9 +40,9 @@ viewallitems = Vue.component('view-all-items', {
                 </span>
             </div>
             <div v-else>
-                <a class="classOptions" @click="changePage('filters')">{{ websiteText.addFilter }}</a>
+                <a class="classOptions" @click="changePage('filters')">{{ websiteText.addFilter||fallbackText.addFilter }}</a>
             </div>
-            <div v-if="totalValues>0" v-html="displayPluralCount(totalValues)"></div>
+            <div v-if="totalValues>0" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount,totalValues)"></div>
             <div v-if="totalValues>resultsPerPage" style="text-align: center">
                 <a v-if="currentPage>1" @click="displayData('back')">&lt;</a>
                 <input 
@@ -55,8 +55,8 @@ viewallitems = Vue.component('view-all-items', {
             </div>
             <div v-if="websiteText!=''">
                 <img v-if="!items.length" src='images/loading.gif'>
-                <p v-else-if="items[0].value=='Empty'">{{ websiteText.noItems }}</p>
-                <p v-else-if="items[0].value=='Error'">{{ websiteText.displayItemsError }}</p>
+                <p v-else-if="items[0].value=='Empty'">{{ websiteText.noItems||fallbackText.noItems }}</p>
+                <p v-else-if="items[0].value=='Error'">{{ websiteText.displayItemsError||fallbackText.displayItemsError }}</p>
                 <div v-else>
                         <ul>
                             <li v-for="item in items">
@@ -75,7 +75,7 @@ viewallitems = Vue.component('view-all-items', {
                 {{totalValues<1000000?" / " + Math.ceil(totalValues/resultsPerPage):''}}
                 <a v-if="currentPage<totalValues/resultsPerPage" @click="displayData('next')">&gt;</a>
             </div>
-            <div><a :href="query">{{ websiteText.viewQuery }}</a></div>
+            <div><a :href="query">{{ websiteText.viewQuery||fallbackText.viewQuery }}</a></div>
         </div>
     </div>`,
     methods: {
@@ -199,11 +199,13 @@ viewallitems = Vue.component('view-all-items', {
         pathForFilter(filter) {
             return window.location.href + '&cf=' + filter.value.value.split('/').slice(-1)[0];
         },
-        displayPluralCount(totalValues) {
-            matches = this.websiteText.itemCount.match('{{PLURAL:[\\s]*\\$1\\|(.*)}}')
-            str = matches[1].split('|')[(totalValues > 1 ? 1 : 0)]
-            str = str.replace("$1", "<b>" + (totalValues < 1000000 ? numberWithCommas(totalValues) : '1 million +') + "</b>")
-            return this.websiteText.itemCount.replace(/{{PLURAL:[\s]*\$1\|(.*)}}/g, str)
+        displayPluralCount(message,totalValues) {
+            if(message){
+                matches = message.match('{{PLURAL:[\\s]*\\$1\\|(.*)}}')
+                str = matches[1].split('|')[(totalValues > 1 ? 1 : 0)]
+                str = str.replace("$1", "<b>" + (totalValues < 1000000 ? numberWithCommas(totalValues) : '1 million +') + "</b>")
+                return message.replace(/{{PLURAL:[\s]*\$1\|(.*)}}/g, str)
+            }
         },
         changePage(page) {
             this.$emit('change-page', page)

@@ -18,7 +18,8 @@ var app = new Vue({
         allItemscomponentKey: 0,
         filterscomponentKey: 0,
         total: '',
-        siteText: ''
+        siteText: '',
+        fallbackSiteText: ''
     },
     mounted: function () {
         // History logging
@@ -66,6 +67,10 @@ var app = new Vue({
                         this.siteText = res.data
                     })
             });
+        // Fallback messages
+        fullUrl = "languages/en.json";
+        axios.get(fullUrl)
+            .then(response => this.fallbackSiteText = response.data)
     },
     methods: {
         updatePage: function (page) {
