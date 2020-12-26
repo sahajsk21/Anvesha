@@ -1,14 +1,14 @@
 // Configuration variables
-siteName = typeof SITE_NAME != "undefined" ? SITE_NAME:"Anvesha";
-defaultLanguages = typeof PREFERRED_LANGUAGES != "undefined" ? PREFERRED_LANGUAGES : [];
-resultsPerPage = typeof RESULTS_PER_PAGE != "undefined" ? RESULTS_PER_PAGE : 200;
-favicon = typeof FAVICON != "undefined" ? FAVICON : "images/favicon.png";
-logo = typeof LOGO != "undefined" ? LOGO : "images/logo.png";
-classes = typeof SUGGESTED_CLASSES != "undefined" ? SUGGESTED_CLASSES.map(function(v){return {value:v}}) : [];
-sparqlEndpoint = typeof SPARQL_ENDPOINT != "undefined" ? SPARQL_ENDPOINT : "https://query.wikidata.org/sparql?query=";
-instanceOf = typeof INSTANCE_OF_PID != "undefined" ? INSTANCE_OF_PID : "P31";
-propertiesForThisType = typeof PROPERTIES_FOR_THIS_TYPE_PID != "undefined" ? PROPERTIES_FOR_THIS_TYPE_PID : "P1963";
-linksInTopNav = typeof LINKS_IN_TOPNAV != "undefined" ? LINKS_IN_TOPNAV : {};
+siteName = SITE_NAME || "Anvesha";
+defaultLanguages = PREFERRED_LANGUAGES || [];
+resultsPerPage = RESULTS_PER_PAGE || 200;
+favicon = FAVICON || "images/favicon.png";
+logo = LOGO || "images/logo.png";
+classes = SUGGESTED_CLASSES.map(function(v){return {value:v}}) || [];
+sparqlEndpoint = SPARQL_ENDPOINT || "https||//query.wikidata.org/sparql?query=";
+instanceOf = INSTANCE_OF_PID || "P31";
+propertiesForThisType = PROPERTIES_FOR_THIS_TYPE_PID || "P1963";
+linksInTopNav = LINKS_IN_TOPNAV || {};
 
 // Website name
 document.title = siteName

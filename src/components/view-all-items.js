@@ -7,7 +7,8 @@ viewallitems = Vue.component('view-all-items', {
             items:[],
             itemsCount: '',
             currentPage: 1,
-            query: ""
+            query: '',
+            sparqlParameters: []
         }
     },
     template: `
@@ -76,11 +77,13 @@ viewallitems = Vue.component('view-all-items', {
                 <a v-if="currentPage<totalValues/resultsPerPage" @click="displayData('next')">&gt;</a>
             </div>
             <div><a :href="query">{{ websiteText.viewQuery||fallbackText.viewQuery }}</a></div>
+            <div><a @click="exportCSV">Export as CSV</a></div>
         </div>
     </div>`,
     methods: {
         displayData(action = ''){
             this.items = []
+            // Determine page change action
             if (action == 'back') {
                 if (this.currentPage > 1) {
                     this.currentPage--;
@@ -91,107 +94,34 @@ viewallitems = Vue.component('view-all-items', {
                     this.currentPage++;
                 }
             }
-            var filterString = "";
-            var noValueString = "";
-            for (let i = 0; i < this.appliedFilters.length; i++) {
-                if (this.appliedFilters[i].parentFilterValue) {
-                    filterString += "{#filter " + i + "\n?value wdt:" + this.appliedFilters[i].parentFilterValue + " ?temp" + i + ".\n" +
-                        "?temp" + i + " wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n}";
-                }
-                else if (this.appliedFilters[i].value == "novalue") {
-                    noValueString += "{#filter " + i + "\n FILTER(NOT EXISTS { ?value wdt:" + this.appliedFilters[i].filterValue + " ?no. }).\n}"
-                }
-                else {
-                    filterString += "{#filter " + i + "\n?value wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n}";
-                }
-            }
-            var filterRanges = "", maxString = "", constraintString = "";
-
-            for (let i = 0; i < this.appliedRanges.length; i++) {
-                if (this.appliedRanges[i].valueLL == "novalue") {
-                    noValueString += "{#date range " + i + "\n FILTER(NOT EXISTS { ?value wdt:" + this.appliedRanges[i].filterValue + " ?no. }).\n}"
-                }
-                else if(this.appliedRanges[i].parentFilterValue){
-                    timePrecision = getTimePrecision(this.appliedRanges[i].valueLL, this.appliedRanges[i].valueUL)
-                    filterRanges += "{#date range " + i + "\n?value wdt:" + this.appliedRanges[i].parentFilterValue +" ?temp" + i + ".\n"+
-                        "?temp" + i + " (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
-                        "?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
-                        "?timenode" + i + " wikibase:timePrecision ?timeprecision" + i + ".\n" +
-                        "FILTER(?timeprecision" + i + ">=" + timePrecision + ")\n}";
-                    constraintString += "FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?tim" + i + " && ?tim" + i + " < '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n";
-                    maxString += "(MAX(?time" + i + ") AS ?tim" + i + ") ";
-
-                }
-                else {
-                    timePrecision = getTimePrecision(this.appliedRanges[i].valueLL, this.appliedRanges[i].valueUL)
-                    filterRanges += "{#date range " + i + "\n?value (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
-                        "?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
-                        "?timenode" + i + " wikibase:timePrecision ?timeprecision" + i + ".\n" +
-                        "FILTER(?timeprecision" + i + ">=" + timePrecision + ")\n}";
-                    constraintString += "FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?tim" + i + " && ?tim" + i + " < '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n";
-                    maxString += "(MAX(?time" + i + ") AS ?tim" + i + ") ";
-                }
-            }
-            var filterQuantities = "";
-            for (let i = 0; i < this.appliedQuantities.length; i++) {
-                if (this.appliedQuantities[i].parentFilterValue) {
-                    if (this.appliedQuantities[i].valueLL == "novalue") {
-                        noValueString += "{#quantity range " + i + "\n FILTER(NOT EXISTS { ?value wdt:" + this.appliedQuantities[i].filterValue + " ?no. }).\n}"
-                    }
-                    else if (this.appliedQuantities[i].unit == "") {
-                        filterQuantities += "{#quantity range " + i + "\n?value wdt:" + this.appliedQuantities[i].parentFilterValue + " ?temp" + i + ".\n" +
-                            "?temp" + i + " (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
-                            "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n}";
-                        constraintString += "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?qua" + i + " && ?qua" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n";
-                        maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
-                    }
-                    else {
-                        filterQuantities += "{#quantity range " + i + "\n?value wdt:" + this.appliedQuantities[i].parentFilterValue + " ?temp" + i + ".\n" +
-                            "?temp" + i + " (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
-                            "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n}";
-                        constraintString += "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?qua" + i + " && ?qua" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n";
-                        maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
-                    }
-                }
-                else {
-                    if (this.appliedQuantities[i].valueLL == "novalue") {
-                        noValueString += "{#quantity range " + i + "\n FILTER(NOT EXISTS { ?value wdt:" + this.appliedQuantities[i].filterValue + " ?no. }).\n}"
-                    }
-                    else if (this.appliedQuantities[i].unit == "") {
-                        filterQuantities += "{#quantity range " + i + "\n?value (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
-                            "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n}";
-                        constraintString += "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?qua" + i + " && ?qua" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n";
-                        maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
-                    }
-                    else {
-                        filterQuantities += "{#quantity range " + i + "\n?value (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
-                            "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n}";
-                        constraintString += "FILTER(" + this.appliedQuantities[i].valueUL + ">=?qua" + i + " && ?qua" + i + ">=" + this.appliedQuantities[i].valueLL + ")\n";
-                        maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
-                    }
-                }
-            }
             sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
                 "  {\n" +
-                "    SELECT ?value  " + maxString + " WHERE {\n" +
+                "    SELECT ?value  " + this.sparqlParameters[4] + " WHERE {\n" +
                 "      ?value wdt:" + instanceOf + " wd:" + this.classValue + ".  \n" +
-                filterString +
-                filterRanges +
-                filterQuantities +
-                noValueString +
+                this.sparqlParameters[0] +
+                this.sparqlParameters[1] +
+                this.sparqlParameters[2] +
+                this.sparqlParameters[3] +
                 "  } \n" +
-                (maxString == "" ? "" : "GROUP BY ?value \n") +
-                (constraintString == "" ? "LIMIT " + resultsPerPage + " OFFSET " + ((this.currentPage - 1) * resultsPerPage) : "") +
+                (this.sparqlParameters[4] == "" ? "" : "GROUP BY ?value \n") +
+                (this.sparqlParameters[5] == "" ? "LIMIT " + resultsPerPage + " OFFSET " + ((this.currentPage - 1) * resultsPerPage) : "") +
                 "  }\n" +
-                constraintString +
+                this.sparqlParameters[5] +
                 "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
                 "}\n" +
                 (this.totalValues > resultsPerPage ? "" : "ORDER BY ?valueLabel\n") +
-                (constraintString != "" ? "LIMIT " + resultsPerPage + " OFFSET " + ((this.currentPage - 1) * resultsPerPage) : "");
+                (this.sparqlParameters[5] != "" ? "LIMIT " + resultsPerPage + " OFFSET " + ((this.currentPage - 1) * resultsPerPage) : "");
             this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
             fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
             axios.get(fullUrl)
-                .then(response => response.data['results']['bindings'].length ? this.items = [...response.data['results']['bindings']] : this.items.push({ value: "Empty" }))
+                .then(response =>{
+                    if(response.data['results']['bindings'].length){
+                        this.items = [...response.data['results']['bindings']]
+                    }
+                    else{
+                        this.items.push({ value: "Empty" })
+                    }
+                }) 
                 .catch(error => {
                     this.items.push({ value: "Error" })
                 })
@@ -224,6 +154,44 @@ viewallitems = Vue.component('view-all-items', {
         },
         linkToWikidata(item) {
             return "https://www.wikidata.org/wiki/" + item.split('/').slice(-1)[0] + "?uselang=" + (urlParams.get('lang') ? urlParams.get('lang') : (defaultLanguages[0] ? defaultLanguages[0] : 'en'))
+        },
+        exportCSV(){
+            document.getElementsByTagName("body")[0].style.cursor = "progress";
+            sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
+                "{\n" +
+                "SELECT ?value  " + this.sparqlParameters[4] + " WHERE {\n" +
+                "?value wdt:" + instanceOf + " wd:" + this.classValue + ".  \n" +
+                this.sparqlParameters[0] +
+                this.sparqlParameters[1] +
+                this.sparqlParameters[2] +
+                this.sparqlParameters[3] +
+                "} \n" +
+                (this.sparqlParameters[4] == "" ? "" : "GROUP BY ?value \n") +
+                "LIMIT 100000\n" +
+                "}\n" +
+                this.sparqlParameters[5] +
+                "SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
+                "}\n" +
+                "ORDER BY ?valueLabel\n";
+            fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+            axios.get(fullUrl)
+                .then(response => {
+                    if (response.data['results']['bindings'].length) {
+                        let csvHeader = encodeURI("data:text/csv;charset=utf-8,");
+                        let csvContent = [...response.data['results']['bindings']].map(e => e.value.value.split('/').slice(-1)[0] + "," + e.valueLabel.value).join("\n");
+                        let downloadURI = csvHeader + encodeURIComponent(csvContent);
+                        var link = document.createElement("a");
+                        link.setAttribute("href", downloadURI);
+                        link.setAttribute("download", "data.csv");
+                        document.body.appendChild(link);
+                        link.click();
+                        document.getElementsByTagName("body")[0].style.cursor = "default";
+                    }
+                })
+                .catch(_error=>{
+                    document.getElementsByTagName("body")[0].style.cursor = "default";
+                    console.log("Download failed");
+                })  
         }
     },
     mounted() {
@@ -235,12 +203,101 @@ viewallitems = Vue.component('view-all-items', {
             "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
             "}\n" +
             "ORDER BY ?valueLabel";
-        var fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+        let fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
         axios.get(fullUrl)
-            .then(response => (response.data['results']['bindings'] ? (this.filtersCount = response.data['results']['bindings'].length, this.filters = [...response.data['results']['bindings']]) : this.filters.push({ value: "Empty", valueLabel: "No data" })))
+            .then(response => {
+                if (response.data['results']['bindings']) {
+                    this.filtersCount = response.data['results']['bindings'].length
+                    this.filters = [...response.data['results']['bindings']]
+                }
+                else {
+                    this.filters.push({ value: "Empty", valueLabel: "No data" })
+                }
+            })
             .catch(error => {
                 this.items.push({ value: "Error" })
             })
+        // Change applied filters/ranges/quantities to SPARQL equivalents
+        let filterString = "";
+        let noValueString = "";
+        for (let i = 0; i < this.appliedFilters.length; i++) {
+            if (this.appliedFilters[i].parentFilterValue) {
+                filterString += "{#filter " + i + "\n?value wdt:" + this.appliedFilters[i].parentFilterValue + " ?temp" + i + ".\n" +
+                    "?temp" + i + " wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n}";
+            }
+            else if (this.appliedFilters[i].value == "novalue") {
+                noValueString += "{#filter " + i + "\n FILTER(NOT EXISTS { ?value wdt:" + this.appliedFilters[i].filterValue + " ?no. }).\n}"
+            }
+            else {
+                filterString += "{#filter " + i + "\n?value wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n}";
+            }
+        }
+        let filterRanges = "", maxString = "", constraintString = "";
+        for (let i = 0; i < this.appliedRanges.length; i++) {
+            if (this.appliedRanges[i].valueLL == "novalue") {
+                noValueString += "{#date range " + i + "\n FILTER(NOT EXISTS { ?value wdt:" + this.appliedRanges[i].filterValue + " ?no. }).\n}"
+            }
+            else if (this.appliedRanges[i].parentFilterValue) {
+                timePrecision = getTimePrecision(this.appliedRanges[i].valueLL, this.appliedRanges[i].valueUL)
+                filterRanges += "{#date range " + i + "\n?value wdt:" + this.appliedRanges[i].parentFilterValue + " ?temp" + i + ".\n" +
+                    "?temp" + i + " (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
+                    "?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
+                    "?timenode" + i + " wikibase:timePrecision ?timeprecision" + i + ".\n" +
+                    "FILTER(?timeprecision" + i + ">=" + timePrecision + ")\n}";
+                constraintString += "FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?tim" + i + " && ?tim" + i + " < '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n";
+                maxString += "(MAX(?time" + i + ") AS ?tim" + i + ") ";
+
+            }
+            else {
+                timePrecision = getTimePrecision(this.appliedRanges[i].valueLL, this.appliedRanges[i].valueUL)
+                filterRanges += "{#date range " + i + "\n?value (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
+                    "?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
+                    "?timenode" + i + " wikibase:timePrecision ?timeprecision" + i + ".\n" +
+                    "FILTER(?timeprecision" + i + ">=" + timePrecision + ")\n}";
+                constraintString += "FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?tim" + i + " && ?tim" + i + " < '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n";
+                maxString += "(MAX(?time" + i + ") AS ?tim" + i + ") ";
+            }
+        }
+        let filterQuantities = "";
+        for (let i = 0; i < this.appliedQuantities.length; i++) {
+            if (this.appliedQuantities[i].parentFilterValue) {
+                if (this.appliedQuantities[i].valueLL == "novalue") {
+                    noValueString += "{#quantity range " + i + "\n FILTER(NOT EXISTS { ?value wdt:" + this.appliedQuantities[i].filterValue + " ?no. }).\n}"
+                }
+                else if (this.appliedQuantities[i].unit == "") {
+                    filterQuantities += "{#quantity range " + i + "\n?value wdt:" + this.appliedQuantities[i].parentFilterValue + " ?temp" + i + ".\n" +
+                        "?temp" + i + " (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                        "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n}";
+                    constraintString += "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?qua" + i + " && ?qua" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n";
+                    maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
+                }
+                else {
+                    filterQuantities += "{#quantity range " + i + "\n?value wdt:" + this.appliedQuantities[i].parentFilterValue + " ?temp" + i + ".\n" +
+                        "?temp" + i + " (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                        "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n}";
+                    constraintString += "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?qua" + i + " && ?qua" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n";
+                    maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
+                }
+            }
+            else {
+                if (this.appliedQuantities[i].valueLL == "novalue") {
+                    noValueString += "{#quantity range " + i + "\n FILTER(NOT EXISTS { ?value wdt:" + this.appliedQuantities[i].filterValue + " ?no. }).\n}"
+                }
+                else if (this.appliedQuantities[i].unit == "") {
+                    filterQuantities += "{#quantity range " + i + "\n?value (p:" + this.appliedQuantities[i].filterValue + "/psv:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                        "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n}";
+                    constraintString += "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?qua" + i + " && ?qua" + i + " >=" + this.appliedQuantities[i].valueLL + ")\n";
+                    maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
+                }
+                else {
+                    filterQuantities += "{#quantity range " + i + "\n?value (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
+                        "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n}";
+                    constraintString += "FILTER(" + this.appliedQuantities[i].valueUL + ">=?qua" + i + " && ?qua" + i + ">=" + this.appliedQuantities[i].valueLL + ")\n";
+                    maxString += "(MAX(?amountValue" + i + ") AS ?qua" + i + ") ";
+                }
+            }
+        }
+        this.sparqlParameters.push(filterString, filterRanges, filterQuantities, noValueString, maxString, constraintString);
         this.displayData();
     }
 })

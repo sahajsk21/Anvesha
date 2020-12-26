@@ -7,9 +7,9 @@ filtervalues = Vue.component('filter-values', {
             fullPropertyValues: [],
             displayCount: 1,
             currentPage: 1,
-            filterProperty: "",
-            query: "",
-            noValueURL: "",
+            filterProperty: '',
+            query: '',
+            noValueURL: '',
             secondaryFilters:[],
             secondaryFiltersCount: -1,
             secondaryFiltersDropdownDisplay: false
@@ -69,11 +69,205 @@ filtervalues = Vue.component('filter-values', {
                 <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
                 <p v-html="displayMessage(websiteText.filterError||fallbackText.filterError, currentFilter.valueLabel)"></p>
             </div>
-            <div v-else-if="itemsType=='Item'">
-                <p v-if="totalValues!=''" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount,totalValues)"></p>
-                <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
-                <p v-if="appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) != -1" v-html="displayMessage(websiteText.selectAdditionalValue||fallbackText.selectAdditionalValue, currentFilter.valueLabel)"></p>
-                <p v-else v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel)"></p>
+            <div v-else>
+                <div v-if="itemsType=='Item'">
+                    <p v-if="totalValues!=''" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount,totalValues)"></p>
+                    <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
+                    <p v-if="appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) != -1" v-html="displayMessage(websiteText.selectAdditionalValue||fallbackText.selectAdditionalValue, currentFilter.valueLabel)"></p>
+                    <p v-else v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel)"></p>
+                    <div v-if="items.length>resultsPerPage && itemsType=='Item'" style="text-align: center">
+                        <a v-if="currentPage>1" @click="currentPage>1?currentPage--:''">&lt;</a>
+                        <input 
+                            v-model.lazy="currentPage" 
+                            type="text" 
+                            style="margin-bottom: 15px;width: 48px;text-align: center"> 
+                        {{items.length<1000000?" / " + Math.ceil(items.length/resultsPerPage):''}}
+                        <a v-if="currentPage<items.length/resultsPerPage" @click="currentPage<items.length/resultsPerPage?currentPage++:''">&gt;</a>
+                    </div>
+                    <ul>
+                        <li v-if="appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) ==-1">
+                            <i>
+                                <a 
+                                    :href="noValueURL" 
+                                    onclick="return false;" 
+                                    @click.exact="applyFilter('novalue')" 
+                                    @click.ctrl="window.open(noValueURL, '_blank')">
+                                    {{ websiteText.noValue||fallbackText.noValue }}
+                                </a>
+                            </i>
+                        </li>
+                        <li v-for="(item,index) in items" v-if="index < currentPage*resultsPerPage && index >= (currentPage-1)*resultsPerPage">
+                            <a 
+                                :href="item.href" 
+                                onclick="return false;" 
+                                @click.exact="applyFilter(item)" 
+                                @click.ctrl="window.open(item.href, '_blank')">
+                                {{item.valueLabel.value}}
+                            </a> 
+                            <span class="result-count">
+                                {{ displayPluralCount(websiteText.results||fallbackText.results,item.count.value) }}
+                            <span>
+                        </li>
+                    </ul>
+                </div>
+                <div v-else-if="itemsType=='ItemFail'">
+                    <p><i v-html="displayMessage(websiteText.filterTimeout||fallbackText.filterTimeout, currentFilter.valueLabel)"></i></p>
+                    <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
+                    <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel)"></p>
+                    <ul>
+                        <li>
+                            <i>
+                                <a 
+                                :href="noValueURL" 
+                                onclick="return false;" 
+                                @click.exact="applyFilter('novalue')" 
+                                @click.ctrl="window.open(noValueURL, '_blank')">
+                                {{ websiteText.noValue||fallbackText.noValue }}
+                            </i>
+                        </li>
+                        <li v-for="item in items">
+                            <a 
+                                :href="item.href" 
+                                onclick="return false;" 
+                                @click.exact="applyFilter(item)" 
+                                @click.ctrl="window.open(item.href, '_blank')">
+                                {{item.valueLabel.value}}
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div v-else-if="itemsType=='Time'">
+                    <p v-if="totalValues!=''" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount,totalValues)"></p>
+                    <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
+                    <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel)"></p>
+                    <ul v-if="displayCount == 1">
+                        <li v-if="appliedRanges.findIndex(filter => filter.filterValue == currentFilter.value) ==-1">
+                            <i>
+                                <a 
+                                    :href="noValueURL" 
+                                    onclick="return false;" 
+                                    @click.exact="applyRange('novalue')" 
+                                    @click.ctrl="window.open(noValueURL, '_blank')">
+                                    {{ websiteText.noValue||fallbackText.noValue }}
+                                </a>
+                            </i>
+                        </li>
+                        <li v-for="item in items" v-if="item.numValues>0">
+                            <a 
+                                :href="item.href" 
+                                onclick="return false;" 
+                                @click.exact="applyRange(item)" 
+                                @click.ctrl="window.open(item.href, '_blank')">
+                                {{item.bucketName}} 
+                            </a> 
+                            <span class="result-count">
+                                {{ displayPluralCount(websiteText.results||fallbackText.results,item.numValues) }}
+                            <span>
+                        </li>
+                    </ul>
+                    <ul v-if="displayCount == 0">
+                        <li>
+                            <i>
+                                <a 
+                                    :href="noValueURL" 
+                                    onclick="return false;" 
+                                    @click.exact="applyFilter('novalue')" 
+                                    @click.ctrl="window.open(noValueURL, '_blank')">
+                                    {{ websiteText.noValue||fallbackText.noValue }}
+                                </a>
+                            </i>
+                        </li>
+                        <li v-for="item in items">
+                            <a 
+                                :href="item.href" 
+                                onclick="return false;" 
+                                @click.exact="applyRange(item)" 
+                                @click.ctrl="window.open(item.href, '_blank')">
+                                {{item.bucketName}} 
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div v-else-if="itemsType=='TimeFail'">
+                    <p><i v-html="displayMessage(websiteText.filterTimeout||fallbackText.filterTimeout, currentFilter.valueLabel)"></i></p>
+                    <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
+                    <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel)"></p>
+                    <ul>
+                        <li>
+                            <i>
+                                <a 
+                                    :href="noValueURL" 
+                                    onclick="return false;" 
+                                    @click.exact="applyFilter('novalue')" 
+                                    @click.ctrl="window.open(noValueURL, '_blank')">
+                                    {{ websiteText.noValue||fallbackText.noValue }}
+                                </a>
+                                </i>
+                            </li>
+                        <li v-for="item in items">
+                            <a 
+                                :href="item.href" 
+                                onclick="return false;" 
+                                @click.exact="applyRange(item)" 
+                                @click.ctrl="window.open(item.href, '_blank')">
+                                {{item.bucketName}} 
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div v-else-if="itemsType=='Quantity'">
+                    <p v-if="displayCount == 1 && totalValues!=''" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount,totalValues)"></p>
+                    <p v-if="displayCount == 0"><i v-html="displayMessage(websiteText.filterTimeout||fallbackText.filterTimeout, currentFilter.valueLabel)"></i></p>
+                    <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
+                    <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel)"></p>
+                    <ul v-if="displayCount == 1">
+                        <li v-if="appliedQuantities.findIndex(filter => filter.filterValue == currentFilter.value) ==-1">
+                            <i>
+                                <a 
+                                    :href="noValueURL" 
+                                    onclick="return false;" 
+                                    @click.exact="applyQuantityRange('novalue')" 
+                                    @click.ctrl="window.open(noValueURL, '_blank')">
+                                    {{ websiteText.noValue||fallbackText.noValue }}
+                                </a>
+                            </i>
+                        </li>
+                        <li v-for="item in items" v-if="item.numValues>0">
+                            <a 
+                                :href="item.href" 
+                                onclick="return false;" 
+                                @click.exact="applyQuantityRange(item)" 
+                                @click.ctrl="window.open(item.href, '_blank')">
+                                {{item.bucketName}} {{item.unit}} 
+                            </a> 
+                            <span class="result-count">
+                                {{ displayPluralCount(websiteText.results||fallbackText.results,item.numValues) }}
+                            <span>
+                        </li>
+                    </ul>
+                    <ul v-if="displayCount == 0">
+                        <li>
+                            <i>
+                                <a 
+                                    :href="noValueURL" 
+                                    onclick="return false;" 
+                                    @click.exact="applyQuantityRange('novalue')" 
+                                    @click.ctrl="window.open(noValueURL, '_blank'>
+                                    {{ websiteText.noValue||fallbackText.noValue }}
+                                </a>
+                            </i>
+                        </li>
+                        <li v-for="item in items">
+                            <a 
+                                :href="item.href" 
+                                onclick="return false;" 
+                                @click.exact="applyQuantityRange(item)" 
+                                @click.ctrl="window.open(item.href, '_blank')">
+                                {{item.bucketName}} 
+                            </a>
+                        </li>
+                    </ul>
+                </div>
                 <div v-if="items.length>resultsPerPage && itemsType=='Item'" style="text-align: center">
                     <a v-if="currentPage>1" @click="currentPage>1?currentPage--:''">&lt;</a>
                     <input 
@@ -83,200 +277,9 @@ filtervalues = Vue.component('filter-values', {
                     {{items.length<1000000?" / " + Math.ceil(items.length/resultsPerPage):''}}
                     <a v-if="currentPage<items.length/resultsPerPage" @click="currentPage<items.length/resultsPerPage?currentPage++:''">&gt;</a>
                 </div>
-                <ul>
-                    <li v-if="appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) ==-1">
-                        <i>
-                            <a 
-                                :href="noValueURL" 
-                                onclick="return false;" 
-                                @click.exact="applyFilter('novalue')" 
-                                @click.ctrl="window.open(noValueURL, '_blank')">
-                                {{ websiteText.noValue||fallbackText.noValue }}
-                            </a>
-                        </i>
-                    </li>
-                    <li v-for="(item,index) in items" v-if="index < currentPage*resultsPerPage && index >= (currentPage-1)*resultsPerPage">
-                        <a 
-                            :href="item.href" 
-                            onclick="return false;" 
-                            @click.exact="applyFilter(item)" 
-                            @click.ctrl="window.open(item.href, '_blank')">
-                            {{item.valueLabel.value}}
-                        </a> 
-                        <span class="result-count">
-                            {{ displayPluralCount(websiteText.results||fallbackText.results,item.count.value) }}
-                        <span>
-                    </li>
-                </ul>
+                <div><a @click="exportCSV">Export as CSV</a></div>
             </div>
-            <div v-else-if="itemsType=='ItemFail'">
-                <p><i v-html="displayMessage(websiteText.filterTimeout||fallbackText.filterTimeout, currentFilter.valueLabel)"></i></p>
-                <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
-                <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel)"></p>
-                <ul>
-                    <li>
-                        <i>
-                            <a 
-                            :href="noValueURL" 
-                            onclick="return false;" 
-                            @click.exact="applyFilter('novalue')" 
-                            @click.ctrl="window.open(noValueURL, '_blank')">
-                            {{ websiteText.noValue||fallbackText.noValue }}
-                        </i>
-                    </li>
-                    <li v-for="item in items">
-                        <a 
-                            :href="item.href" 
-                            onclick="return false;" 
-                            @click.exact="applyFilter(item)" 
-                            @click.ctrl="window.open(item.href, '_blank')">
-                            {{item.valueLabel.value}}
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <div v-else-if="itemsType=='Time'">
-                <p v-if="totalValues!=''" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount,totalValues)"></p>
-                <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
-                <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel)"></p>
-                <ul v-if="displayCount == 1">
-                    <li v-if="appliedRanges.findIndex(filter => filter.filterValue == currentFilter.value) ==-1">
-                        <i>
-                            <a 
-                                :href="noValueURL" 
-                                onclick="return false;" 
-                                @click.exact="applyRange('novalue')" 
-                                @click.ctrl="window.open(noValueURL, '_blank')">
-                                {{ websiteText.noValue||fallbackText.noValue }}
-                            </a>
-                        </i>
-                    </li>
-                    <li v-for="item in items" v-if="item.numValues>0">
-                        <a 
-                            :href="item.href" 
-                            onclick="return false;" 
-                            @click.exact="applyRange(item)" 
-                            @click.ctrl="window.open(item.href, '_blank')">
-                            {{item.bucketName}} 
-                        </a> 
-                        <span class="result-count">
-                            {{ displayPluralCount(websiteText.results||fallbackText.results,item.numValues) }}
-                        <span>
-                    </li>
-                </ul>
-                <ul v-if="displayCount == 0">
-                    <li>
-                        <i>
-                            <a 
-                                :href="noValueURL" 
-                                onclick="return false;" 
-                                @click.exact="applyFilter('novalue')" 
-                                @click.ctrl="window.open(noValueURL, '_blank')">
-                                {{ websiteText.noValue||fallbackText.noValue }}
-                            </a>
-                        </i>
-                    </li>
-                    <li v-for="item in items">
-                        <a 
-                            :href="item.href" 
-                            onclick="return false;" 
-                            @click.exact="applyRange(item)" 
-                            @click.ctrl="window.open(item.href, '_blank')">
-                            {{item.bucketName}} 
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <div v-else-if="itemsType=='TimeFail'">
-                <p><i v-html="displayMessage(websiteText.filterTimeout||fallbackText.filterTimeout, currentFilter.valueLabel)"></i></p>
-                <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
-                <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel)"></p>
-                <ul>
-                    <li>
-                        <i>
-                            <a 
-                                :href="noValueURL" 
-                                onclick="return false;" 
-                                @click.exact="applyFilter('novalue')" 
-                                @click.ctrl="window.open(noValueURL, '_blank')">
-                                {{ websiteText.noValue||fallbackText.noValue }}
-                            </a>
-                            </i>
-                        </li>
-                    <li v-for="item in items">
-                        <a 
-                            :href="item.href" 
-                            onclick="return false;" 
-                            @click.exact="applyRange(item)" 
-                            @click.ctrl="window.open(item.href, '_blank')">
-                            {{item.bucketName}} 
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <div v-else-if="itemsType=='Quantity'">
-                <p v-if="displayCount == 1 && totalValues!=''" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount,totalValues)"></p>
-                <p v-if="displayCount == 0"><i v-html="displayMessage(websiteText.filterTimeout||fallbackText.filterTimeout, currentFilter.valueLabel)"></i></p>
-                <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
-                <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel)"></p>
-                <ul v-if="displayCount == 1">
-                    <li v-if="appliedQuantities.findIndex(filter => filter.filterValue == currentFilter.value) ==-1">
-                        <i>
-                            <a 
-                                :href="noValueURL" 
-                                onclick="return false;" 
-                                @click.exact="applyQuantityRange('novalue')" 
-                                @click.ctrl="window.open(noValueURL, '_blank')">
-                                {{ websiteText.noValue||fallbackText.noValue }}
-                            </a>
-                        </i>
-                    </li>
-                    <li v-for="item in items" v-if="item.numValues>0">
-                        <a 
-                            :href="item.href" 
-                            onclick="return false;" 
-                            @click.exact="applyQuantityRange(item)" 
-                            @click.ctrl="window.open(item.href, '_blank')">
-                            {{item.bucketName}} {{item.unit}} 
-                        </a> 
-                        <span class="result-count">
-                            {{ displayPluralCount(websiteText.results||fallbackText.results,item.numValues) }}
-                        <span>
-                    </li>
-                </ul>
-                <ul v-if="displayCount == 0">
-                    <li>
-                        <i>
-                            <a 
-                                :href="noValueURL" 
-                                onclick="return false;" 
-                                @click.exact="applyQuantityRange('novalue')" 
-                                @click.ctrl="window.open(noValueURL, '_blank'>
-                                {{ websiteText.noValue||fallbackText.noValue }}
-                            </a>
-                        </i>
-                    </li>
-                    <li v-for="item in items">
-                        <a 
-                            :href="item.href" 
-                            onclick="return false;" 
-                            @click.exact="applyQuantityRange(item)" 
-                            @click.ctrl="window.open(item.href, '_blank')">
-                            {{item.bucketName}} 
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <div v-if="items.length>resultsPerPage && itemsType=='Item'" style="text-align: center">
-                <a v-if="currentPage>1" @click="currentPage>1?currentPage--:''">&lt;</a>
-                <input 
-                    v-model.lazy="currentPage" 
-                    type="text" 
-                    style="margin-bottom: 15px;width: 48px;text-align: center"> 
-                {{items.length<1000000?" / " + Math.ceil(items.length/resultsPerPage):''}}
-                <a v-if="currentPage<items.length/resultsPerPage" @click="currentPage<items.length/resultsPerPage?currentPage++:''">&gt;</a>
-            </div>
-            <a :href="query">{{ websiteText.viewQuery||fallbackText.viewQuery }}</a>
+            <div><a :href="query">{{ websiteText.viewQuery||fallbackText.viewQuery }}</a></div>
         </div>
     </div>`,
     methods: {
@@ -326,6 +329,26 @@ filtervalues = Vue.component('filter-values', {
         removeQuantity(quantity) {
             this.$emit("remove-quantity", quantity, 'filter-values');
         },
+        exportCSV() {
+            document.getElementsByTagName("body")[0].style.cursor = "progress";
+            let csvHeader = encodeURI("data:text/csv;charset=utf-8,");
+            if (this.itemsType == 'Item' || this.itemsType == 'ItemFail'){
+                var csvContent = this.items.map(e => e.value.value.split('/').slice(-1)[0] + "," + e.valueLabel.value).join("\n");
+            }
+            else if (this.itemsType == 'Time' || this.itemsType == 'TimeFail') {
+                var csvContent = this.items.map(e => e.bucketName).join("\n");
+            }
+            else if (this.itemsType == 'Quantity') {
+                var csvContent = this.items.map(e => "'" + e.bucketName + "' " + e.unit).join("\n");
+            }
+            let downloadURI = csvHeader + encodeURIComponent(csvContent);
+            var link = document.createElement("a");
+            link.setAttribute("href", downloadURI);
+            link.setAttribute("download", "data.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.getElementsByTagName("body")[0].style.cursor = "default";
+        }
     },
     mounted() {
         var sparqlQuery = "SELECT DISTINCT ?value ?valueLabel ?class ?classLabel ?property WHERE {\n" +
@@ -382,7 +405,7 @@ filtervalues = Vue.component('filter-values', {
             }
             else if(this.appliedRanges[i].parentFilterValue){
                 timePrecision = getTimePrecision(this.appliedRanges[i].valueLL, this.appliedRanges[i].valueUL, 1)
-                filterRanges += "{#date range " + i + "\n?item wdt:P166 ?temp" + i + ".\n"+
+                filterRanges += "{#date range " + i + "\n?item wdt:" + this.appliedRanges[i].parentFilterValue+ " ?temp" + i + ".\n"+
                     "?temp" + i + " (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
                     "?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
                     "?timenode" + i + " wikibase:timePrecision ?timeprecision" + i + ".\n" +

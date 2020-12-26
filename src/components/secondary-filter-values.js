@@ -7,9 +7,9 @@ secondayFilterValues = Vue.component('secondary-filters', {
             fullPropertyValues: [],
             displayCount: 1,
             currentPage: 1,
-            filterProperty: "",
-            query: "#",
-            noValueURL: "",
+            filterProperty: '',
+            query: '#',
+            noValueURL: ''
         }
     },
     template: `
@@ -170,7 +170,8 @@ secondayFilterValues = Vue.component('secondary-filters', {
                 {{items.length<1000000?" / " + Math.ceil(items.length/resultsPerPage):''}}
                 <a v-if="currentPage<items.length/resultsPerPage" @click="currentPage<items.length/resultsPerPage?currentPage++:''">&gt;</a>
             </div>
-            <a :href="query">{{ websiteText.viewQuery||fallbackText.viewQuery }}</a>
+            <div><a :href="query">{{ websiteText.viewQuery||fallbackText.viewQuery }}</a></div>
+            <div><a @click="exportCSV">Export as CSV</a></div>
         </div>
     </div>`,
     methods: {
@@ -207,7 +208,27 @@ secondayFilterValues = Vue.component('secondary-filters', {
         },
         removeQuantity(quantity) {
             this.$emit("remove-quantity", quantity, 'secondary-filter-values');
-        }, 
+        },
+        exportCSV() {
+            document.getElementsByTagName("body")[0].style.cursor = "progress";
+            let csvHeader = encodeURI("data:text/csv;charset=utf-8,");
+            if (this.itemsType == 'Item' || this.itemsType == 'ItemFail') {
+                var csvContent = this.items.map(e => e.value.value.split('/').slice(-1)[0] + "," + e.valueLabel.value).join("\n");
+            }
+            else if (this.itemsType == 'Time' || this.itemsType == 'TimeFail') {
+                var csvContent = this.items.map(e => e.bucketName).join("\n");
+            }
+            else if (this.itemsType == 'Quantity') {
+                var csvContent = this.items.map(e => "'" + e.bucketName + "' " + e.unit).join("\n");
+            }
+            let downloadURI = csvHeader + encodeURIComponent(csvContent);
+            var link = document.createElement("a");
+            link.setAttribute("href", downloadURI);
+            link.setAttribute("download", "data.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.getElementsByTagName("body")[0].style.cursor = "default";
+        } 
     },
     mounted() {
         var filterString = "";
@@ -232,7 +253,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
             }
             else if (this.appliedRanges[i].parentFilterValue) {
                 timePrecision = getTimePrecision(this.appliedRanges[i].valueLL, this.appliedRanges[i].valueUL, 1)
-                filterRanges += "{#date range " + i + "\n?item wdt:P166 ?temp" + i + ".\n" +
+                filterRanges += "{#date range " + i + "\n?item wdt:" + this.appliedRanges[i].parentFilterValue + " ?temp" + i + ".\n" +
                     "?temp" + i + " (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
                     "?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
                     "?timenode" + i + " wikibase:timePrecision ?timeprecision" + i + ".\n" +
