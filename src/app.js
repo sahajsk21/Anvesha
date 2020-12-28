@@ -19,7 +19,8 @@ var app = new Vue({
         filterscomponentKey: 0,
         total: '',
         siteText: '',
-        fallbackSiteText: ''
+        fallbackSiteText: '',
+        format: ''
     },
     mounted: function () {
         // History logging
@@ -574,6 +575,9 @@ var app = new Vue({
     computed: {
         view: function () {
             if (this.page == "") {
+                if (urlParams.has("format")) {
+                    this.format = urlParams.get("format")
+                }
                 if (!urlParams.has("c") && !urlParams.has("view")) {
                     return 'class-filter'
                 }

@@ -1,5 +1,5 @@
 viewallitems = Vue.component('view-all-items', {
-    props: ['websiteText', 'fallbackText', 'classValue', 'classLabel', 'totalValues', 'appliedFilters', 'appliedRanges', 'appliedQuantities'],
+    props: ['websiteText', 'fallbackText', 'classValue', 'classLabel', 'totalValues', 'appliedFilters', 'appliedRanges', 'appliedQuantities', 'format'],
     data() {
         return {
             filtersCount: -1,
@@ -298,6 +298,11 @@ viewallitems = Vue.component('view-all-items', {
             }
         }
         this.sparqlParameters.push(filterString, filterRanges, filterQuantities, noValueString, maxString, constraintString);
-        this.displayData();
+        if(this.format=='csv'){
+            this.exportCSV();
+        }
+        else{
+            this.displayData();
+        }
     }
 })

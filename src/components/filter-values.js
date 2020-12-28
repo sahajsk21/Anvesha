@@ -1,5 +1,5 @@
 filtervalues = Vue.component('filter-values', {
-    props: ['websiteText', 'fallbackText', 'classValue', 'classLabel', 'currentFilter', 'totalValues', 'appliedFilters', 'appliedRanges', 'appliedQuantities'],
+    props: ['websiteText', 'fallbackText', 'classValue', 'classLabel', 'currentFilter', 'totalValues', 'appliedFilters', 'appliedRanges', 'appliedQuantities', 'format'],
     data() {
         return {
             items: [],
@@ -840,6 +840,10 @@ filtervalues = Vue.component('filter-values', {
                                 })
 
                         })
+                }
+                // Download csv directly
+                if (this.format == 'csv') {
+                    this.exportCSV();
                 }
             })
     }

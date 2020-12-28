@@ -40,7 +40,8 @@
                 :key="allItemscomponentKey"
                 :applied-filters="appliedFilters"
                 :applied-ranges="appliedRanges"
-                :applied-quantities="appliedQuantities">
+                :applied-quantities="appliedQuantities"
+                :format="format">
             </view-all-items>
 
             <filters-view 
@@ -81,7 +82,8 @@
                 :current-filter="currentFilter"
                 :applied-filters="appliedFilters"
                 :applied-ranges="appliedRanges"
-                :applied-quantities="appliedQuantities">
+                :applied-quantities="appliedQuantities"
+                :format="format">
             </filter-values>
 
             <secondary-filters 
@@ -103,7 +105,8 @@
                 :secondary-filter="secondaryFilter"
                 :applied-filters="appliedFilters"
                 :applied-ranges="appliedRanges"
-                :applied-quantities="appliedQuantities">
+                :applied-quantities="appliedQuantities"
+                :format="format">
             </secondary-filters>
 
             <subclass-view

@@ -1,5 +1,5 @@
 secondayFilterValues = Vue.component('secondary-filters', {
-    props: ['websiteText', 'fallbackText', 'classValue', 'classLabel', 'secondaryFilter', 'currentFilter', 'totalValues', 'appliedFilters', 'appliedRanges', 'appliedQuantities'],
+    props: ['websiteText', 'fallbackText', 'classValue', 'classLabel', 'secondaryFilter', 'currentFilter', 'totalValues', 'appliedFilters', 'appliedRanges', 'appliedQuantities', 'format'],
     data() {
         return {
             items: [],
@@ -694,6 +694,10 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                 })
 
                         })
+                }
+                // Download csv directly
+                if (this.format == 'csv') {
+                    this.exportCSV();
                 }
             })
     }
