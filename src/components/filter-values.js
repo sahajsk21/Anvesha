@@ -8,7 +8,7 @@ filtervalues = Vue.component('filter-values', {
             displayCount: 1,
             currentPage: 1,
             filterProperty: '',
-            query: '',
+            query: '#',
             noValueURL: '',
             secondaryFilters:[],
             secondaryFiltersCount: -1,
@@ -333,13 +333,13 @@ filtervalues = Vue.component('filter-values', {
             document.getElementsByTagName("body")[0].style.cursor = "progress";
             let csvHeader = encodeURI("data:text/csv;charset=utf-8,");
             if (this.itemsType == 'Item' || this.itemsType == 'ItemFail'){
-                var csvContent = this.items.map(e => e.value.value.split('/').slice(-1)[0] + "," + e.valueLabel.value).join("\n");
+                var csvContent = this.items.map(e => e.value.value.split('/').slice(-1)[0] + "," + `\"${e.valueLabel.value}\"` + (this.displayCount == 1 ? "," + e.count.value : '')).join("\n");
             }
             else if (this.itemsType == 'Time' || this.itemsType == 'TimeFail') {
-                var csvContent = this.items.map(e => e.bucketName).join("\n");
+                var csvContent = this.items.map(e => `\"${e.bucketName}\" ` + (this.displayCount == 1 ? "," + e.numValues : '')).join("\n");
             }
             else if (this.itemsType == 'Quantity') {
-                var csvContent = this.items.map(e => "'" + e.bucketName + "' " + e.unit).join("\n");
+                var csvContent = this.items.map(e => `\"${e.bucketName}\" ` + e.unit + (this.displayCount == 1 ? "," + e.numValues : '')).join("\n");
             }
             let downloadURI = csvHeader + encodeURIComponent(csvContent);
             var link = document.createElement("a");
@@ -351,6 +351,12 @@ filtervalues = Vue.component('filter-values', {
         }
     },
     mounted() {
+        /* 
+         Get linked filters realated to current filter using value type constraint.
+         Exclude all filters with property types other than Time, Quantity and Item. 
+         P2302: Property Constraint
+         P2308: Class qualifier
+        */
         var sparqlQuery = "SELECT DISTINCT ?value ?valueLabel ?class ?classLabel ?property WHERE {\n" +
             "wd:" + this.currentFilter.value + " p:P2302 ?constraint_statement.\n" +
             "?constraint_statement pq:P2308 ?class.\n" +
@@ -383,6 +389,7 @@ filtervalues = Vue.component('filter-values', {
                 }
             })
 
+        // Convert the applied filters/time ranges/quantities into SPARQL equivalents
         var filterString = "";
         var noValueString = "";
         for (let i = 0; i < this.appliedFilters.length; i++) {
@@ -421,12 +428,13 @@ filtervalues = Vue.component('filter-values', {
                     "FILTER(?timeprecision" + i + ">=" + timePrecision + ")\n}";
             }
             else {
+                // Overwrite the previous value apllied.
                 timePrecision = getTimePrecision(this.appliedRanges[i].valueLL, this.appliedRanges[i].valueUL,1)
                 timeString = "{#date range " + i +"\n?item (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode.\n" +
-                    "  ?timenode wikibase:timeValue ?time.\n" +
-                    "  ?timenode wikibase:timePrecision ?timeprecision.\n" +
-                    "  FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?time && ?time <= '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n" +
-                    "  FILTER(?timeprecision>=" + timePrecision + ")\n}";
+                    "?timenode wikibase:timeValue ?time.\n" +
+                    "?timenode wikibase:timePrecision ?timeprecision.\n" +
+                    "FILTER('" + this.appliedRanges[i].valueLL + "'^^xsd:dateTime <= ?time && ?time <= '" + this.appliedRanges[i].valueUL + "'^^xsd:dateTime).\n" +
+                    "FILTER(?timeprecision>=" + timePrecision + ")\n}";
             }
         }
         var filterQuantities = "";
@@ -462,26 +470,29 @@ filtervalues = Vue.component('filter-values', {
                     filterQuantities += "{#quantity range " + i +"\n?item (p:" + this.appliedQuantities[i].filterValue + "/psn:" + this.appliedQuantities[i].filterValue + ") ?amount" + i + ".\n" +
                         "  ?amount" + i + " wikibase:quantityAmount ?amountValue" + i + ".\n" +
                         "FILTER(" + this.appliedQuantities[i].valueUL + " >= ?amountValue" + i + " && ?amountValue" + i + " >" + this.appliedQuantities[i].valueLL + ")\n}"
-
                 }
             }
         }
+        // Get the property type for current filter
         sparqlQuery = "SELECT ?property WHERE {\n" +
             "  wd:" + this.currentFilter.value + " wikibase:propertyType ?property.\n" +
             "}";
-        const fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
-        let vm = this;
+        var fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+        var vm = this;
         axios.get(fullUrl)
             .then((response) => {
                 if (response.data['results']['bindings'][0].property.value.split("#")[1] == "Time") {
+                    // Time property type
+                    // Set the URL parameters for href attribute, i.e., only for display purpose. 
                     var q = window.location.search;
                     parameters = new URLSearchParams(q)
                     parameters.delete("cf")
                     parameters.delete("sf")
-                    parameters.set("r." + this.currentFilter.value, "novalue")
-                    this.noValueURL = window.location.pathname + "?" + parameters
+                    parameters.set("r." + vm.currentFilter.value, "novalue")
+                    vm.noValueURL = window.location.pathname + "?" + parameters
+                    
                     var sparqlQuery = "SELECT ?time WHERE {\n" +
-                        "?item wdt:" + instanceOf + " wd:" + this.classValue + ".\n" +
+                        "?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
                         filterString +
                         filterRanges +
                         timeString +
@@ -489,41 +500,48 @@ filtervalues = Vue.component('filter-values', {
                         noValueString +
                         "}\n" +
                         "ORDER by ?time";
-                    this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
-                    const fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+                    vm.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
+                    fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
                     axios.get(fullUrl)
                         .then(response => {
                             if (response.data['results']['bindings'].length) {
                                 arr = generateDateBuckets(response.data['results']['bindings'])
+                                // Set the href parameter of each bucket.
                                 for (var i = 0; i < arr.length; i++) {
                                     var q = window.location.search;
                                     parameters = new URLSearchParams(q)
                                     parameters.delete("cf")
                                     parameters.delete("sf")
-                                    if (arr[i].size == 1) parameters.set("r." + this.currentFilter.value, arr[i].bucketLL.year + "~" + arr[i].bucketUL.year)
-                                    else if (arr[i].size == 2) parameters.set("r." + this.currentFilter.value, arr[i].bucketLL.year)
-                                    else if (arr[i].size == 3) parameters.set("r." + this.currentFilter.value, arr[i].bucketLL.year + "-" + arr[i].bucketLL.month)
-                                    else if (arr[i].size == 4) parameters.set("r." + this.currentFilter.value, arr[i].bucketLL.year + "-" + arr[i].bucketLL.month + "-" + arr[i].bucketLL.day)
-                                    else if (arr[i].size == 5) parameters.set("r." + this.currentFilter.value, arr[i].bucketLL.year + "-" + arr[i].bucketLL.month + "-" + arr[i].bucketLL.day)
+                                    if (arr[i].size == 1) parameters.set("r." + vm.currentFilter.value, arr[i].bucketLL.year + "~" + arr[i].bucketUL.year)
+                                    else if (arr[i].size == 2) parameters.set("r." + vm.currentFilter.value, arr[i].bucketLL.year)
+                                    else if (arr[i].size == 3) parameters.set("r." + vm.currentFilter.value, arr[i].bucketLL.year + "-" + arr[i].bucketLL.month)
+                                    else if (arr[i].size == 4) parameters.set("r." + vm.currentFilter.value, arr[i].bucketLL.year + "-" + arr[i].bucketLL.month + "-" + arr[i].bucketLL.day)
+                                    else if (arr[i].size == 5) parameters.set("r." + vm.currentFilter.value, arr[i].bucketLL.year + "-" + arr[i].bucketLL.month + "-" + arr[i].bucketLL.day)
                                     arr[i]['href'] = window.location.pathname + "?" + parameters
                                 }
                                 if (arr.length) {
                                     vm.items = arr;
-                                    this.itemsType = 'Time'
+                                    vm.itemsType = 'Time'
+                                    vm.displayCount = 1
                                 }
                                 else {
-                                    this.itemsType = 'Additionalempty'
+                                    vm.itemsType = 'Additionalempty'
                                 }
                             }
                             else {
+                                // Check if "No value" is to be displayed or not.
                                 index = vm.appliedRanges.findIndex(filter => filter.filterValue == vm.currentFilter.value)
-                                if (index = -1) this.itemsType = "Additionalempty"
-                                else this.itemsType = 'Time'
+                                if (index == -1) vm.itemsType = "Additionalempty"
+                                else vm.itemsType = 'Time'
                             }
                         })
-                        .catch(error => {
-                            var sparqlQuery = "SELECT ?time WHERE{SELECT ?time WHERE {\n" +
-                                "  hint:Query hint:optimizer \"None\".\n" +
+                        .catch(_error => {
+                            /* 
+                             Gets fallback results in case the primary query fails or times out.
+                             Finds random time values and creates buckets.
+                            */
+                            sparqlQuery = "SELECT ?time WHERE{SELECT ?time WHERE {\n" +
+                                "hint:Query hint:optimizer \"None\".\n" +
                                 "?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
                                 filterString +
                                 "?item wdt:" + vm.currentFilter.value + " ?time.\n" +
@@ -533,11 +551,12 @@ filtervalues = Vue.component('filter-values', {
                                 "LIMIT " + resultsPerPage + "\n" +
                                 "}\n" +
                                 "ORDER BY ?time";
-                            const fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+                            fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
                             axios.get(fullUrl)
                                 .then(res => {
                                     if (res.data['results']['bindings'].length) {
                                         arr = generateDateBuckets(res.data['results']['bindings'], vm.currentFilter)
+                                        // Set the href parameter of each bucket.
                                         for (var i = 0; i < arr.length; i++) {
                                             var q = window.location.search;
                                             parameters = new URLSearchParams(q)
@@ -551,214 +570,241 @@ filtervalues = Vue.component('filter-values', {
                                             arr[i]['href'] = window.location.pathname + "?" + parameters
                                         }
                                         vm.items = arr
-                                        vm.displayCount = 0
                                         vm.itemsType = 'Time'
+                                        vm.displayCount = 0
                                     }
                                     else {
                                         vm.itemsType = 'TimeFail'
                                     }
-
-                                }
-                                )
-                                .catch(error => {
+                                })
+                                .catch(_error => {
                                     vm.itemsType = 'Error'
                                 })
                         })
                 }
                 else if (response.data['results']['bindings'][0].property.value.split("#")[1] == "Quantity") {
+                    // Quantity property type
+                    // Set the URL parameters for href attribute, i.e., only for display purpose. 
                     var q = window.location.search;
                     parameters = new URLSearchParams(q)
                     parameters.delete("cf")
                     parameters.delete("sf")
-                    parameters.set("q." + this.currentFilter.value, "novalue")
-                    this.noValueURL = window.location.pathname + "?" + parameters
+                    parameters.set("q." + vm.currentFilter.value, "novalue")
+                    vm.noValueURL = window.location.pathname + "?" + parameters
+                    /* 
+                     Gets items and their normalized amount/quantity.
+                     Query for quantities with units. 
+                    */
                     var sparqlQuery = "SELECT ?item ?amount WHERE {\n" +
-                        "    ?item wdt:" + instanceOf + " wd:" + this.classValue + ".\n" +
+                        "?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
                         filterString +
-                        "    ?item (p:" + this.currentFilter.value + "/psn:" + this.currentFilter.value + ") ?v.\n" +
-                        "    ?v wikibase:quantityAmount ?amount.\n" +
+                        "?item (p:" + vm.currentFilter.value + "/psn:" + vm.currentFilter.value + ") ?v.\n" +
+                        "?v wikibase:quantityAmount ?amount.\n" +
                         filterRanges +
                         filterQuantities +
                         noValueString +
                         "}\n" +
                         "ORDER BY ?amount";
-                    this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
-                    const fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+                    vm.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
+                    var fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
                     axios.get(fullUrl)
                         .then(response => (response.data['results']['bindings'].length ? response : ''))
-                        .then(
-                            function (response) {
+                        .then((response) => {
                                 if (response == "") {
-                                    var sparqlQuery = "SELECT ?amount WHERE {\n" +
-                                        "    ?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
+                                    // If the above query returns null then try for un-normalized values.
+                                    sparqlQuery = "SELECT ?amount WHERE {\n" +
+                                        "?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
                                         filterString +
-                                        "    ?item (p:" + vm.currentFilter.value + "/psv:" + vm.currentFilter.value + ") ?v.\n" +
-                                        "    ?v wikibase:quantityAmount ?amount.\n" +
+                                        "?item (p:" + vm.currentFilter.value + "/psv:" + vm.currentFilter.value + ") ?v.\n" +
+                                        "?v wikibase:quantityAmount ?amount.\n" +
                                         filterRanges +
                                         filterQuantities +
                                         noValueString +
                                         "}\n" +
                                         "ORDER BY ?amount";
                                     vm.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
-                                    const fullUr = sparqlEndpoint + encodeURIComponent(sparqlQuery);
-                                    axios.get(fullUr)
+                                    fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+                                    axios.get(fullUrl)
                                         .then(res => {
                                             if (res.data['results']['bindings'].length) {
-                                                arr = generateFilterValuesFromNumbers(res.data['results']['bindings'])
+                                                arr = generateFilterValuesFromNumbers(res.data['results']['bindings']);
+                                                // Set the href parameter of each bucket.
                                                 for (var i = 0; i < arr.length; i++) {
                                                     var q = window.location.search;
-                                                    parameters = new URLSearchParams(q)
-                                                    parameters.delete("cf")
-                                                    parameters.delete("sf")
-                                                    parameters.set("q." + vm.currentFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + (arr[i].unit != "" ? ("~" + arr[i].unit) : ""))
-                                                    arr[i]['href'] = window.location.pathname + "?" + parameters
+                                                    parameters = new URLSearchParams(q);
+                                                    parameters.delete("cf");
+                                                    parameters.delete("sf");
+                                                    parameters.set("q." + vm.currentFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + (arr[i].unit != "" ? ("~" + arr[i].unit) : ""));
+                                                    arr[i]['href'] = window.location.pathname + "?" + parameters;
                                                 }
-                                                vm.items = arr
-                                                vm.itemsType = 'Quantity'
+                                                vm.items = arr;
+                                                vm.itemsType = 'Quantity';
+                                                vm.displayCount = 1;
                                             }
                                             else {
-                                                index = vm.appliedQuantities.findIndex(filter => filter.filterValue == vm.currentFilter.value)
-                                                if (index != -1) {
-                                                    vm.itemsType = "Additionalempty"
-                                                }
-                                                else {
-                                                    vm.itemsType = 'Quantity'
-                                                }
+                                                // Check if "No value" is to be displayed or not.
+                                                index = vm.appliedQuantities.findIndex(filter => filter.filterValue == vm.currentFilter.value);
+                                                if (index != -1) vm.itemsType = "Additionalempty";
+                                                else vm.itemsType = 'Quantity';
                                             }
                                         })
-                                        .catch(error => {
+                                        .catch(_error => {
+                                            /*
+                                             Gets fallback results in case the primary query fails or times out.
+                                             Finds random quantity amounts and creates buckets.
+                                            */
                                             sparqlQuery = "SELECT ?amount WHERE\n" +
                                                 "{\n" +
-                                                "  SELECT ?amount WHERE {\n" +
-                                                "    hint:Query hint:optimizer \"None\".\n" +
-                                                "    ?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
-                                                "    ?item (p:" + vm.currentFilter.value + "/psv:" + vm.currentFilter.value + ") ?v.\n" +
-                                                "    ?v wikibase:quantityAmount ?amount.\n" +
+                                                "SELECT ?amount WHERE {\n" +
+                                                "hint:Query hint:optimizer \"None\".\n" +
+                                                "?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
+                                                "?item (p:" + vm.currentFilter.value + "/psv:" + vm.currentFilter.value + ") ?v.\n" +
+                                                "?v wikibase:quantityAmount ?amount.\n" +
                                                 "}\n" +
                                                 "LIMIT " + resultsPerPage + "\n" +
                                                 "}\n" +
                                                 "ORDER BY ?amount";
-                                            const fullUr = sparqlEndpoint + encodeURIComponent(sparqlQuery);
-                                            axios.get(fullUr)
+                                            fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+                                            axios.get(fullUrl)
                                                 .then(r => {
                                                     if (r.data['results']['bindings'].length) {
-                                                        arr = generateFilterValuesFromNumbers(r.data['results']['bindings'])
+                                                        arr = generateFilterValuesFromNumbers(r.data['results']['bindings']);
+                                                        // Set the href parameter of each bucket.
                                                         for (var i = 0; i < arr.length; i++) {
                                                             var q = window.location.search;
-                                                            parameters = new URLSearchParams(q)
-                                                            parameters.delete("cf")
-                                                            parameters.delete("sf")
-                                                            parameters.set("q." + vm.currentFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + (arr[i].unit != "" ? ("~" + arr[i].unit) : ""))
-                                                            arr[i]['href'] = window.location.pathname + "?" + parameters
+                                                            parameters = new URLSearchParams(q);
+                                                            parameters.delete("cf");
+                                                            parameters.delete("sf");
+                                                            parameters.set("q." + vm.currentFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + (arr[i].unit != "" ? ("~" + arr[i].unit) : ""));
+                                                            arr[i]['href'] = window.location.pathname + "?" + parameters;
                                                         }
-                                                        vm.items = arr
+                                                        vm.items = arr;
+                                                        vm.displayCount = 0;
                                                     }
-                                                    vm.itemsType = 'Quantity'
-
+                                                    vm.itemsType = 'Quantity';
                                                 })
-                                                .catch(error => {
-                                                    vm.itemsType = 'Error'
-                                                })
-                                        })
+                                                .catch(_error => {
+                                                    vm.itemsType = 'Error';
+                                                });
+                                        });
                                 }
                                 else {
+                                    // Above query succeeds, i.e., quantities have units.
                                     firstItem = response.data['results']['bindings'][0].item.value.split("/").slice(-1)[0];
+                                    /*
+                                     Gets units for the results.
+                                     Since the unit of all quantities will be same
+                                     just find the unit of first item.
+                                    */
                                     var unitQuery = "SELECT ?unitLabel WHERE {\n" +
                                         "    wd:" + firstItem + " (p:" + vm.currentFilter.value + "/psn:" + vm.currentFilter.value + ") ?v.\n" +
                                         "    ?v wikibase:quantityAmount ?amount;\n" +
                                         "       wikibase:quantityUnit ?unit.\n" +
                                         "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }\n" +
                                         "}";
-                                    const url = sparqlEndpoint + encodeURIComponent(unitQuery);
-                                    axios.get(url)
+                                    fullUrl = sparqlEndpoint + encodeURIComponent(unitQuery);
+                                    axios.get(fullUrl)
                                         .then(res => {
                                             if (response.data['results']['bindings'].length) {
-                                                arr = generateFilterValuesFromNumbers(response.data['results']['bindings'], res.data['results']['bindings'][0].unitLabel.value)
+                                                arr = generateFilterValuesFromNumbers(response.data['results']['bindings'], res.data['results']['bindings'][0].unitLabel.value);
+                                                // Set the href parameter of each bucket.
                                                 for (var i = 0; i < arr.length; i++) {
                                                     var q = window.location.search;
-                                                    parameters = new URLSearchParams(q)
-                                                    parameters.delete("cf")
-                                                    parameters.delete("sf")
-                                                    parameters.set("quantity," + vm.currentFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + (arr[i].unit != "" ? ("~" + arr[i].unit) : ""))
-                                                    arr[i]['href'] = window.location.pathname + "?" + parameters
+                                                    parameters = new URLSearchParams(q);
+                                                    parameters.delete("cf");
+                                                    parameters.delete("sf");
+                                                    parameters.set("quantity," + vm.currentFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + (arr[i].unit != "" ? ("~" + arr[i].unit) : ""));
+                                                    arr[i]['href'] = window.location.pathname + "?" + parameters;
                                                 }
-                                                vm.items = arr
-                                                vm.itemsType = 'Quantity'
+                                                vm.items = arr;
+                                                vm.itemsType = 'Quantity';
+                                                vm.displayCount = 1;
                                             }
                                             else {
-                                                index = vm.appliedFilters.findIndex(filter => filter.filterValue == vm.currentFilter.value)
-                                                if (index = -1) this.itemsType = "Additionalempty"
-                                                else this.itemsType = 'Quantity'
+                                                // Check if "No value" is to be displayed or not.
+                                                index = vm.appliedFilters.findIndex(filter => filter.filterValue == vm.currentFilter.value);
+                                                if (index == -1)
+                                                    vm.itemsType = "Additionalempty";
+                                                else
+                                                    vm.itemsType = 'Quantity';
                                             }
                                         })
-                                        .catch(error => {
-                                            vm.itemsType = 'Error'
-                                        })
-
+                                        .catch(_error => {
+                                            vm.itemsType = 'Error';
+                                        });
                                 }
-                            }
-                        )
-                        .catch(error => {
-                            sparqlQuery = "SELECT ?amount WHERE\n" +
-                                "{\n" +
-                                "  SELECT ?item ?amount WHERE {\n" +
-                                "  hint:Query hint:optimizer \"None\".\n" +
-                                "    ?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
-                                "    ?item (p:" + vm.currentFilter.value + "/psn:" + vm.currentFilter.value + ") ?v.\n" +
-                                "    ?v wikibase:quantityAmount ?amount.\n" +
-                                "}\n" +
-                                "LIMIT " + resultsPerPage + "\n" +
-                                "}\n" +
-                                "ORDER BY ?amount";
-                            this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
-                            const url = sparqlEndpoint + encodeURIComponent(sparqlQuery);
-                            axios.get(url)
-                                .then(res => {
-                                    if (vm.itemsType = 'Quantity') {
-                                        arr = generateFilterValuesFromNumbers(res.data['results']['bindings'])
-                                        for (var i = 0; i < arr.length; i++) {
-                                            var q = window.location.search;
-                                            parameters = new URLSearchParams(q)
-                                            parameters.delete("cf")
-                                            parameters.delete("sf")
-                                            parameters.set("q." + vm.currentFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + (arr[i].unit != "" ? ("~" + arr[i].unit) : ""))
-                                            arr[i]['href'] = window.location.pathname + "?" + parameters
+                            })
+                            .catch(_error => {
+                                /*
+                                    Gets fallback results in case the primary query fails or times out.
+                                    Finds random quantity amounts and creates buckets.
+                                */
+                                sparqlQuery = "SELECT ?amount WHERE\n" +
+                                    "{\n" +
+                                    "SELECT ?item ?amount WHERE {\n" +
+                                    "hint:Query hint:optimizer \"None\".\n" +
+                                    "?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
+                                    "?item (p:" + vm.currentFilter.value + "/psn:" + vm.currentFilter.value + ") ?v.\n" +
+                                    "?v wikibase:quantityAmount ?amount.\n" +
+                                    "}\n" +
+                                    "LIMIT " + resultsPerPage + "\n" +
+                                    "}\n" +
+                                    "ORDER BY ?amount";
+                                vm.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
+                                fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+                                axios.get(fullUrl)
+                                    .then(res => {
+                                        if (res.data['results']['bindings'].length) {
+                                            arr = generateFilterValuesFromNumbers(res.data['results']['bindings'])
+                                            // Set the href parameter of each bucket.
+                                            for (var i = 0; i < arr.length; i++) {
+                                                var q = window.location.search;
+                                                parameters = new URLSearchParams(q)
+                                                parameters.delete("cf")
+                                                parameters.delete("sf")
+                                                parameters.set("q." + vm.currentFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + (arr[i].unit != "" ? ("~" + arr[i].unit) : ""))
+                                                arr[i]['href'] = window.location.pathname + "?" + parameters
+                                            }
+                                            vm.items = arr
+                                            vm.displayCount = 0
                                         }
-                                        vm.items = arr
-                                        vm.displayCount = 0
-                                    }
-                                })
-                                .catch(error => {
-                                    vm.itemsType = 'Error'
-                                })
-                        })
+                                        vm.itemsType = 'Quantity'
+                                    })
+                                    .catch(_error => {
+                                        vm.itemsType = 'Error'
+                                    })
+                            })
                 }
                 else {
+                    // Item property type
+                    // Set the URL parameters for href attribute, i.e., only for display purpose. 
                     var q = window.location.search;
                     parameters = new URLSearchParams(q)
-                    parameters.set("f." + this.currentFilter.value, "novalue")
-                    this.noValueURL = window.location.pathname + "?" + parameters
+                    parameters.set("f." + vm.currentFilter.value, "novalue")
+                    vm.noValueURL = window.location.pathname + "?" + parameters
+                    // Gets items and their count. 
                     var sparqlQuery = "SELECT ?value ?valueLabel ?count WHERE {\n" +
-                        "  {\n" +
+                        "{\n" +
                         "SELECT ?value (COUNT(?value) AS ?count) WHERE {\n" +
-                        "  ?item wdt:" + instanceOf + " wd:" + this.classValue + ".\n" +
-                        " ?item wdt:" + this.currentFilter.value + " ?value.\n" +
+                        "?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
+                        "?item wdt:" + vm.currentFilter.value + " ?value.\n" +
                         filterString +
                         filterRanges +
                         filterQuantities +
                         noValueString +
                         "}\n" +
                         "GROUP BY ?value\n" +
-                        "  }\n" +
-                        "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
+                        "}\n" +
+                        "SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
                         "}\n" +
                         "ORDER BY DESC (?count)";
-                    this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
-                    const fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+                    vm.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
+                    var fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
                     axios.get(fullUrl)
                         .then(response => {
                             if (response.data['results']['bindings'].length) {
                                 arr = [...response.data['results']['bindings']]
+                                // Remove the already applied filter value.
                                 index = []
                                 for (let i = 0; i < vm.appliedFilters.length; i++) {
                                     if (vm.appliedFilters[i].filterValue == vm.currentFilter.value) {
@@ -767,75 +813,85 @@ filtervalues = Vue.component('filter-values', {
                                 }
                                 arr = arr.filter(x => !index.includes(x.value.value.split('/').slice(-1)[0]))
                                 if (arr.length > 0) {
-                                    this.itemsType = "Item"
-                                    this.items = arr
+                                    vm.itemsType = "Item"
+                                    vm.items = arr
+                                    vm.displayCount = 1
                                 }
                                 else {
-                                    this.itemsType = "Additionalempty"
+                                    vm.itemsType = "Additionalempty"
                                 }
+                                // Set the href parameter of each value.
                                 for (var i = 0; i < arr.length; i++) {
                                     var q = window.location.search;
                                     parameters = new URLSearchParams(q)
                                     parameters.delete("cf")
                                     parameters.delete("sf")
+                                    // Multiple values for a filter
                                     var existingValues = ""
                                     for (let i = 0; i < vm.appliedFilters.length; i++) {
-                                        if (vm.appliedFilters[i].filterValue == this.currentFilter.value) {
+                                        if (vm.appliedFilters[i].filterValue == vm.currentFilter.value) {
                                             existingValues = existingValues + vm.appliedFilters[i].value + "-";
                                         }
                                     }
-                                    parameters.set("f." + this.currentFilter.value, existingValues + arr[i].value.value.split('/').slice(-1)[0])
+                                    parameters.set("f." + vm.currentFilter.value, existingValues + arr[i].value.value.split('/').slice(-1)[0])
                                     arr[i]['href'] = window.location.pathname + "?" + parameters
                                 }
                             }
                             else {
+                                // Check if "No value" is to be displayed or not.
                                 index = vm.appliedFilters.findIndex(filter => filter.filterValue == vm.currentFilter.value)
-                                if (index = -1) this.itemsType = "Additionalempty"
-                                else this.itemsType = 'Item'
+                                if (index == -1) vm.itemsType = "Additionalempty"
+                                else vm.itemsType = 'Item'
                             }
                         })
-                        .catch(error => {
+                        .catch(_error => {
+                            /*
+                                Gets fallback results in case the primary query fails or times out.
+                                Finds random 300 values.
+                            */
                             sparqlQuery = "SELECT ?value ?valueLabel WHERE{\n" +
                                 "{\n" +
-                                "  SELECT DISTINCT ?value\n" +
+                                "SELECT DISTINCT ?value\n" +
                                 "{\n" +
-                                "  SELECT ?value WHERE {\n" +
-                                "    hint:Query hint:optimizer \"None\".\n" +
-                                "  ?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
-                                " ?item wdt:" + vm.currentFilter.value + " ?value.\n" +
+                                "SELECT ?value WHERE {\n" +
+                                "hint:Query hint:optimizer \"None\".\n" +
+                                "?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
+                                "?item wdt:" + vm.currentFilter.value + " ?value.\n" +
                                 filterString +
                                 filterRanges +
                                 filterQuantities +
                                 "}\n" +
                                 "LIMIT 300\n" +
-                                "      }\n" +
+                                "}\n" +
                                 "\n" +
                                 "}\n" +
-                                "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
-                                "  }\n" +
+                                "SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
+                                "}\n" +
                                 "ORDER BY ?valueLabel";
-                            const fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+                            fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
                             axios.get(fullUrl)
                                 .then((res) => {
-                                    vm.itemsType = "ItemFail"
+                                    // Sorting the results
                                     arr = [...res.data['results']['bindings']].slice(0).sort(
                                         function (a, b) {
                                             var x = a.valueLabel.value.toLowerCase();
                                             var y = b.valueLabel.value.toLowerCase();
                                             return x < y ? -1 : x > y ? 1 : 0;
-                                        }
-                                    )
+                                        })
+                                    // Set the href parameter of each value.
                                     for (var i = 0; i < arr.length; i++) {
                                         var q = window.location.search;
                                         parameters = new URLSearchParams(q)
                                         parameters.delete("cf")
                                         parameters.delete("sf")
-                                        parameters.set("f." + this.currentFilter.value, arr[i].value.value.split('/').slice(-1)[0])
+                                        parameters.set("f." + vm.currentFilter.value, arr[i].value.value.split('/').slice(-1)[0])
                                         arr[i]['href'] = window.location.pathname + "?" + parameters
                                     }
                                     vm.items = arr
+                                    vm.itemsType = "ItemFail"
+                                    vm.displayCount = 0
                                 })
-                                .catch(error => {
+                                .catch(_error => {
                                     vm.itemsType = 'Error'
                                 })
 

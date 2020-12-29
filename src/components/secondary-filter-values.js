@@ -39,11 +39,129 @@ secondayFilterValues = Vue.component('secondary-filters', {
                 <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
                 <p v-html="displayMessage(websiteText.filterError||fallbackText.filterError, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
             </div>
-            <div v-else-if="itemsType=='Item'">
-                <p v-if="totalValues!=''" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount,totalValues)"></p>
-                <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
-                <p v-if="appliedFilters.findIndex(filter => filter.filterValue == secondaryFilter.value) != -1" v-html="displayMessage(websiteText.selectAdditionalValue||fallbackText.selectAdditionalValue, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
-                <p v-else v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
+            <div v-else>
+                <div v-if="itemsType=='Item'">
+                    <p v-if="totalValues!=''" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount,totalValues)"></p>
+                    <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
+                    <p v-if="appliedFilters.findIndex(filter => filter.filterValue == secondaryFilter.value) != -1" v-html="displayMessage(websiteText.selectAdditionalValue||fallbackText.selectAdditionalValue, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
+                    <p v-else v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
+                    <div v-if="items.length>resultsPerPage && itemsType=='Item'" style="text-align: center">
+                        <a v-if="currentPage>1" @click="currentPage>1?currentPage--:''">&lt;</a>
+                        <input 
+                            v-model.lazy="currentPage" 
+                            type="text" 
+                            style="margin-bottom: 15px;width: 48px;text-align: center"> 
+                        {{items.length<1000000?" / " + Math.ceil(items.length/resultsPerPage):''}}
+                        <a v-if="currentPage<items.length/resultsPerPage" @click="currentPage<items.length/resultsPerPage?currentPage++:''">&gt;</a>
+                    </div>
+                    <ul>
+                        <li v-for="(item,index) in items" v-if="index < currentPage*resultsPerPage && index >= (currentPage-1)*resultsPerPage">
+                            <a 
+                                :href="item.href" 
+                                onclick="return false;" 
+                                @click.exact="applyFilter(item)" 
+                                @click.ctrl="window.open(item.href, '_blank')">
+                                {{item.valueLabel.value}}
+                            </a> 
+                            <span class="result-count">
+                                {{ displayPluralCount(websiteText.results||fallbackText.results,item.count.value) }}
+                            <span>
+                        </li>
+                    </ul>
+                </div>
+                <div v-else-if="itemsType=='ItemFail'">
+                    <p><i v-html="displayMessage(websiteText.filterTimeout||fallbackText.filterTimeout, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></i></p>
+                    <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
+                    <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
+                    <ul>
+                        <li v-for="item in items">
+                            <a 
+                                :href="item.href" 
+                                onclick="return false;" 
+                                @click.exact="applyFilter(item)" 
+                                @click.ctrl="window.open(item.href, '_blank')">
+                                {{item.valueLabel.value}}
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div v-else-if="itemsType=='Time'">
+                    <p v-if="totalValues!=''" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount,totalValues)"></p>
+                    <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
+                    <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
+                    <ul v-if="displayCount == 1">
+                        <li v-for="item in items" v-if="item.numValues>0">
+                            <a 
+                                :href="item.href" 
+                                onclick="return false;" 
+                                @click.exact="applyRange(item)" 
+                                @click.ctrl="window.open(item.href, '_blank')">
+                                {{item.bucketName}} 
+                            </a> 
+                            <span class="result-count">
+                                {{ displayPluralCount(websiteText.results||fallbackText.results,item.numValues) }}
+                            <span>
+                        </li>
+                    </ul>
+                    <ul v-if="displayCount == 0">
+                        <li v-for="item in items">
+                            <a 
+                                :href="item.href" 
+                                onclick="return false;" 
+                                @click.exact="applyRange(item)" 
+                                @click.ctrl="window.open(item.href, '_blank')">
+                                {{item.bucketName}} 
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div v-else-if="itemsType=='TimeFail'">
+                    <p><i v-html="displayMessage(websiteText.filterTimeout||fallbackText.filterTimeout, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></i></p>
+                    <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
+                    <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
+                    <ul>
+                        <li v-for="item in items">
+                            <a 
+                                :href="item.href" 
+                                onclick="return false;" 
+                                @click.exact="applyRange(item)" 
+                                @click.ctrl="window.open(item.href, '_blank')">
+                                {{item.bucketName}} 
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div v-else-if="itemsType=='Quantity'">
+                    <p v-if="(displayCount == 1) && totalValues!=''" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount,totalValues)"></p>
+                    <p v-if="displayCount == 0"><i v-html="displayMessage(websiteText.filterTimeout||fallbackText.filterTimeout, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></i></p>
+                    <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
+                    <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
+                    <ul v-if="displayCount == 1">
+                        <li v-for="item in items" v-if="item.numValues>0">
+                            <a 
+                                :href="item.href" 
+                                onclick="return false;" 
+                                @click.exact="applyQuantityRange(item)" 
+                                @click.ctrl="window.open(item.href, '_blank')">
+                                {{item.bucketName}} {{item.unit}} 
+                            </a> 
+                            <span class="result-count">
+                                {{ displayPluralCount(websiteText.results||fallbackText.results,item.numValues) }}
+                            <span>
+                        </li>
+                    </ul>
+                    <ul v-if="displayCount == 0">
+                        <li v-for="item in items">
+                            <a 
+                                :href="item.href" 
+                                onclick="return false;" 
+                                @click.exact="applyQuantityRange(item)" 
+                                @click.ctrl="window.open(item.href, '_blank')">
+                                {{item.bucketName}} 
+                            </a>
+                        </li>
+                    </ul>
+                </div>
                 <div v-if="items.length>resultsPerPage && itemsType=='Item'" style="text-align: center">
                     <a v-if="currentPage>1" @click="currentPage>1?currentPage--:''">&lt;</a>
                     <input 
@@ -53,125 +171,9 @@ secondayFilterValues = Vue.component('secondary-filters', {
                     {{items.length<1000000?" / " + Math.ceil(items.length/resultsPerPage):''}}
                     <a v-if="currentPage<items.length/resultsPerPage" @click="currentPage<items.length/resultsPerPage?currentPage++:''">&gt;</a>
                 </div>
-                <ul>
-                    <li v-for="(item,index) in items" v-if="index < currentPage*resultsPerPage && index >= (currentPage-1)*resultsPerPage">
-                        <a 
-                            :href="item.href" 
-                            onclick="return false;" 
-                            @click.exact="applyFilter(item)" 
-                            @click.ctrl="window.open(item.href, '_blank')">
-                            {{item.valueLabel.value}}
-                        </a> 
-                        <span class="result-count">
-                            {{ displayPluralCount(websiteText.results||fallbackText.results,item.count.value) }}
-                        <span>
-                    </li>
-                </ul>
-            </div>
-            <div v-else-if="itemsType=='ItemFail'">
-                <p><i v-html="displayMessage(websiteText.filterTimeout||fallbackText.filterTimeout, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></i></p>
-                <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
-                <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
-                <ul>
-                    <li v-for="item in items">
-                        <a 
-                            :href="item.href" 
-                            onclick="return false;" 
-                            @click.exact="applyFilter(item)" 
-                            @click.ctrl="window.open(item.href, '_blank')">
-                            {{item.valueLabel.value}}
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <div v-else-if="itemsType=='Time'">
-                <p v-if="totalValues!=''" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount,totalValues)"></p>
-                <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
-                <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
-                <ul v-if="displayCount == 1">
-                    <li v-for="item in items" v-if="item.numValues>0">
-                        <a 
-                            :href="item.href" 
-                            onclick="return false;" 
-                            @click.exact="applyRange(item)" 
-                            @click.ctrl="window.open(item.href, '_blank')">
-                            {{item.bucketName}} 
-                        </a> 
-                        <span class="result-count">
-                            {{ displayPluralCount(websiteText.results||fallbackText.results,item.numValues) }}
-                        <span>
-                    </li>
-                </ul>
-                <ul v-if="displayCount == 0 || displayCount == 2">
-                    <li v-for="item in items">
-                        <a 
-                            :href="item.href" 
-                            onclick="return false;" 
-                            @click.exact="applyRange(item)" 
-                            @click.ctrl="window.open(item.href, '_blank')">
-                            {{item.bucketName}} 
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <div v-else-if="itemsType=='TimeFail'">
-                <p><i v-html="displayMessage(websiteText.filterTimeout||fallbackText.filterTimeout, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></i></p>
-                <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
-                <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
-                <ul>
-                    <li v-for="item in items">
-                        <a 
-                            :href="item.href" 
-                            onclick="return false;" 
-                            @click.exact="applyRange(item)" 
-                            @click.ctrl="window.open(item.href, '_blank')">
-                            {{item.bucketName}} 
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <div v-else-if="itemsType=='Quantity'">
-                <p v-if="(displayCount == 1 || displayCount == 0) && totalValues!=''" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount,totalValues)"></p>
-                <p v-if="displayCount == 2"><i v-html="displayMessage(websiteText.filterTimeout||fallbackText.filterTimeout, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></i></p>
-                <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
-                <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
-                <ul v-if="displayCount == 1">
-                    <li v-for="item in items" v-if="item.numValues>0">
-                        <a 
-                            :href="item.href" 
-                            onclick="return false;" 
-                            @click.exact="applyQuantityRange(item)" 
-                            @click.ctrl="window.open(item.href, '_blank')">
-                            {{item.bucketName}} {{item.unit}} 
-                        </a> 
-                        <span class="result-count">
-                            {{ displayPluralCount(websiteText.results||fallbackText.results,item.numValues) }}
-                        <span>
-                    </li>
-                </ul>
-                <ul v-if="displayCount == 0 || displayCount == 2">
-                    <li v-for="item in items">
-                        <a 
-                            :href="item.href" 
-                            onclick="return false;" 
-                            @click.exact="applyQuantityRange(item)" 
-                            @click.ctrl="window.open(item.href, '_blank')">
-                            {{item.bucketName}} 
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <div v-if="items.length>resultsPerPage && itemsType=='Item'" style="text-align: center">
-                <a v-if="currentPage>1" @click="currentPage>1?currentPage--:''">&lt;</a>
-                <input 
-                    v-model.lazy="currentPage" 
-                    type="text" 
-                    style="margin-bottom: 15px;width: 48px;text-align: center"> 
-                {{items.length<1000000?" / " + Math.ceil(items.length/resultsPerPage):''}}
-                <a v-if="currentPage<items.length/resultsPerPage" @click="currentPage<items.length/resultsPerPage?currentPage++:''">&gt;</a>
+                <div><a @click="exportCSV">Export as CSV</a></div>
             </div>
             <div><a :href="query">{{ websiteText.viewQuery||fallbackText.viewQuery }}</a></div>
-            <div><a @click="exportCSV">Export as CSV</a></div>
         </div>
     </div>`,
     methods: {
@@ -213,13 +215,13 @@ secondayFilterValues = Vue.component('secondary-filters', {
             document.getElementsByTagName("body")[0].style.cursor = "progress";
             let csvHeader = encodeURI("data:text/csv;charset=utf-8,");
             if (this.itemsType == 'Item' || this.itemsType == 'ItemFail') {
-                var csvContent = this.items.map(e => e.value.value.split('/').slice(-1)[0] + "," + e.valueLabel.value).join("\n");
+                var csvContent = this.items.map(e => e.value.value.split('/').slice(-1)[0] + "," + `\"${e.valueLabel.value}\"` + (this.displayCount == 1 ? "," + e.count.value : '')).join("\n");
             }
             else if (this.itemsType == 'Time' || this.itemsType == 'TimeFail') {
-                var csvContent = this.items.map(e => e.bucketName).join("\n");
+                var csvContent = this.items.map(e => `\"${e.bucketName}\" ` + (this.displayCount == 1 ? "," + e.numValues : '')).join("\n");
             }
             else if (this.itemsType == 'Quantity') {
-                var csvContent = this.items.map(e => "'" + e.bucketName + "' " + e.unit).join("\n");
+                var csvContent = this.items.map(e => `\"${e.bucketName}\" ` + e.unit + (this.displayCount == 1 ? "," + e.numValues : '')).join("\n");
             }
             let downloadURI = csvHeader + encodeURIComponent(csvContent);
             var link = document.createElement("a");
@@ -231,6 +233,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
         } 
     },
     mounted() {
+        // Convert the applied filters/time ranges/quantities into SPARQL equivalents
         var filterString = "";
         var noValueString = "";
         for (let i = 0; i < this.appliedFilters.length; i++) {
@@ -312,24 +315,27 @@ secondayFilterValues = Vue.component('secondary-filters', {
                 }
             }
         }
+        // Get the property type for current filter
         sparqlQuery = "SELECT ?property WHERE {\n" +
             "  wd:" + this.secondaryFilter.value + " wikibase:propertyType ?property.\n" +
             "}";
-        const fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
-        let vm = this;
+        var fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+        var vm = this;
         axios.get(fullUrl)
             .then((response) => {
                 if (response.data['results']['bindings'][0].property.value.split("#")[1] == "Time") {
-                    this.displayCount = 0
+                    // Time property type
+                    // Set the URL parameters for href attribute, i.e., only for display purpose. 
                     var q = window.location.search;
                     parameters = new URLSearchParams(q)
                     parameters.delete("cf")
                     parameters.delete("sf")
-                    parameters.set("r." + this.currentFilter.value + "." + this.secondaryFilter.value, "novalue")
-                    this.noValueURL = window.location.pathname + "?" + parameters
+                    parameters.set("r." + vm.currentFilter.value + "." + vm.secondaryFilter.value, "novalue")
+                    vm.noValueURL = window.location.pathname + "?" + parameters
+                    
                     var sparqlQuery = "ELECT ?time WHERE {\n" +
-                        "?item wdt:" + instanceOf + " wd:" + this.classValue + ".\n" +
-                        "?item wdt:" + this.currentFilter.value +" ?temp.\n" +
+                        "?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
+                        "?item wdt:" + vm.currentFilter.value +" ?temp.\n" +
                         filterString +
                         filterRanges +
                         timeString +
@@ -337,40 +343,47 @@ secondayFilterValues = Vue.component('secondary-filters', {
                         noValueString +
                         "}\n" +
                         "ORDER by ?time";
-                    this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
+                    vm.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
                     const fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
                     axios.get(fullUrl)
                         .then(response => {
                             if (response.data['results']['bindings'].length) {
                                 arr = generateDateBuckets(response.data['results']['bindings'])
+                                // Set the href parameter of each bucket.
                                 for (var i = 0; i < arr.length; i++) {
                                     var q = window.location.search;
                                     parameters = new URLSearchParams(q)
                                     parameters.delete("cf")
                                     parameters.delete("sf")
-                                    if (arr[i].size == 1) parameters.set("r." + this.currentFilter.value + "." + this.secondaryFilter.value, arr[i].bucketLL.year + "~" + arr[i].bucketUL.year)
-                                    else if (arr[i].size == 2) parameters.set("r." + this.currentFilter.value + "." + this.secondaryFilter.value, arr[i].bucketLL.year)
-                                    else if (arr[i].size == 3) parameters.set("r." + this.currentFilter.value + "." + this.secondaryFilter.value, arr[i].bucketLL.year + "-" + arr[i].bucketLL.month)
-                                    else if (arr[i].size == 4) parameters.set("r." + this.currentFilter.value + "." + this.secondaryFilter.value, arr[i].bucketLL.year + "-" + arr[i].bucketLL.month + "-" + arr[i].bucketLL.day)
-                                    else if (arr[i].size == 5) parameters.set("r." + this.currentFilter.value + "." + this.secondaryFilter.value, arr[i].bucketLL.year + "-" + arr[i].bucketLL.month + "-" + arr[i].bucketLL.day)
+                                    if (arr[i].size == 1) parameters.set("r." + vm.currentFilter.value + "." + vm.secondaryFilter.value, arr[i].bucketLL.year + "~" + arr[i].bucketUL.year)
+                                    else if (arr[i].size == 2) parameters.set("r." + vm.currentFilter.value + "." + vm.secondaryFilter.value, arr[i].bucketLL.year)
+                                    else if (arr[i].size == 3) parameters.set("r." + vm.currentFilter.value + "." + vm.secondaryFilter.value, arr[i].bucketLL.year + "-" + arr[i].bucketLL.month)
+                                    else if (arr[i].size == 4) parameters.set("r." + vm.currentFilter.value + "." + vm.secondaryFilter.value, arr[i].bucketLL.year + "-" + arr[i].bucketLL.month + "-" + arr[i].bucketLL.day)
+                                    else if (arr[i].size == 5) parameters.set("r." + vm.currentFilter.value + "." + vm.secondaryFilter.value, arr[i].bucketLL.year + "-" + arr[i].bucketLL.month + "-" + arr[i].bucketLL.day)
                                     arr[i]['href'] = window.location.pathname + "?" + parameters
                                 }
                                 if (arr.length) {
                                     vm.items = arr;
-                                    this.itemsType = 'Time'
+                                    vm.itemsType = 'Time'
+                                    vm.displayCount = 1
                                 }
                                 else {
-                                    this.itemsType = 'Additionalempty'
+                                    vm.itemsType = 'Additionalempty'
                                 }
                             }
                             else {
+                                // Check if "No value" is to be displayed or not.
                                 index = vm.appliedRanges.findIndex(filter => filter.filterValue == vm.secondaryFilter.value)
-                                if (index = -1) this.itemsType = "Additionalempty"
-                                else this.itemsType = 'Time'
+                                if (index == -1) vm.itemsType = "Additionalempty"
+                                else vm.itemsType = 'Time'
                             }
                         })
-                        .catch(error => {
-                            var sparqlQuery = "SELECT ?time WHERE{SELECT ?time WHERE {\n" +
+                        .catch(_error => {
+                            /*
+                             Gets fallback results in case the primary query fails or times out.
+                             Finds random time values and creates buckets.
+                            */
+                            sparqlQuery = "SELECT ?time WHERE{SELECT ?time WHERE {\n" +
                                 "  hint:Query hint:optimizer \"None\".\n" +
                                 "?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
                                 "?item wdt:" + vm.currentFilter.value + " ?temp.\n" +
@@ -382,11 +395,12 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                 "LIMIT " + resultsPerPage + "\n" +
                                 "}\n" +
                                 "ORDER BY ?time";
-                            const fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+                            fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
                             axios.get(fullUrl)
                                 .then(res => {
                                     if (res.data['results']['bindings'].length) {
                                         arr = generateDateBuckets(res.data['results']['bindings'], vm.secondaryFilter)
+                                        // Set the href parameter of each bucket.
                                         for (var i = 0; i < arr.length; i++) {
                                             var q = window.location.search;
                                             parameters = new URLSearchParams(q)
@@ -400,65 +414,70 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                             arr[i]['href'] = window.location.pathname + "?" + parameters
                                         }
                                         vm.items = arr
-                                        vm.displayCount = 2
                                         vm.itemsType = 'Time'
+                                        vm.displayCount = 0
                                     }
                                     else {
                                         vm.itemsType = 'TimeFail'
                                     }
 
-                                }
-                                )
-                                .catch(error => {
+                                })
+                                .catch(_error => {
                                     vm.itemsType = 'Error'
                                 })
                         })
                 }
                 else if (response.data['results']['bindings'][0].property.value.split("#")[1] == "Quantity") {
-                    this.displayCount = 0;
+                    // Quantity property type
+                    // Set the URL parameters for href attribute, i.e., only for display purpose. 
                     var q = window.location.search;
                     parameters = new URLSearchParams(q)
                     parameters.delete("cf")
                     parameters.delete("sf")
-                    parameters.set("q." + this.currentFilter.value + "." + this.secondaryFilter.value, "novalue")
-                    this.noValueURL = window.location.pathname + "?" + parameters
-                    var sparqlQuery = "SELECT ?item ?amount WHERE {\n" +
-                        "    ?item wdt:" + instanceOf + " wd:" + this.classValue + ".\n" +
+                    parameters.set("q." + vm.currentFilter.value + "." + vm.secondaryFilter.value, "novalue")
+                    vm.noValueURL = window.location.pathname + "?" + parameters
+                    /* 
+                     Gets items and their normalized amount/quantity.
+                     Query for quantities with units. 
+                    */
+                    sparqlQuery = "SELECT ?item ?amount WHERE {\n" +
+                        "?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
                         filterString +
-                        "{#Current filter\n?item wdt:"+this.currentFilter.value+" ?temp.\n" +
-                        "    ?temp (p:" + this.secondaryFilter.value + "/psn:" + this.secondaryFilter.value + ") ?v.\n" +
-                        "    ?v wikibase:quantityAmount ?amount.\n}" +
+                        "{#Current filter\n?item wdt:"+vm.currentFilter.value+" ?temp.\n" +
+                        "?temp (p:" + vm.secondaryFilter.value + "/psn:" + vm.secondaryFilter.value + ") ?v.\n" +
+                        "?v wikibase:quantityAmount ?amount.\n}" +
                         filterRanges +
                         filterQuantities +
                         noValueString +
                         "}\n" +
                         "ORDER BY ?amount";
-                    this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
-                    const fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+                    vm.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
+                    var fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
                     axios.get(fullUrl)
                         .then(response => (response.data['results']['bindings'].length ? response : ''))
-                        .then(
-                            function (response) {
+                        .then((response) => {
                                 if (response == "") {
-                                    var sparqlQuery = "SELECT ?amount WHERE {\n" +
-                                        "?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
-                                        filterString +
-                                        "{#Current filter\n?item wdt:"+vm.currentFilter.value+" ?temp.\n" +
-                                        "?temp (p:" + vm.secondaryFilter.value + "/psv:" + vm.secondaryFilter.value + ") ?v.\n" +
-                                        "?v wikibase:quantityAmount ?amount.\n}" +
-                                        filterRanges +
-                                        filterQuantities +
-                                        noValueString +
-                                        "\n}\n" +
-                                        "ORDER BY ?amount";
-                                    vm.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
-                                    const fullUr = sparqlEndpoint + encodeURIComponent(sparqlQuery);
-                                    axios.get(fullUr)
+                                    // If the above query returns null then try for un-normalized values.
+                                    sparqlQuery = "SELECT ?amount WHERE {\n" +
+                                    "?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
+                                    filterString +
+                                    "{#Current filter\n?item wdt:" + vm.currentFilter.value + " ?temp.\n" +
+                                    "?temp (p:" + vm.secondaryFilter.value + "/psv:" + vm.secondaryFilter.value + ") ?v.\n" +
+                                    "?v wikibase:quantityAmount ?amount.\n}" +
+                                    filterRanges +
+                                    filterQuantities +
+                                    noValueString +
+                                    "\n}\n" +
+                                    "ORDER BY ?amount"
+                                    vm.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery)
+                                    fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery)
+                                    axios.get(fullUrl)
                                         .then(res => {
                                             if (res.data['results']['bindings'].length) {
                                                 arr = generateFilterValuesFromNumbers(res.data['results']['bindings'])
+                                                // Set the href parameter of each bucket.
                                                 for (var i = 0; i < arr.length; i++) {
-                                                    var q = window.location.search;
+                                                    var q = window.location.search
                                                     parameters = new URLSearchParams(q)
                                                     parameters.delete("cf")
                                                     parameters.delete("sf")
@@ -467,37 +486,40 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                                 }
                                                 vm.items = arr
                                                 vm.itemsType = 'Quantity'
+                                                vm.displayCount = 1;
                                             }
                                             else {
+                                                // Check if "No value" is to be displayed or not.
                                                 index = vm.appliedQuantities.findIndex(filter => filter.filterValue == vm.secondaryFilter.value)
-                                                if (index != -1) {
-                                                    vm.itemsType = "Additionalempty"
-                                                }
-                                                else {
-                                                    vm.itemsType = 'Quantity'
-                                                }
+                                                if (index != -1) vm.itemsType = "Additionalempty"
+                                                else vm.itemsType = 'Quantity'
                                             }
                                         })
-                                        .catch(error => {
+                                        .catch(_error => {
+                                            /*
+                                             Gets fallback results in case the primary query fails or times out.
+                                             Finds random quantity amounts and creates buckets.
+                                            */
                                             sparqlQuery = "SELECT ?amount WHERE\n" +
                                                 "{\n" +
                                                 "  SELECT ?amount WHERE {\n" +
                                                 "    hint:Query hint:optimizer \"None\".\n" +
                                                 "    ?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
-                                                "    ?item wdt:"+vm.currentFilter.value+" ?temp.\n" +
+                                                "    ?item wdt:" + vm.currentFilter.value + " ?temp.\n" +
                                                 "    ?temp (p:" + vm.secondaryFilter.value + "/psv:" + vm.secondaryFilter.value + ") ?v.\n" +
                                                 "    ?v wikibase:quantityAmount ?amount.\n" +
                                                 "}\n" +
                                                 "LIMIT " + resultsPerPage + "\n" +
                                                 "}\n" +
-                                                "ORDER BY ?amount";
-                                            const fullUr = sparqlEndpoint + encodeURIComponent(sparqlQuery);
-                                            axios.get(fullUr)
+                                                "ORDER BY ?amount"
+                                            fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery)
+                                            axios.get(fullUrl)
                                                 .then(r => {
                                                     if (r.data['results']['bindings'].length) {
                                                         arr = generateFilterValuesFromNumbers(r.data['results']['bindings'])
+                                                        // Set the href parameter of each bucket.
                                                         for (var i = 0; i < arr.length; i++) {
-                                                            var q = window.location.search;
+                                                            var q = window.location.search
                                                             parameters = new URLSearchParams(q)
                                                             parameters.delete("cf")
                                                             parameters.delete("sf")
@@ -505,31 +527,32 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                                             arr[i]['href'] = window.location.pathname + "?" + parameters
                                                         }
                                                         vm.items = arr
+                                                        vm.displayCount = 0;
                                                     }
                                                     vm.itemsType = 'Quantity'
 
                                                 })
-                                                .catch(error => {
+                                                .catch(_error => {
                                                     vm.itemsType = 'Error'
                                                 })
                                         })
                                 }
                                 else {
-                                    firstItem = response.data['results']['bindings'][0].item.value.split("/").slice(-1)[0];
+                                    firstItem = response.data['results']['bindings'][0].item.value.split("/").slice(-1)[0]
                                     var unitQuery = "SELECT ?unitLabel WHERE {\n" +
-                                        "    wd:" + firstItem + " wdt:"+vm.currentFilter.value+" ?temp.\n" +
+                                        "    wd:" + firstItem + " wdt:" + vm.currentFilter.value + " ?temp.\n" +
                                         "    ?temp (p:" + vm.secondaryFilter.value + "/psn:" + vm.secondaryFilter.value + ") ?v.\n" +
                                         "    ?v wikibase:quantityAmount ?amount;\n" +
                                         "       wikibase:quantityUnit ?unit.\n" +
                                         "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }\n" +
-                                        "}";
-                                    const url = sparqlEndpoint + encodeURIComponent(unitQuery);
+                                        "}"
+                                    const url = sparqlEndpoint + encodeURIComponent(unitQuery)
                                     axios.get(url)
                                         .then(res => {
                                             if (response.data['results']['bindings'].length) {
                                                 arr = generateFilterValuesFromNumbers(response.data['results']['bindings'], res.data['results']['bindings'][0].unitLabel.value)
                                                 for (var i = 0; i < arr.length; i++) {
-                                                    var q = window.location.search;
+                                                    var q = window.location.search
                                                     parameters = new URLSearchParams(q)
                                                     parameters.delete("cf")
                                                     parameters.delete("sf")
@@ -541,18 +564,20 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                             }
                                             else {
                                                 index = vm.appliedFilters.findIndex(filter => filter.filterValue == vm.secondaryFilter.value)
-                                                if (index = -1) this.itemsType = "Additionalempty"
-                                                else this.itemsType = 'Quantity'
+                                                if (index == -1)
+                                                    vm.itemsType = "Additionalempty"
+                                                else
+                                                    vm.itemsType = 'Quantity'
                                             }
                                         })
-                                        .catch(error => {
+                                        .catch(_error => {
                                             vm.itemsType = 'Error'
                                         })
 
                                 }
                             }
                         )
-                        .catch(error => {
+                        .catch(_error => {
                             sparqlQuery = "SELECT ?amount WHERE\n" +
                                 "{\n" +
                                 "  SELECT ?item ?amount WHERE {\n" +
@@ -579,25 +604,28 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                             arr[i]['href'] = window.location.pathname + "?" + parameters
                                         }
                                         vm.items = arr
-                                        vm.displayCount = 2
+                                        vm.displayCount = 0
                                     }
                                 })
-                                .catch(error => {
+                                .catch(_error => {
                                     vm.itemsType = 'Error'
                                 })
                         })
                 }
                 else {
+                    // Item property type
+                    // Set the URL parameters for href attribute, i.e., only for display purpose. 
                     var q = window.location.search;
                     parameters = new URLSearchParams(q)
-                    parameters.set("f." + this.currentFilter.value + "." + this.secondaryFilter.value, "novalue")
-                    this.noValueURL = window.location.pathname + "?" + parameters
+                    parameters.set("f." + vm.currentFilter.value + "." + vm.secondaryFilter.value, "novalue")
+                    vm.noValueURL = window.location.pathname + "?" + parameters
+                    // Gets items and their count. 
                     var sparqlQuery = "SELECT ?value ?valueLabel ?count WHERE {\n" +
                         "{\n" +
                         "SELECT ?value (COUNT(?value) AS ?count) WHERE {\n" +
-                        "?item wdt:" + instanceOf + " wd:" + this.classValue +".\n" +
-                        "{\n?item wdt:" + this.currentFilter.value + " ?temp.\n" +
-                        "?temp wdt:" + this.secondaryFilter.value + " ?value.\n}" +
+                        "?item wdt:" + instanceOf + " wd:" + vm.classValue +".\n" +
+                        "{\n?item wdt:" + vm.currentFilter.value + " ?temp.\n" +
+                        "?temp wdt:" + vm.secondaryFilter.value + " ?value.\n}" +
                         filterString +
                         filterRanges +
                         filterQuantities +
@@ -608,12 +636,13 @@ secondayFilterValues = Vue.component('secondary-filters', {
                         "SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
                         "}\n" +
                         "ORDER BY DESC (?count)";
-                    this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
-                    const fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+                    vm.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
+                    var fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
                     axios.get(fullUrl)
                         .then(response => {
                             if (response.data['results']['bindings'].length) {
                                 arr = [...response.data['results']['bindings']]
+                                // Remove the already applied filter value.
                                 index = []
                                 for (let i = 0; i < vm.appliedFilters.length; i++) {
                                     if (vm.appliedFilters[i].filterValue == vm.secondaryFilter.value) {
@@ -622,34 +651,42 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                 }
                                 arr = arr.filter(x => !index.includes(x.value.value.split('/').slice(-1)[0]))
                                 if (arr.length > 0) {
-                                    this.itemsType = "Item"
-                                    this.items = arr
+                                    vm.itemsType = "Item"
+                                    vm.items = arr
+                                    vm.displayCount = 1
                                 }
                                 else {
-                                    this.itemsType = "Additionalempty"
+                                    vm.itemsType = "Additionalempty"
                                 }
+                                // Set the href parameter of each value.
                                 for (var i = 0; i < arr.length; i++) {
                                     var q = window.location.search;
                                     parameters = new URLSearchParams(q)
                                     parameters.delete("cf")
                                     parameters.delete("sf")
                                     var existingValues = ""
+                                    // Multiple values for a filter
                                     for (let i = 0; i < vm.appliedFilters.length; i++) {
-                                        if (vm.appliedFilters[i].filterValue == this.secondaryFilter.value) {
+                                        if (vm.appliedFilters[i].filterValue == vm.secondaryFilter.value) {
                                             existingValues = existingValues + vm.appliedFilters[i].value + "-";
                                         }
                                     }
-                                    parameters.set("f." + this.currentFilter.value + "." + this.secondaryFilter.value, existingValues + arr[i].value.value.split('/').slice(-1)[0])
+                                    parameters.set("f." + vm.currentFilter.value + "." + vm.secondaryFilter.value, existingValues + arr[i].value.value.split('/').slice(-1)[0])
                                     arr[i]['href'] = window.location.pathname + "?" + parameters
                                 }
                             }
                             else {
+                                // Check if "No value" is to be displayed or not.
                                 index = vm.appliedFilters.findIndex(filter => filter.filterValue == vm.secondaryFilter.value)
-                                if (index = -1) this.itemsType = "Additionalempty"
-                                else this.itemsType = 'Item'
+                                if (index == -1) vm.itemsType = "Additionalempty"
+                                else vm.itemsType = 'Item'
                             }
                         })
-                        .catch(error => {
+                        .catch(_error => {
+                            /*
+                                Gets fallback results in case the primary query fails or times out.
+                                Finds random 300 values.
+                            */
                             sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
                                 "  {\n" +
                                 "    SELECT DISTINCT ?value WHERE {\n" +
@@ -668,28 +705,30 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                 "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
                                 "}\n" +
                                 "ORDER BY (?valueLabel)";
-                            const fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+                            fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
                             axios.get(fullUrl)
                                 .then((res) => {
-                                    vm.itemsType = "ItemFail"
+                                    // Sorting the results
                                     arr = [...res.data['results']['bindings']].slice(0).sort(
                                         function (a, b) {
                                             var x = a.valueLabel.value.toLowerCase();
                                             var y = b.valueLabel.value.toLowerCase();
                                             return x < y ? -1 : x > y ? 1 : 0;
-                                        }
-                                    )
+                                        })
+                                    // Set the href parameter of each value.
                                     for (var i = 0; i < arr.length; i++) {
                                         var q = window.location.search;
                                         parameters = new URLSearchParams(q)
                                         parameters.delete("cf")
                                         parameters.delete("sf")
-                                        parameters.set("f." + this.currentFilter.value + "." + this.secondaryFilter.value, arr[i].value.value.split('/').slice(-1)[0])
+                                        parameters.set("f." + vm.currentFilter.value + "." + vm.secondaryFilter.value, arr[i].value.value.split('/').slice(-1)[0])
                                         arr[i]['href'] = window.location.pathname + "?" + parameters
                                     }
                                     vm.items = arr
+                                    vm.itemsType = "ItemFail"
+                                    vm.displayCount = 0
                                 })
-                                .catch(error => {
+                                .catch(_error => {
                                     vm.itemsType = 'Error'
                                 })
 
