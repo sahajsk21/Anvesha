@@ -197,13 +197,17 @@ viewallitems = Vue.component('view-all-items', {
     mounted() {
         // Check available filters
         sparqlQuery = "SELECT ?value ?valueLabel ?property WHERE {\n" +
-            "  wd:" + this.classValue + " wdt:" + propertiesForThisType + " ?value.\n" +
-            "  ?value wikibase:propertyType ?property.\n" +
-            "  FILTER (?property in (wikibase:Time, wikibase:Quantity, wikibase:WikibaseItem))  \n" +
-            "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
+            "wd:" + this.classValue + " wdt:" + propertiesForThisType + " ?value.\n" +
+            "?value wikibase:propertyType ?property.\n" +
+            "FILTER(NOT EXISTS {\n" +
+            "?value p:P2302 ?constraint_statement.\n" +
+            "?constraint_statement ps:P2302 wd:Q21502410.\n" +
+            "})\n" +
+            "FILTER (?property in (wikibase:Time, wikibase:Quantity, wikibase:WikibaseItem))  \n" +
+            "SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
             "}\n" +
             "ORDER BY ?valueLabel";
-        let fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+        var fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
         axios.get(fullUrl)
             .then(response => {
                 if (response.data['results']['bindings']) {
@@ -214,7 +218,7 @@ viewallitems = Vue.component('view-all-items', {
                     this.filters.push({ value: "Empty", valueLabel: "No data" })
                 }
             })
-            .catch(error => {
+            .catch(_error => {
                 this.items.push({ value: "Error" })
             })
         // Change applied filters/ranges/quantities to SPARQL equivalents
