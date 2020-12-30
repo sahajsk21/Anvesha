@@ -4,7 +4,7 @@ viewallitems = Vue.component('view-all-items', {
         return {
             filtersCount: -1,
             filters: [],
-            items:[],
+            items: [],
             itemsCount: '',
             currentPage: 1,
             query: '',
@@ -21,8 +21,7 @@ viewallitems = Vue.component('view-all-items', {
             @remove-filter="removeFilter"
             @remove-range="removeRange"
             @remove-quantity="removeQuantity"
-            @change-page="changePage"
-        >
+            @change-page="changePage" >
         </header-view>
         <div class="content" id="viewallitems">
             <div v-if="filtersCount==-1"></div>
@@ -81,7 +80,7 @@ viewallitems = Vue.component('view-all-items', {
         </div>
     </div>`,
     methods: {
-        displayData(action = ''){
+        displayData(action = '') {
             this.items = []
             // Determine page change action
             if (action == 'back') {
@@ -94,43 +93,55 @@ viewallitems = Vue.component('view-all-items', {
                     this.currentPage++;
                 }
             }
+            /* 
+             Gets items based on applied filters.
+             In case of item has multiple values for quantity, 
+             max value is considered.
+             If number of items is too high fetch limited items
+             at a time based on the current page number.
+             Sort only in case of single page results.
+            */
             sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
-                "  {\n" +
-                "    SELECT ?value  " + this.sparqlParameters[4] + " WHERE {\n" +
-                "      ?value wdt:" + instanceOf + " wd:" + this.classValue + ".  \n" +
+                "{\n" +
+                "SELECT ?value  " + this.sparqlParameters[4] + " WHERE {\n" +
+                "?value wdt:" + instanceOf + " wd:" + this.classValue + ".  \n" +
                 this.sparqlParameters[0] +
                 this.sparqlParameters[1] +
                 this.sparqlParameters[2] +
                 this.sparqlParameters[3] +
-                "  } \n" +
+                "}\n" +
                 (this.sparqlParameters[4] == "" ? "" : "GROUP BY ?value \n") +
                 (this.sparqlParameters[5] == "" ? "LIMIT " + resultsPerPage + " OFFSET " + ((this.currentPage - 1) * resultsPerPage) : "") +
-                "  }\n" +
-                this.sparqlParameters[5] +
-                "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
                 "}\n" +
-                (this.totalValues > resultsPerPage ? "" : "ORDER BY ?valueLabel\n") +
+                this.sparqlParameters[5] +
+                "SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
+                "}\n" +
+                ((this.totalValues > resultsPerPage || this.totalValues == '') ? "" : "ORDER BY ?valueLabel\n") +
                 (this.sparqlParameters[5] != "" ? "LIMIT " + resultsPerPage + " OFFSET " + ((this.currentPage - 1) * resultsPerPage) : "");
             this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
             fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
             axios.get(fullUrl)
-                .then(response =>{
-                    if(response.data['results']['bindings'].length){
+                .then(response => {
+                    if (response.data['results']['bindings'].length) {
                         this.items = [...response.data['results']['bindings']]
                     }
-                    else{
+                    else {
                         this.items.push({ value: "Empty" })
                     }
-                }) 
-                .catch(error => {
+                })
+                .catch(_error => {
                     this.items.push({ value: "Error" })
                 })
         },
         pathForFilter(filter) {
             return window.location.href + '&cf=' + filter.value.value.split('/').slice(-1)[0];
         },
-        displayPluralCount(message,totalValues) {
-            if(message){
+        displayPluralCount(message, totalValues) {
+            if (message) {
+                /* 
+                 Replace the PLURAL segment in language file with 
+                 either the first or second half based on number of values.
+                */  
                 matches = message.match('{{PLURAL:[\\s]*\\$1\\|(.*)}}')
                 str = matches[1].split('|')[(totalValues > 1 ? 1 : 0)]
                 str = str.replace("$1", "<b>" + (totalValues < 1000000 ? numberWithCommas(totalValues) : '1 million +') + "</b>")
@@ -155,9 +166,14 @@ viewallitems = Vue.component('view-all-items', {
         linkToWikidata(item) {
             return "https://www.wikidata.org/wiki/" + item.split('/').slice(-1)[0] + "?uselang=" + (urlParams.get('lang') ? urlParams.get('lang') : (defaultLanguages[0] ? defaultLanguages[0] : 'en'))
         },
-        exportCSV(){
+        exportCSV() {
             document.getElementsByTagName("body")[0].style.cursor = "progress";
-            sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
+            /* 
+             Gets items based on applied filters.
+             In case of item has multiple values for quantity, 
+             max value is considered.
+            */
+            var sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
                 "{\n" +
                 "SELECT ?value  " + this.sparqlParameters[4] + " WHERE {\n" +
                 "?value wdt:" + instanceOf + " wd:" + this.classValue + ".  \n" +
@@ -173,10 +189,11 @@ viewallitems = Vue.component('view-all-items', {
                 "SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
                 "}\n" +
                 "ORDER BY ?valueLabel\n";
-            fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+            var fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
             axios.get(fullUrl)
                 .then(response => {
                     if (response.data['results']['bindings'].length) {
+                        // Generate CSV content and load it in a temporary <a> tag and the click it dynamically.
                         let csvHeader = encodeURI("data:text/csv;charset=utf-8,");
                         let csvContent = [...response.data['results']['bindings']].map(e => e.value.value.split('/').slice(-1)[0] + "," + e.valueLabel.value).join("\n");
                         let downloadURI = csvHeader + encodeURIComponent(csvContent);
@@ -188,15 +205,15 @@ viewallitems = Vue.component('view-all-items', {
                         document.getElementsByTagName("body")[0].style.cursor = "default";
                     }
                 })
-                .catch(_error=>{
+                .catch(_error => {
                     document.getElementsByTagName("body")[0].style.cursor = "default";
-                    console.log("Download failed");
-                })  
+                    alert("Download failed");
+                })
         }
     },
     mounted() {
-        // Check available filters
-        sparqlQuery = "SELECT ?value ?valueLabel ?property WHERE {\n" +
+        // Check available filters and exclude ones with distinct type value constraint.
+        var sparqlQuery = "SELECT ?value ?valueLabel ?property WHERE {\n" +
             "wd:" + this.classValue + " wdt:" + propertiesForThisType + " ?value.\n" +
             "?value wikibase:propertyType ?property.\n" +
             "FILTER(NOT EXISTS {\n" +
@@ -302,10 +319,10 @@ viewallitems = Vue.component('view-all-items', {
             }
         }
         this.sparqlParameters.push(filterString, filterRanges, filterQuantities, noValueString, maxString, constraintString);
-        if(this.format=='csv'){
+        if (this.format == 'csv') {
             this.exportCSV();
         }
-        else{
+        else {
             this.displayData();
         }
     }
