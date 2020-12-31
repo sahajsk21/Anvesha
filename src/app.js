@@ -1,7 +1,4 @@
 var app = new Vue({
-    components: {
-        classfilter, viewallitems, filtersview, filtervalues
-    },
     data: {
         page: '',
         clsValue: '',

@@ -99,10 +99,11 @@ a:hover {
 
 .info span {
   font-size: 1.1em;
+  margin-left: 0.25em;
 }
 
 .info p {
-  margin:0.5em 0 0 1em;
+  margin:0.5em 0 0 1.25em;
 }
 
 .secondary-filter{

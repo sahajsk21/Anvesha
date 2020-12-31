@@ -12,11 +12,13 @@
     "filterError": "Trying to get values took too long for the filter $1.",
     "filterTimeout": "(Getting a complete set of values for filter $1 took too long; instead, here is a possibly incomplete set.)",
     "selectValue": "Select a value for $1:",
-    "selectAdditionalValue":"Select an additional value for $1:",
+    "selectAdditionalValue": "Select an additional value for $1:",
     "noValue": "No value",
     "changeClassNote": "(Note: if you change the class, you will lose the current set of filters.)",
     "specificClass": "Change to a more specific class:",
     "generalClass": "Change to a more general class:",
     "viewList": "View list of items",
-    "results": "({{PLURAL:$1|1 result|$1 results}})"
+    "results": "({{PLURAL:$1|1 result|$1 results}})",
+    "applyLinkedFilter": "Apply filter on $1",
+    "chooseLinkedFilter": "Choose a filter from one of the following classes:"
 }

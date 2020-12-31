@@ -33,9 +33,9 @@ filtervalues = Vue.component('filter-values', {
                 <div class="info">
                     <div style="cursor:pointer"  @click="toggleDropdown">
                         <img v-bind:style="{ transform:'rotate('+ secondaryFiltersDropdownDisplay*180 + 'deg)' }" src="images/down-arrow.svg" height="14px">
-                        <span> Apply filter on <b>{{currentFilter.valueLabel}}</b></span>
+                        <span v-html="displayMessage(websiteText.applyLinkedFilter||fallbackText.applyLinkedFilter, currentFilter.valueLabel)"></span>
                     </div>
-                    <p v-if="secondaryFiltersDropdownDisplay">Choose a filter from one of the following classes:</p>
+                    <p v-if="secondaryFiltersDropdownDisplay">{{ websiteText.chooseLinkedFilter||fallbackText.chooseLinkedFilter }}</p>
                 </div>
                 <ul class="secondary-filter" v-bind:style="{ display: (secondaryFiltersDropdownDisplay?'block':'none') }">
                     <li v-for="(cls,clsLabel) in secondaryFilters">
@@ -354,8 +354,9 @@ filtervalues = Vue.component('filter-values', {
     },
     mounted() {
         /* 
-         Get linked filters realated to current filter using value type constraint.
-         Exclude all filters with property types other than Time, Quantity and Item. 
+         Get linked filters related to current filter using value type constraint.
+         Exclude all filters with property types other than Time, Quantity and Item.
+         Exclude all properties with distinct values constraint.
          P2302: Property Constraint
          P2308: Class qualifier
         */
@@ -365,6 +366,10 @@ filtervalues = Vue.component('filter-values', {
             "?constraint_statement ps:P2302 wd:Q21510865.\n" +
             "?class wdt:" + propertiesForThisType + " ?value.\n" +
             "?value wikibase:propertyType ?property.\n" +
+            "FILTER(NOT EXISTS {\n" +
+            "?value p:P2302 ?constraint.\n" +
+            "?constraint ps:P2302 wd:Q21502410.\n" +
+            "})\n" +
             "FILTER (?property in (wikibase:Time, wikibase:Quantity, wikibase:WikibaseItem))\n" +
             "SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
             "}"+
