@@ -27,5 +27,5 @@
 	"viewList": "Afficher la liste des éléments",
 	"results": "({{PLURAL:$1|un résultat|$1 résultats}})",
 	"applyLinkedFilter": "Appliquer le filtre sur $1",
-	"chooseLinkedFilter": "Choisissez un filtre parmi l'une des classes suivantes:"
+	"chooseLinkedFilter": "Choisissez un filtre parmi l’une des classes suivantes :"
 }

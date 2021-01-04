@@ -23,5 +23,7 @@
 	"specificClass": "Daha spesifik bir sınıfa geçin:",
 	"generalClass": "Daha genel bir sınıfa geçin:",
 	"viewList": "Öğe listesini gör",
-	"results": "({{PLURAL:$1|1 sonuç|$1 sonuç}})"
+	"results": "({{PLURAL:$1|1 sonuç|$1 sonuç}})",
+	"applyLinkedFilter": "$1 üzerinde filtreyi uygulayın",
+	"chooseLinkedFilter": "Aşağıdaki sınıflardan birinden bir filtre seçin:"
 }

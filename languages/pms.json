@@ -23,5 +23,7 @@
 	"specificClass": "Passé a na classa pi spessìfica:",
 	"generalClass": "Passé a na classa pi general:",
 	"viewList": "Smon-e la lista d'element",
-	"results": "({{PLURAL:$1|1 arzultà|$1 arzultà}})"
+	"results": "({{PLURAL:$1|1 arzultà|$1 arzultà}})",
+	"applyLinkedFilter": "Apliché ël filtr su $1",
+	"chooseLinkedFilter": "Serne un filtr da un-a dle classe sì-sota:"
 }

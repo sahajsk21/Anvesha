@@ -23,5 +23,7 @@
 	"specificClass": "Biguherîne û bike sinifeke zêdetir spesîfîk:",
 	"generalClass": "Biguherîne û bike sinifeke giştîtir:",
 	"viewList": "Lîsteya hêmanan bibîne",
-	"results": "({{PLURAL:$1|1 encam}})"
+	"results": "({{PLURAL:$1|1 encam}})",
+	"applyLinkedFilter": "Parzûnê li ser $1 tetbîq bike",
+	"chooseLinkedFilter": "Parzûnekê bibijêre ji yek sinifên li jêr:"
 }
