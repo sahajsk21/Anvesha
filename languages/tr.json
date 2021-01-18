@@ -1,17 +1,18 @@
 {
 	"@metadata": {
 		"authors": [
+			"Hedda",
 			"MuratTheTurkish"
 		]
 	},
-	"itemCount": "Bu açıklamayla {{PLURAL:$1|eşleşen bir öğe var|eşleşen $1 öğe var}}.",
+	"itemCount": "Bu tanımla {{PLURAL:$1|eşleşen bir öge var|eşleşen $1 öge var}}.",
 	"classPlaceholder": "Sınıf girin",
 	"browse": "Veya aşağıdaki sınıflardan herhangi birine göz atın:",
 	"noFiltersDefined": "Bu sınıf için filtre tanımlanmadı.",
 	"addFilter": "Filtre ekle",
-	"viewQuery": "SPARQL sorgusunu gör",
-	"noItems": "Bu tanımla eşleşen öğe yok.",
-	"displayItemsError": "Öğelerin listesini görüntüleme denemesi çok uzun sürdü; lütfen daha fazla filtre eklemeyi düşünün.",
+	"viewQuery": "SPARQL sorgusunu görüntüle",
+	"noItems": "Bu tanımla eşleşen öge yok.",
+	"displayItemsError": "Ögelerin listesini görüntüleme denemesi çok uzun sürdü; lütfen, daha fazla filtre eklemeyi düşünün.",
 	"gettingValues": "$1 filtresi için değerler alınıyor ...",
 	"noAdditionalValues": "$1 filtresi için ek değer yok.",
 	"filterError": "$1 filtresi için değerleri almaya çalışmak çok uzun sürdü.",
@@ -19,10 +20,10 @@
 	"selectValue": "$1 için bir değer seçin:",
 	"selectAdditionalValue": "$1 için ek bir değer seçin:",
 	"noValue": "Değer yok",
-	"changeClassNote": "(Not: Sınıfı değiştirirseniz, mevcut filtre grubunu kaybedersiniz.)",
-	"specificClass": "Daha spesifik bir sınıfa geçin:",
-	"generalClass": "Daha genel bir sınıfa geçin:",
-	"viewList": "Öğe listesini gör",
+	"changeClassNote": "(Not: Sınıfı değiştirirseniz mevcut filtre grubunu kaybedersiniz.)",
+	"specificClass": "Daha belirgin bir sınıf seçin:",
+	"generalClass": "Daha genel bir sınıf seçin:",
+	"viewList": "Öge listesini görüntüle",
 	"results": "({{PLURAL:$1|1 sonuç|$1 sonuç}})",
 	"applyLinkedFilter": "$1 üzerinde filtreyi uygulayın",
 	"chooseLinkedFilter": "Aşağıdaki sınıflardan birinden bir filtre seçin:"
