@@ -1,7 +1,8 @@
 {
 	"@metadata": {
 		"authors": [
-			"1917 Ekim Devrimi"
+			"1917 Ekim Devrimi",
+			"Mirzali"
 		]
 	},
 	"itemCount": "Nê izahatiya {{PLURAL:$1|zeypê jew unsur esto|zeypê $1 unsuri estê }}.",
@@ -23,5 +24,7 @@
 	"specificClass": "Ravêrê zêde jew sınıfa spesifik:",
 	"generalClass": "Ravêrê ju sınıfa umumi:",
 	"viewList": "Listey unsura bıvinê",
-	"results": "({{PLURAL:$1|1 netice|$1 neticeyi}})"
+	"results": "({{PLURAL:$1|1 netice|$1 neticeyi}})",
+	"applyLinkedFilter": "$1 sera parzuni tetbiq bıkerê",
+	"chooseLinkedFilter": "Rêzanê cêrênan ra yew parzun weçinê:"
 }
