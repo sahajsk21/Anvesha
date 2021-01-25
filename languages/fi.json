@@ -11,5 +11,7 @@
 	"viewQuery": "Tarkastele SPARQL-kyselyä",
 	"noItems": "Yksikään kohde ei vastannut kuvausta.",
 	"gettingValues": "Haetaan suodatinta $1 vastaavia arvoja...",
-	"noValue": "Ei arvoa"
+	"selectValue": "Valitse arvo suodattimelle $1:",
+	"noValue": "Ei arvoa",
+	"viewList": "Palaa luetteloon kohteista"
 }
