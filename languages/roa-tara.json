@@ -1,0 +1,29 @@
+{
+	"@metadata": {
+		"authors": [
+			"Joetaras"
+		]
+	},
+	"itemCount": "{{PLURAL:$1|Ste 'na vôsce ca s'accocchie|Stonne $1 vôsce ca s'accocchiane}} cu sta descrizione.",
+	"classPlaceholder": "Mitte 'a classe",
+	"browse": "O, sfogghie une de ste classe:",
+	"noFiltersDefined": "Nisciune filtre jè definite pe sta classe.",
+	"addFilter": "Aggiunge 'nu filtre",
+	"viewQuery": "'Ndruche 'a 'nderrogazione SPARQL",
+	"noItems": "Nisciuna vôsce s'accocchie cu sta descrizione.",
+	"displayItemsError": "'U tendative pe 'ndrucà l'elenghe de le vôsce ste mette assaije tiembe; pe piacere mitte quacche filtre de cchiù",
+	"gettingValues": "Stoche e pigghie le valore pu filtre $1...",
+	"noAdditionalValues": "Non ge stonne valore aggiundive pu filtre $1.",
+	"filterError": "Stoche a prove a pigghie le valore pigghie troppe tiembe pu filtre $1.",
+	"filterTimeout": "('U recupere de 'nu 'nzieme comblete de valore pu filtre $1 ste mette assaije tiembe; invece, aqquà ste pronde 'nu 'nzieme 'ngomblete.)",
+	"selectValue": "Scacchie 'nu valore pe $1:",
+	"selectAdditionalValue": "Scacchie 'nu valore aggiundive pe $1:",
+	"noValue": "Nisciune valore",
+	"changeClassNote": "(Note: ce ste cange 'a classe, pirde tutte le 'mbostaziune corrende de le filtre.)",
+	"specificClass": "Cange a 'na classe cchiù specifeche:",
+	"generalClass": "Cange a 'na classe cchiù generale:",
+	"viewList": "'Ndruche l'elenghe de vôsce",
+	"results": "({{PLURAL:$1|1 resultate}})",
+	"applyLinkedFilter": "Appleche 'u filtre sus a $1",
+	"chooseLinkedFilter": "Scacchie 'nu filtre da une de ste classe:"
+}

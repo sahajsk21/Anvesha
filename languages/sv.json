@@ -24,5 +24,7 @@
 	"specificClass": "Ändra till en mer specifik klass:",
 	"generalClass": "Ändra till en mer allmän klass:",
 	"viewList": "Visa lista över objekt",
-	"results": "({{PLURAL:$1|1 resultat|$1 resultat}})"
+	"results": "({{PLURAL:$1|1 resultat|$1 resultat}})",
+	"applyLinkedFilter": "Tillämpa filter på $1",
+	"chooseLinkedFilter": "Välj ett filter från en av följande klasser:"
 }

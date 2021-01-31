@@ -1,0 +1,17 @@
+{
+	"@metadata": {
+		"authors": [
+			"Moj"
+		]
+	},
+	"itemCount": "{{PLURAL:$1|Yksi kohde|Yhteensä $1 kohdetta}} vastasi kuvausta.",
+	"classPlaceholder": "Syötä luokka",
+	"browse": "Voit myös selata jotakin seuraavista luokista:",
+	"addFilter": "Lisää suodatin",
+	"viewQuery": "Tarkastele SPARQL-kyselyä",
+	"noItems": "Yksikään kohde ei vastannut kuvausta.",
+	"gettingValues": "Haetaan suodatinta $1 vastaavia arvoja...",
+	"selectValue": "Valitse arvo suodattimelle $1:",
+	"noValue": "Ei arvoa",
+	"viewList": "Palaa luetteloon kohteista"
+}
