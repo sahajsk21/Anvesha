@@ -76,7 +76,8 @@ viewallitems = Vue.component('view-all-items', {
                 <a v-if="currentPage<totalValues/resultsPerPage" @click="displayData('next')">&gt;</a>
             </div>
             <div><a :href="query">{{ websiteText.viewQuery||fallbackText.viewQuery }}</a></div>
-            <div><a @click="exportCSV">Export as CSV</a></div>
+            <div><a @click="exportAsFormat('csv')">Export as CSV</a></div>
+            <div><a @click="exportAsFormat('json')">Export as JSON</a></div>
         </div>
     </div>`,
     methods: {
@@ -166,7 +167,7 @@ viewallitems = Vue.component('view-all-items', {
         linkToWikidata(item) {
             return "https://www.wikidata.org/wiki/" + item.split('/').slice(-1)[0] + "?uselang=" + (urlParams.get('lang') ? urlParams.get('lang') : (defaultLanguages[0] ? defaultLanguages[0] : 'en'))
         },
-        exportCSV() {
+        exportAsFormat(format) {
             document.getElementsByTagName("body")[0].style.cursor = "progress";
             /* 
              Gets items based on applied filters.
@@ -193,13 +194,21 @@ viewallitems = Vue.component('view-all-items', {
             axios.get(fullUrl)
                 .then(response => {
                     if (response.data['results']['bindings'].length) {
-                        // Generate CSV content and load it in a temporary <a> tag and the click it dynamically.
-                        let csvHeader = encodeURI("data:text/csv;charset=utf-8,");
-                        let csvContent = [...response.data['results']['bindings']].map(e => e.value.value.split('/').slice(-1)[0] + "," + e.valueLabel.value).join("\n");
-                        let downloadURI = csvHeader + encodeURIComponent(csvContent);
+                        // Generate content in the desired format and load it in a temporary <a> tag and the click it dynamically.
                         var link = document.createElement("a");
+                        if(format == 'csv'){
+                            var csvHeader = encodeURI("data:text/csv;charset=utf-8,");
+                            var csvContent = [...response.data['results']['bindings']].map(e => e.value.value.split('/').slice(-1)[0] + "," + e.valueLabel.value).join("\n");
+                            var downloadURI = csvHeader + encodeURIComponent(csvContent);
+                            link.setAttribute("download", "data.csv");
+                        }
+                        else if(format=='json'){
+                            var jsonHeader = encodeURI("data:text/json;charset=utf-8,");
+                            var jsonContent = JSON.stringify(response.data['results']['bindings']);
+                            var downloadURI = jsonHeader + encodeURIComponent(jsonContent);
+                            link.setAttribute("download", "data.json");
+                        }
                         link.setAttribute("href", downloadURI);
-                        link.setAttribute("download", "data.csv");
                         document.body.appendChild(link);
                         link.click();
                         document.getElementsByTagName("body")[0].style.cursor = "default";
@@ -319,8 +328,8 @@ viewallitems = Vue.component('view-all-items', {
             }
         }
         this.sparqlParameters.push(filterString, filterRanges, filterQuantities, noValueString, maxString, constraintString);
-        if (this.format == 'csv') {
-            this.exportCSV();
+        if (this.format) {
+            this.exportAsFormat(this.format);
         }
         else {
             this.displayData();
