@@ -24,5 +24,7 @@
 	"specificClass": "החלפה למחלקה מדויקת יותר:",
 	"generalClass": "החלפה למחלקה כללית יותר:",
 	"viewList": "הצגת רשימת פריטים",
-	"results": "({{PLURAL:$1|תוצאה אחת|$1 תוצאות}})"
+	"results": "({{PLURAL:$1|תוצאה אחת|$1 תוצאות}})",
+	"applyLinkedFilter": "החלת מסנן על $1",
+	"chooseLinkedFilter": "נא לבחור מסנן מאחת מהמחלקות הבאות:"
 }
