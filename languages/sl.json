@@ -1,0 +1,29 @@
+{
+	"@metadata": {
+		"authors": [
+			"Eleassar"
+		]
+	},
+	"itemCount": "Temu opisu {{PLURAL:$1|ustreza en predmet|two=ustrezata dva predmeta|few=ustrezajo $1 predmeti|ustreza $1 predmetov}}.",
+	"classPlaceholder": "Vnesite skupino",
+	"browse": "Ali prebrskajte katerega od naslednjih razredov:",
+	"noFiltersDefined": "Za ta razred ni opredeljen noben filter.",
+	"addFilter": "Dodajte filter",
+	"viewQuery": "Ogled poizvedbe SPARQL",
+	"noItems": "S tem opisom se ne ujema noben predmet.",
+	"displayItemsError": "Poskus prikaza predmetov je trajal predolgo; razmislite o tem, da bi uporabili še kakšen filter.",
+	"gettingValues": "Pridobivam vrednosti za filter $1 ...",
+	"noAdditionalValues": "Za filter $1 ni dodatnih vrednosti.",
+	"filterError": "Pridobivanje vrednosti za filter $1 je trajalo predolgo.",
+	"filterTimeout": "(Pridobivanje popolnega nabora vrednosti za filter $1 je trajalo predolgo; prikazan je nepopoln nabor.)",
+	"selectValue": "Izberite vrednost za $1:",
+	"selectAdditionalValue": "Izberite dodatno vrednost za $1:",
+	"noValue": "Brez vrednosti",
+	"changeClassNote": "(Opomba: Če spremenite skupino, boste izgubili trenutni nabor filtrov.)",
+	"specificClass": "Spremeni v bolj specifično skupino:",
+	"generalClass": "Spremeni v bolj splošno skupino:",
+	"viewList": "Prikaži seznam predmetov",
+	"results": "({{PLURAL:$1|one=1 zadetek|two=Dva zadetka|few=$1 zadetki|$1 zadetkov}})",
+	"applyLinkedFilter": "Uporabi filter na $1",
+	"chooseLinkedFilter": "Izberite filter iz ene od naslednjih skupin:"
+}
