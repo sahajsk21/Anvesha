@@ -1,7 +1,8 @@
 {
 	"@metadata": {
 		"authors": [
-			"Moj"
+			"Moj",
+			"Pyscowicz"
 		]
 	},
 	"itemCount": "{{PLURAL:$1|Yksi kohde|Yhteensä $1 kohdetta}} vastasi kuvausta.",
@@ -13,5 +14,6 @@
 	"gettingValues": "Haetaan suodatinta $1 vastaavia arvoja...",
 	"selectValue": "Valitse arvo suodattimelle $1:",
 	"noValue": "Ei arvoa",
-	"viewList": "Palaa luetteloon kohteista"
+	"viewList": "Palaa luetteloon kohteista",
+	"results": "({{PLURAL:$1|1 tulos|$1 tulosta}})"
 }

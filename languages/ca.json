@@ -23,5 +23,7 @@
 	"specificClass": "Canvia a una classe més específica:",
 	"generalClass": "Canvia a una classe més general:",
 	"viewList": "Mostra la llista d'elements",
-	"results": "({{PLURAL:$1|1 resultat|$1 resultats}})"
+	"results": "({{PLURAL:$1|1 resultat|$1 resultats}})",
+	"applyLinkedFilter": "Aplicar el filtre a $1",
+	"chooseLinkedFilter": "Trieu un filtre d'una de les classes següents:"
 }
