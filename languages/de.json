@@ -2,6 +2,7 @@
 	"@metadata": {
 		"authors": [
 			"DraconicDark",
+			"FF11",
 			"Pittigrilli"
 		]
 	},
@@ -13,10 +14,14 @@
 	"viewQuery": "SPARQL-Abfrage anzeigen",
 	"noItems": "Kein Datenobjekt entspricht dieser Beschreibung.",
 	"displayItemsError": "Der Versuch, die Liste der Datenobjekte anzuzeigen, dauerte zu lange; bitte erwäge daher, weitere Filter hinzuzufügen.",
+	"gettingValues": "Hole Werte für Filter $1 ...",
 	"noAdditionalValues": "Es gibt keine zusätzlichen Werte für den Filter $1.",
+	"filterError": "Der Versuch, Werte für den Filter $1 abzurufen, dauerte zu lang.",
 	"selectValue": "Wähle einen Wert für $1 aus:",
 	"selectAdditionalValue": "Wähle einen zusätzlichen Wert für $1:",
 	"noValue": "Kein Wert",
 	"specificClass": "Wechsle zu einer spezifischeren Klasse:",
-	"viewList": "Betrachte eine Liste der Objekte"
+	"viewList": "Betrachte eine Liste der Objekte",
+	"results": "({{PLURAL:$1|ein Ergebnis|$1 Ergebnisse}})",
+	"chooseLinkedFilter": "Wähle einen Filter von einer der folgenden Klassen:"
 }
