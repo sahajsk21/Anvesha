@@ -4,6 +4,7 @@
 			"DraconicDark",
 			"FF-11",
 			"FF11",
+			"ManuelFranz",
 			"Pittigrilli"
 		]
 	},
@@ -24,5 +25,6 @@
 	"specificClass": "Wechsle zu einer spezifischeren Klasse:",
 	"viewList": "Betrachte eine Liste der Objekte",
 	"results": "({{PLURAL:$1|ein Ergebnis|$1 Ergebnisse}})",
+	"applyLinkedFilter": "Filter auf $1 anwenden",
 	"chooseLinkedFilter": "Wähle einen Filter von einer der folgenden Klassen:"
 }
