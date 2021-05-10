@@ -8,7 +8,7 @@
 	"classPlaceholder": "Vnesite skupino",
 	"browse": "Ali prebrskajte katerega od naslednjih razredov:",
 	"noFiltersDefined": "Za ta razred ni opredeljen noben filter.",
-	"addFilter": "Dodajte filter",
+	"addFilter": "Dodaj filter",
 	"viewQuery": "Ogled poizvedbe SPARQL",
 	"noItems": "S tem opisom se ne ujema noben predmet.",
 	"displayItemsError": "Poskus prikaza predmetov je trajal predolgo; razmislite o tem, da bi uporabili še kakšen filter.",
