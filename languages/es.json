@@ -2,6 +2,7 @@
 	"@metadata": {
 		"authors": [
 			"Fitoschido",
+			"Jack30",
 			"Jesusmc"
 		]
 	},
@@ -24,5 +25,7 @@
 	"specificClass": "Cambiar a una clase más específica:",
 	"generalClass": "Cambiar a una clase más general:",
 	"viewList": "Ver lista de elementos",
-	"results": "({{PLURAL:$1|1 resultado|$1 resultados}})"
+	"results": "({{PLURAL:$1|1 resultado|$1 resultados}})",
+	"applyLinkedFilter": "aplicar filtro en $1",
+	"chooseLinkedFilter": "escoger un filtro de una de las siguientes clases:"
 }
