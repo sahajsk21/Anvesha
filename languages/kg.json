@@ -1,0 +1,29 @@
+{
+	"@metadata": {
+		"authors": [
+			"Cgmbo"
+		]
+	},
+	"itemCount": "Kele {{PLURAL:$1|ti kima mosi ya me fwanana|ti bima $1 ya me fwanana}} ti ntendula yai.",
+	"classPlaceholder": "Kotisa kimvuka",
+	"browse": "To, kota na mosi ya bimvuka yai:",
+	"noFiltersDefined": "Bo me tula filtre mosi ve na kimvuka yai.",
+	"addFilter": "Yika filtre",
+	"viewQuery": "Monisa kima ya bo ke lomba SPARQL",
+	"noItems": "Kima mosi ve me fwanana ti ntendula yai.",
+	"displayItemsError": "Kumeka kusonga liste ya bima me baka ntangu mingi kuluta; nge lenda yika bafiltre mingi.",
+	"gettingValues": "Kubaka bantalu ya filtre $1 ...",
+	"noAdditionalValues": "Beto kele ve ti bantalu ya nkaka sambu na filtre $1.",
+	"filterError": "Kumeka kubaka bantalu me baka ntangu mingi kuluta sambu na filtre $1.",
+	"filterTimeout": "(Kubaka kimvuka ya bantalu sambu na filtre $1 me baka ntangu mingi kuluta; kansi, ziku yai kimvuka mosi ya kele ve ya mvimba.)",
+	"selectValue": "Pona ntalu mosi sambu na $1:",
+	"selectAdditionalValue": "Pona ntalu ya nkaka sambu na $1:",
+	"noValue": "Ntalu kele ve",
+	"changeClassNote": "(Lukebisu: kana nge soba kimvuka, nge ta vidisa kimvuka ya bafiltre ya sesepi.)",
+	"specificClass": "Soba na kimvuka ya fioti kuluta:",
+	"generalClass": "Soba na kimvuka ya nene kuluta:",
+	"viewList": "Tala liste ya bima",
+	"results": "({{PLURAL:$1|résultatresult|barésulatat $1}})",
+	"applyLinkedFilter": "Sadila filtre na $1",
+	"chooseLinkedFilter": "Pona filtre mosi na mosi ya bimvuka yai:"
+}
