@@ -24,5 +24,7 @@
 	"specificClass": "Mudar para uma classe mais específica:",
 	"generalClass": "Mudar para uma classe mais geral:",
 	"viewList": "Ver lista de elementos",
-	"results": "({{PLURAL:$1|1 resultado|$1 resultados}})"
+	"results": "({{PLURAL:$1|1 resultado|$1 resultados}})",
+	"applyLinkedFilter": "Aplicar filtro em $1",
+	"chooseLinkedFilter": "Escolher um filtro de uma das seguintes classes:"
 }
