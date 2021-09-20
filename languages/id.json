@@ -1,0 +1,29 @@
+{
+	"@metadata": {
+		"authors": [
+			"Akmaie Ajam"
+		]
+	},
+	"itemCount": "Ada {{PLURAL:$1|1 item|$1 item}} yang cocok dengan deskripsi ini.",
+	"classPlaceholder": "Ketikkan kelas",
+	"browse": "Atau, telusuri salah satu kelas berikut:",
+	"noFiltersDefined": "Tidak ada filter yang didefinisikan untuk kelas ini.",
+	"addFilter": "Tambah filter",
+	"viewQuery": "Lihat kueri SPARQL",
+	"noItems": "Tidak ada item yang cocok dengan deskripsi ini.",
+	"displayItemsError": "Percobaan untuk menampilkan daftar item terlalu lama; harap pertimbangkan untuk menambahkan lebih banyak filter.",
+	"gettingValues": "Mendapatkan nilai untuk filter $1 ...",
+	"noAdditionalValues": "Tidak ada nilai tambahan untuk filter $1.",
+	"filterError": "Percobaan untuk mendapatkan nilai terlalu lama untuk filter $1.",
+	"filterTimeout": "(Mendapatkan kumpulan nilai lengkap untuk filter $1 membutuhkan waktu terlalu lama; sebagai gantinya, berikut adalah kumpulan yang mungkin tidak lengkap.)",
+	"selectValue": "Pilih nilai untuk $1:",
+	"selectAdditionalValue": "Pilih nilai tambahan untuk $1:",
+	"noValue": "Tanpa nilai",
+	"changeClassNote": "(Catatan: jika Anda mengubah kelas, set filter yang Anda pilih hilang.)",
+	"specificClass": "Ubah ke kelas yang lebih spesifik:",
+	"generalClass": "Ubah ke kelas yang lebih umum:",
+	"viewList": "Lihat daftar item",
+	"results": "({{PLURAL:$1|1 hasil|$1 hasil}})",
+	"applyLinkedFilter": "Terapkan filter pada $1",
+	"chooseLinkedFilter": "Pilih filter dari salah satu kelas berikut:"
+}
