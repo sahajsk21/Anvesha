@@ -2,29 +2,30 @@
 	"@metadata": {
 		"authors": [
 			")8",
-			"Shimamura Sakura"
+			"Shimamura Sakura",
+			"列维劳德"
 		]
 	},
-	"itemCount": "有{{PLURAL:$1|一个|$1个}}项目符合此描述。",
+	"itemCount": "有{{PLURAL:$1|$1 个符合此描述的项目}}。",
 	"classPlaceholder": "输入类别",
-	"browse": "或浏览以下类别之一：",
+	"browse": "或浏览以下任意类别：",
 	"noFiltersDefined": "没有为此类别定义过滤器。",
 	"addFilter": "添加过滤器",
-	"viewQuery": "查看SPARQL请求",
+	"viewQuery": "查看 SPARQL 请求",
 	"noItems": "没有项目符合此描述。",
-	"displayItemsError": "显示列表用时太久；请考虑增加更多过滤器。",
-	"gettingValues": "正在为过滤器$1获取值……",
-	"noAdditionalValues": "过滤器$1没有更多的值了。",
-	"filterError": "为过滤器$1获取值用时太久。",
-	"filterTimeout": "（取得过滤器$1所有的值用时太久；作为代替，这里是可能不全的集合。）",
-	"selectValue": "为$1选择一个值：",
-	"selectAdditionalValue": "为$1选择更多的值：",
-	"noValue": "没有值",
-	"changeClassNote": "（提醒：如果更改类别，将会丢失当前的过滤器集。）",
+	"displayItemsError": "显示列表耗时过久；请考虑增加更多过滤器。",
+	"gettingValues": "正在为 $1 过滤器获取值……",
+	"noAdditionalValues": "$1 过滤器没有更多的值了。",
+	"filterError": "为过滤器 $1 获取值耗时过久。",
+	"filterTimeout": "（取得过滤器 $1 所有的耗时太久；所以，下面是可能不完整的集合。）",
+	"selectValue": "为 $1 选择一个值：",
+	"selectAdditionalValue": "选择一个值给 $1 添加：",
+	"noValue": "没有取值",
+	"changeClassNote": "（提醒：如果您更改类别，您将会丢失当前的过滤器集。）",
 	"specificClass": "切换到更具体的类别：",
 	"generalClass": "切换到更一般的类别：",
 	"viewList": "查看项目列表",
-	"results": "({{PLURAL:$1|一个结果|$1个结果}})",
-	"applyLinkedFilter": "为$1应用过滤器",
-	"chooseLinkedFilter": "从下列类别之一中选择过滤器："
+	"results": "({{PLURAL:$1|$1 个结果}})",
+	"applyLinkedFilter": "为 $1 应用过滤器",
+	"chooseLinkedFilter": "从下列中的一个类别中选择过滤器："
 }
