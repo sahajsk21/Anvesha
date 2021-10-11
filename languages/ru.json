@@ -1,10 +1,12 @@
 {
 	"@metadata": {
 		"authors": [
+			"DDPAT",
 			"Kareyac",
 			"Okras"
 		]
 	},
+	"classPlaceholder": "Введите класс",
 	"addFilter": "Добавить фильтр",
 	"viewQuery": "Просмотр SPARQL-запроса",
 	"gettingValues": "Получение значений для фильтра $1…",
