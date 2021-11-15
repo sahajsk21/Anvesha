@@ -1,0 +1,14 @@
+{
+	"@metadata": {
+		"authors": [
+			"Ajeje Brazorf",
+			"Beta16"
+		]
+	},
+	"addFilter": "Aggiungi un filtro",
+	"selectValue": "Seleziona un valore per $1:",
+	"noValue": "Nessun valore",
+	"results": "({{PLURAL:$1|1 risultato|$1 risultati}})",
+	"applyLinkedFilter": "Applica filtro su $1",
+	"chooseLinkedFilter": "Scegli un filtro da una delle seguenti classi:"
+}
