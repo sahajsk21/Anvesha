@@ -1,0 +1,29 @@
+{
+	"@metadata": {
+		"authors": [
+			"Jon Harald Søby"
+		]
+	},
+	"itemCount": "Det er {{PLURAL:$1|ett element|$1 elementer}} som passer med denne beskrivelsen.",
+	"classPlaceholder": "Skriv inn klasse",
+	"browse": "Eller bla gjennom følgende klasser:",
+	"noFiltersDefined": "Ingen filtre er definert for denne klassen.",
+	"addFilter": "Legg til et filter",
+	"viewQuery": "Vis SPARQL-spørring",
+	"noItems": "Ingen elementer passer med denne beskrivelsen.",
+	"displayItemsError": "Forsøket på å vise listen over elementer tok for lang tid; prøv å legge til flere filtre.",
+	"gettingValues": "Henter verdier for filter $1 …",
+	"noAdditionalValues": "Det er ingen flere verdier for filteret $1.",
+	"filterError": "Forsøk på å hente verdier tok for lang tid for filter $1.",
+	"filterTimeout": "(Henting av et fullstendig sett av verdier for filteret $1 tok for lang tid; i stedet vises et muligens ufullstendig sett her.)",
+	"selectValue": "Velg en verdi for $1:",
+	"selectAdditionalValue": "Velg en ekstra verdi for $1:",
+	"noValue": "Ingen verdi",
+	"changeClassNote": "(Merk: Hvis du endrer klassen vil du miste det gjeldende settet av filtre.)",
+	"specificClass": "Endre til en mer spesifikk klasse:",
+	"generalClass": "Endre til en mer generell klasse:",
+	"viewList": "Vis liste over elementer",
+	"results": "({{PLURAL:$1|Ett resultat|$1 resultater}})",
+	"applyLinkedFilter": "Bruk filter på $1",
+	"chooseLinkedFilter": "Velg et filter blant en av følgende klasser:"
+}
