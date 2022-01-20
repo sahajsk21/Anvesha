@@ -8,12 +8,18 @@
 	"itemCount": "{{PLURAL:$1|Yksi kohde|Yhteensä $1 kohdetta}} vastasi kuvausta.",
 	"classPlaceholder": "Syötä luokka",
 	"browse": "Voit myös selata jotakin seuraavista luokista:",
+	"noFiltersDefined": "Tälle luokalle ei ole määritelty suodatinta.",
 	"addFilter": "Lisää suodatin",
 	"viewQuery": "Tarkastele SPARQL-kyselyä",
 	"noItems": "Yksikään kohde ei vastannut kuvausta.",
+	"displayItemsError": "Kohdeluettelon näyttämisyritys kesti liian kauan; harkitse suodattimien lisäämistä.",
 	"gettingValues": "Haetaan suodatinta $1 vastaavia arvoja...",
 	"selectValue": "Valitse arvo suodattimelle $1:",
 	"noValue": "Ei arvoa",
+	"changeClassNote": "(Huomaa: jos vaihdat luokkaa, asettamasi suodattimet katoavat.)",
+	"specificClass": "Vaihda tarkempaan luokkaan:",
+	"generalClass": "Vaihda yleisempään luokkaan:",
 	"viewList": "Palaa luetteloon kohteista",
-	"results": "({{PLURAL:$1|1 tulos|$1 tulosta}})"
+	"results": "({{PLURAL:$1|1 tulos|$1 tulosta}})",
+	"chooseLinkedFilter": "Valitse suodatin seuraavista luokista:"
 }
