@@ -1,0 +1,13 @@
+{
+	"@metadata": {
+		"authors": [
+			"Ajeje Brazorf"
+		]
+	},
+	"classPlaceholder": "Nzirisci classi",
+	"addFilter": "Agghiunci nu filtru",
+	"viewQuery": "Talìa la query SPARQL",
+	"noValue": "Nuddu valuri",
+	"results": "({{PLURAL:$1|1 risurtatu|$1 risurtati}})",
+	"chooseLinkedFilter": "Scegghi nu filtru d'una dî classi seguenti:"
+}
