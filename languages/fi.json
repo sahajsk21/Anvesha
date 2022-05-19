@@ -2,6 +2,7 @@
 	"@metadata": {
 		"authors": [
 			"Moj",
+			"Nike",
 			"Pyscowicz"
 		]
 	},
@@ -21,5 +22,6 @@
 	"generalClass": "Vaihda yleisempään luokkaan:",
 	"viewList": "Palaa luetteloon kohteista",
 	"results": "({{PLURAL:$1|1 tulos|$1 tulosta}})",
+	"applyLinkedFilter": "Käytä suodatinta kohteeseen $1",
 	"chooseLinkedFilter": "Valitse suodatin seuraavista luokista:"
 }
