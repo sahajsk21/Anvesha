@@ -1,0 +1,29 @@
+{
+	"@metadata": {
+		"authors": [
+			"McDutchie"
+		]
+	},
+	"itemCount": "Il ha {{PLURAL:$1|un elemento|$1 elementos}} que corresponde a iste description.",
+	"classPlaceholder": "Insere classe",
+	"browse": "O explora un del sequente classes:",
+	"noFiltersDefined": "Nulle filtro es definite pro iste classe.",
+	"addFilter": "Adder un filtro",
+	"viewQuery": "Vider consulta SPARQL",
+	"noItems": "Nulle elemento corresponde a iste description.",
+	"displayItemsError": "Le tentativa de monstrar le lista de elementos ha prendite troppo de tempore; considera adder plus filtros.",
+	"gettingValues": "Obtene valores pro filtro $1 …",
+	"noAdditionalValues": "Il non ha valores additional pro le filtro $1.",
+	"filterError": "Tentar obtener valores ha prendite troppo de tempore pro le filtro $1.",
+	"filterTimeout": "(Obtener un insimul complete de valores pro le filtro $1 ha prendite troppo de tempore; in su loco, ecce un insimul possibilemente incomplete.)",
+	"selectValue": "Selige un valor pro $1:",
+	"selectAdditionalValue": "Selige un valor additional pro $1:",
+	"noValue": "Nulle valor",
+	"changeClassNote": "(Nota: si tu cambia le classe, tu perdera le insimul actual de filtros.)",
+	"specificClass": "Passar a un classe plus specific:",
+	"generalClass": "Passar a un classe plus general:",
+	"viewList": "Vider le lista de elementos",
+	"results": "($1 resultato{{PLURAL:$1||s}})",
+	"applyLinkedFilter": "Applicar filtro sur $1",
+	"chooseLinkedFilter": "Elige un filtro de un del sequente classes:"
+}
