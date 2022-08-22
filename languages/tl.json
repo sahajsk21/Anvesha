@@ -1,0 +1,29 @@
+{
+	"@metadata": {
+		"authors": [
+			"GinawaSaHapon"
+		]
+	},
+	"itemCount": "May {{PLURAL:$1|isang item|$1 (na) item}} na tumutugma sa paglalarawang ito.",
+	"classPlaceholder": "Ilagay ang klase",
+	"browse": "O, mag-browse sa kahit ano sa mga sumusunod na klase:",
+	"noFiltersDefined": "Walang filter na na-define para sa klaseng ito.",
+	"addFilter": "Magdagdag ng filter",
+	"viewQuery": "Tingnan ang SPARQL query",
+	"noItems": "Walang tumutugmang item sa paglalarawang ito.",
+	"displayItemsError": "Masyado matagal ang pagsubok na maipakita ang listahan ng mga item; ikonsidera po ang pagdagdag pa sa mas maraming filter.",
+	"gettingValues": "Hinahanapan ng mga value para sa filter na $1...",
+	"noAdditionalValues": "Walang karagdagang value para sa filter na $1.",
+	"filterError": "Masyadong matagal ang pagsubok na makuha ang mga value para sa filter na $1.",
+	"filterTimeout": "(Masyadong matagal ang pagkuha sa isang kumpletong listahan ng mga value para sa filter na $1; kaya naman, heto na lang ang isang posibleng di-kumpletong set.)",
+	"selectValue": "Pumili ng value para sa $1:",
+	"selectAdditionalValue": "Pumili ng karagdagang value para sa $1:",
+	"noValue": "Walang value",
+	"changeClassNote": "(Paalala: kung binago mo ang klase, mawawala mo rin ang kasalukuyang set mo ng mga filter.)",
+	"specificClass": "Lumipat sa isang mas specific na klase:",
+	"generalClass": "Lumipat sa isang mas general na klase:",
+	"viewList": "Tingnan ang listahan ng mga item",
+	"results": "({{PLURAL:$1|1 resulta|$1 (na) resulta}})",
+	"applyLinkedFilter": "Ilapat ang filter sa $1",
+	"chooseLinkedFilter": "Pumili ng filter mula sa isa sa mga sumusunod na klase:"
+}
