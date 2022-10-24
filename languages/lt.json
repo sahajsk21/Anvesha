@@ -1,0 +1,29 @@
+{
+	"@metadata": {
+		"authors": [
+			"Eitvys200"
+		]
+	},
+	"itemCount": "Yra {{PLURAL:$1|vienas objektas, atitinkantis|yra $1 objektai, atitinkantys}} šį aprašymą.",
+	"classPlaceholder": "Įveskite klasę",
+	"browse": "Arba, naršykite bet kurią iš šių klasių:",
+	"noFiltersDefined": "Nėra šiai klasei nurodyto filtro.",
+	"addFilter": "Pridėti filtrą",
+	"viewQuery": "Peržiūrėti SPARQL užklausą",
+	"noItems": "Nėra objekto, kuris atitiktų šį aprašymą.",
+	"displayItemsError": "Bandymas parodyti objektų sąrašą užtruko per ilgai; prašome apsvarstyti galimybę pridėti daugiau filtrų.",
+	"gettingValues": "Gaunamos $1 filtro reikšmės ...",
+	"noAdditionalValues": "Nėra papildomų $1 filtro reikšmių.",
+	"filterError": "Bandymas gauti filtro $1 reikšmes užtruko per ilgai.",
+	"filterTimeout": "(Pilno $1 filtro reikšmių sąrašo gavimas užtruko per ilgai; vietoj to, čia pateikiamas galimai nepilnas rinkinys.)",
+	"selectValue": "Pasirinkite $1 reikšmę:",
+	"selectAdditionalValue": "Pasirinkite papildomą $1 reikšmę:",
+	"noValue": "Nėra reikšmės",
+	"changeClassNote": "(Pastaba: jei pakeisite klasę, prarasite dabartinį filtrų rinkinį.)",
+	"specificClass": "Pakeisti į konkretesnę klasę:",
+	"generalClass": "Pakeisti į bendresnę klasę:",
+	"viewList": "Peržiūrėti objektų sąrašą",
+	"results": "({{PLURAL:$1|1 rezultatas|$1 rezultatai}})",
+	"applyLinkedFilter": "Pritaikyti filtrą $1",
+	"chooseLinkedFilter": "Pasirinkite filtrą iš vienos iš šių klasių:"
+}
