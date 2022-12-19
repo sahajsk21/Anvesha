@@ -1,7 +1,8 @@
 {
 	"@metadata": {
 		"authors": [
-			"Kly"
+			"Kly",
+			"列维劳德"
 		]
 	},
 	"itemCount": "有 {{PLURAL:$1|1|$1}} 個項目符合此描述。",
@@ -23,7 +24,7 @@
 	"specificClass": "更改成更具體的分類：",
 	"generalClass": "更改成更通用的分類：",
 	"viewList": "查看項目清單",
-	"results": "({{PLURAL:$1|1 個結果|$1 個結果}})",
+	"results": "({{PLURAL:$1|1 筆結果|$1 筆結果}})",
 	"applyLinkedFilter": "在$1套用篩選",
 	"chooseLinkedFilter": "從以下類別挑選出一個篩選："
 }
