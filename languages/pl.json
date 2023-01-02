@@ -1,0 +1,30 @@
+{
+	"@metadata": {
+		"authors": [
+			"Kareyac",
+			"Luku123"
+		]
+	},
+	"itemCount": "Tu {{PLURAL:$1|jest jeden element która się zgadza|są $1 elementy które się zgadzają}} z tym opisem.",
+	"classPlaceholder": "Podaj klasę",
+	"browse": "Lub przeglądaj dowolną z następujących klas:",
+	"noFiltersDefined": "Dla tej klasy nie został zdefiniowany żaden filtr.",
+	"addFilter": "Dodaj filtr",
+	"viewQuery": "Wyświetl zapytanie SPARQL",
+	"noItems": "Żaden element nie zgadza się z tym opisem.",
+	"displayItemsError": "Próba wyświetlenia listy elementów trwała za długo; proszę rozważyć dodanie większej ilości filtrów.",
+	"gettingValues": "Pobieranie wartości dla filtra $1 ...",
+	"noAdditionalValues": "Nie ma dodatkowych wartości dla filtra $1.",
+	"filterError": "Próba uzyskania wartości trwała za długo dla filtra $1.",
+	"filterTimeout": "(Uzyskiwanie kompletnego zestawu wartości dla filtra $1 trwało za długo; zamiast tego tutaj jest prawdopodobnie niekompletny zestaw.)",
+	"selectValue": "Wybierz wartość dla $1:",
+	"selectAdditionalValue": "Wybierz dodatkową wartość dla $1:",
+	"noValue": "Bez wartości",
+	"changeClassNote": "(Uwaga: jeżeli zmienisz klasę to stracisz obecny zestaw filtrów.)",
+	"specificClass": "Zmień na bardziej szczegółową klasę:",
+	"generalClass": "Zmień na bardziej ogólną klasę:",
+	"viewList": "Pokaż listę elementów",
+	"results": "({{PLURAL:$1|1 wynik|$1 wyniki}})",
+	"applyLinkedFilter": "Zastosuj filtr na $1",
+	"chooseLinkedFilter": "Wybierz filtr z jednej z następujących klas:"
+}
