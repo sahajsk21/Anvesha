@@ -1,0 +1,23 @@
+{
+	"@metadata": {
+		"authors": [
+			"Robby",
+			"Volvox"
+		]
+	},
+	"classPlaceholder": "Klass aginn",
+	"browse": "Oder duerchsicht eng vun de follgende Klassen:",
+	"noFiltersDefined": "Fir dës Klass ass kee Filter definéiert.",
+	"addFilter": "E Filter derbäisetzen",
+	"viewQuery": "SPARQL-Ufro weisen",
+	"noAdditionalValues": "Et gëtt keng weider Wäerter fir de Filter $1.",
+	"selectValue": "Wielt e Wäert fir $1:",
+	"selectAdditionalValue": "Wielt en zousätzleche Wäert fir $1:",
+	"noValue": "Kee Wäert",
+	"specificClass": "Wiesselt op méi eng spezifesch Klass:",
+	"generalClass": "Wiesselt op méi eng allgemeng Klass:",
+	"viewList": "Lëscht vun den Elementer weisen",
+	"results": "({{PLURAL:$1|1 Resultat|$1 Resultater}})",
+	"applyLinkedFilter": "Filter op $1 applizéieren",
+	"chooseLinkedFilter": "Wielt ee Filter aus enger vun de follgende Klassen:"
+}
