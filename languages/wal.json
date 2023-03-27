@@ -1,0 +1,29 @@
+{
+	"@metadata": {
+		"authors": [
+			"Ella Lachow"
+		]
+	},
+	"itemCount": "Ha qonccissuwaara {{PLURAL:$1|issoy de'ees|$1 corati de'oosona}}.",
+	"classPlaceholder": "Shaahuwaa gelissa",
+	"browse": "Woykko ha kaalliyaa shaahotuppe bessa:",
+	"noFiltersDefined": "Ha shaahuwaassi gacciyaagee baawa.",
+	"addFilter": "Gacciyaagaa gujja",
+	"viewQuery": "SPARQL oyshaa be'a",
+	"noItems": "Ha qonccissuwaara gayttiyabi aybinne baawa.",
+	"displayItemsError": "Dummatidaageetu paatettaa bessanawu malishin daro wodiya ekkiis; hayyanaa aaro gacciyaagaa gujjanawu qoppa.",
+	"gettingValues": "$1 ha gacettaassi gatiyaa demmiiddi de'ees...",
+	"noAdditionalValues": "Ha $1 gacciyaagaassi gujo gatee baawa.",
+	"filterError": "Ha $1 gacciyaagaassi gatiyaa demmanawu malishin daro wodiya ekkiis.",
+	"filterTimeout": "(Ha $1 gacciyaagaassi kumetta gatetu shiiquwaa demmanawu adussa wodiyaa ekkiis. A sohuwan ooni erii paca shiiqoy daana danddayees.)",
+	"selectValue": "$1 hagaassi gatiyaa doora:",
+	"selectAdditionalValue": "$1 hagaassi gujo gatiyaa doora:",
+	"noValue": "Gatee baawa",
+	"changeClassNote": "(Hassaya: neeni shaahuwaa laammikko, neeni ha'i de'iya gacettata xayanawu danddayaasa.)",
+	"specificClass": "Daro dummatida shaahuwaassi laamma:",
+	"generalClass": "Daro aakkida shaahuwaassi laamma:",
+	"viewList": "Dummatidaageetu paatettaa be'a",
+	"results": "({{PLURAL:$1|1 ayfee|$1 ayfeti}})",
+	"applyLinkedFilter": "Hagan $1 gacciyaagaa wotta",
+	"chooseLinkedFilter": "Ha kaalliyaa shaahotuppe gacciyaagaa doora:"
+}
