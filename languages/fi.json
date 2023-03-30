@@ -15,6 +15,7 @@
 	"noItems": "Yksikään kohde ei vastannut kuvausta.",
 	"displayItemsError": "Kohdeluettelon näyttämisyritys kesti liian kauan; harkitse suodattimien lisäämistä.",
 	"gettingValues": "Haetaan suodatinta $1 vastaavia arvoja...",
+	"noAdditionalValues": "Suodattimelle $1 ei ole lisäarvoja.",
 	"selectValue": "Valitse arvo suodattimelle $1:",
 	"noValue": "Ei arvoa",
 	"changeClassNote": "(Huomaa: jos vaihdat luokkaa, asettamasi suodattimet katoavat.)",
