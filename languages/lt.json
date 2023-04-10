@@ -1,7 +1,8 @@
 {
 	"@metadata": {
 		"authors": [
-			"Eitvys200"
+			"Eitvys200",
+			"Nokeoo"
 		]
 	},
 	"itemCount": "Yra {{PLURAL:$1|vienas objektas, atitinkantis|yra $1 objektai, atitinkantys}} šį aprašymą.",
