@@ -1,0 +1,29 @@
+{
+	"@metadata": {
+		"authors": [
+			"Joao Xavier"
+		]
+	},
+	"itemCount": "Existas {{PLURAL:$1|1 detalo|$1 detali}} qui ajustesas a ca deskripturo.",
+	"classPlaceholder": "Informez klaso",
+	"browse": "O verifikez irga ek la sequanta klasi:",
+	"noFiltersDefined": "Nula filtrilo definesis por ca klaso.",
+	"addFilter": "Adjuntez filtrilo",
+	"viewQuery": "Videz demando SPARQL",
+	"noItems": "Nula detali ajustesas a ca deskripto.",
+	"displayItemsError": "Ni spensis multa tempo probanta montrar listo di elementi; voluntez konsiderar pri augmento di filtrili.",
+	"gettingValues": "Obtenanta valori por filtrilo $1 ...",
+	"noAdditionalValues": "Ne existas plusa valori por elemento $1.",
+	"filterError": "Demandis multa tempo obtenar valori por la filtrilo $1.",
+	"filterTimeout": "(Obtenar kompleta listo pri valori por filtrilo $1 demandis multa tempo. Vice to, yen listo, posible infompleta)",
+	"selectValue": "Selektez valoro por $1:",
+	"selectAdditionalValue": "Selektez plusa valoro por $1:",
+	"noValue": "Nula valoro",
+	"changeClassNote": "(Noto: se vu modifikos la klaso, vu perdos la nuna grupo di filtrili.)",
+	"specificClass": "Chanjez a klaso plu specifika:",
+	"generalClass": "Chanjez a klaso plu generala:",
+	"viewList": "Vidar listo di elementi",
+	"results": "({{PLURAL:$1|1 rezulto|$1 rezulti}})",
+	"applyLinkedFilter": "Uzez filtrilo che $1",
+	"chooseLinkedFilter": "Selektez filtrilo de un ek la sequanta klasi:"
+}
