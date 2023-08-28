@@ -1,0 +1,29 @@
+{
+	"@metadata": {
+		"authors": [
+			"Toliño"
+		]
+	},
+	"itemCount": "Hai {{PLURAL:$1|un elemento que coincide|$1 elementos que coinciden}} con esta descrición.",
+	"classPlaceholder": "Escribe unha clase",
+	"browse": "Ou navega por calquera das seguintes clases:",
+	"noFiltersDefined": "Non hai ningún filtro definido para esta clase.",
+	"addFilter": "Engadir un filtro",
+	"viewQuery": "Ver a consulta SPARQL",
+	"noItems": "Ningún elemento coincide con esta descrición.",
+	"displayItemsError": "O intento de amosar a lista de elementos tardou demasiado tempo; considera engadir máis filtros.",
+	"gettingValues": "Obtendo os valores para o filtro \"$1\"...",
+	"noAdditionalValues": "Non hai valores adicionais para o filtro \"$1\".",
+	"filterError": "O intento de obter os valores tardou demasiado tempo para o filtro \"$1\".",
+	"filterTimeout": "(A obtención dun conxunto completo de valores para o filtro \"$1\" tardou demasiado tempo; no entanto, aquí tes un conxunto posiblemente incompleto.)",
+	"selectValue": "Selecciona un valor para \"$1\":",
+	"selectAdditionalValue": "Selecciona un valor adicional para \"$1\":",
+	"noValue": "Sen valor",
+	"changeClassNote": "(Nota: Se cambias a clase, perderás o conxunto actual de filtros.)",
+	"specificClass": "Cambiar a unha clase máis específica:",
+	"generalClass": "Cambiar a unha clase máis xeral:",
+	"viewList": "Ver a lista de elementos",
+	"results": "({{PLURAL:$1|1 resultado|$1 resultados}})",
+	"applyLinkedFilter": "Aplicar o filtro en \"$1\"",
+	"chooseLinkedFilter": "Escolle un filtro dunha das seguintes clases:"
+}
