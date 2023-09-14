@@ -29,7 +29,7 @@ filtervalues = Vue.component('filter-values', {
         >
         </header-view>
         <div class="content">
-            <div v-if="secondaryFiltersCount>0" class="filter-box">
+            <div v-if="secondaryFiltersCount>0" class="property-filter-box">
                 <div class="info">
                     <div style="cursor:pointer"  @click="toggleDropdown">
                         <img v-bind:style="{ transform:'rotate('+ secondaryFiltersDropdownDisplay*180 + 'deg)' }" src="images/down-arrow.svg" height="14px">
