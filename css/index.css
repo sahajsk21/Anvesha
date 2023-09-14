@@ -97,6 +97,14 @@ a:hover {
     padding: 10px;
 }
 
+.property-filter-box{
+    margin-bottom: 20px;
+    background-color: #d8f5b9;
+    border: 1px solid #68bd71;
+    border-radius: 5px;
+    padding: 10px 20px;
+}
+
 .info span {
   font-size: 1.1em;
   margin-left: 0.25em;
