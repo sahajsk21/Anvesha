@@ -1,0 +1,18 @@
+{
+	"@metadata": {
+		"authors": [
+			"Chinamoonroll",
+			"Joseagush"
+		]
+	},
+	"classPlaceholder": "Ketikang kelas",
+	"noFiltersDefined": "Nénten wénten filter sané katentuang ring kelas puniki.",
+	"addFilter": "Weweh saringan",
+	"viewQuery": "Nampilang kuéri SPARQL",
+	"noItems": "Nénten wénten sané mateges ring deskripsi niki.",
+	"selectValue": "Pilih nilai antuk $1:",
+	"selectAdditionalValue": "Pilih nilai tambahan antuk $1:",
+	"noValue": "tan paaji",
+	"viewList": "Cingak lis padagingan",
+	"results": "({{PLURAL:$1|1 asil|$1 asil}})"
+}
