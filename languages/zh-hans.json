@@ -2,6 +2,7 @@
 	"@metadata": {
 		"authors": [
 			")8",
+			"LittlePaw365",
 			"Shimamura Sakura",
 			"列维劳德"
 		]
@@ -20,7 +21,7 @@
 	"filterTimeout": "（取得过滤器 $1 所有的耗时太久；所以，下面是可能不完整的集合。）",
 	"selectValue": "为 $1 选择一个值：",
 	"selectAdditionalValue": "选择一个值给 $1 添加：",
-	"noValue": "没有取值",
+	"noValue": "没有值",
 	"changeClassNote": "（提醒：如果您更改类别，您将会丢失当前的过滤器集。）",
 	"specificClass": "切换到更具体的类别：",
 	"generalClass": "切换到更一般的类别：",
