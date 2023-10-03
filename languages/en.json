@@ -13,7 +13,7 @@
     "filterTimeout": "(Getting a complete set of values for filter $1 took too long; instead, here is a possibly incomplete set.)",
     "selectValue": "Select a value for $1:",
     "selectAdditionalValue": "Select an additional value for $1:",
-    "noValue": "No Value",
+    "noValue": "No value",
     "changeClassNote": "(Note: if you change the class, you will lose the current set of filters.)",
     "specificClass": "Change to a more specific class:",
     "generalClass": "Change to a more general class:",
