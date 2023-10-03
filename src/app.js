@@ -139,7 +139,7 @@ var app = new Vue({
                         filterValue: this.currentFilter.value,
                         filterValueLabel: this.currentFilter.valueLabel,
                         value: "novalue",
-                        valueLabel: "No value"
+                        valueLabel: websiteText.noValue
                     });
                     urlParams.set("f." + this.currentFilter.value, "novalue")
                 }
@@ -172,7 +172,7 @@ var app = new Vue({
                         filterValue: this.secondaryFilter.value,
                         filterValueLabel: this.secondaryFilter.valueLabel,
                         value: "novalue",
-                        valueLabel: "No value"
+                        valueLabel: websiteText.noValue
                     });
                     urlParams.set("f." + this.currentFilter.value + "." + this.secondaryFilter.value, "novalue")
                 }
@@ -205,7 +205,7 @@ var app = new Vue({
                     this.appRanges[i] = {
                         filterValue: this.currentFilter.value,
                         filterValueLabel: this.currentFilter.valueLabel,
-                        valueLabel: "No value",
+                        valueLabel: websiteText.noValue,
                         valueLL: "novalue",
                         valueUL: "novalue"
                     }
@@ -231,7 +231,7 @@ var app = new Vue({
                     this.appRanges.push({
                         filterValue: this.currentFilter.value,
                         filterValueLabel: this.currentFilter.valueLabel,
-                        valueLabel: "No value",
+                        valueLabel: websiteText.noValue,
                         valueLL: "novalue",
                         valueUL: "novalue"
                     });
@@ -266,7 +266,7 @@ var app = new Vue({
                         parentFilterValueLabel: this.currentFilter.valueLabel,
                         filterValue: this.secondaryFilter.value,
                         filterValueLabel: this.secondaryFilter.valueLabel,
-                        valueLabel: "No value",
+                        valueLabel: websiteText.noValue,
                         valueLL: "novalue",
                         valueUL: "novalue"
                     }
@@ -296,7 +296,7 @@ var app = new Vue({
                         parentFilterValueLabel: this.currentFilter.valueLabel,
                         filterValue: this.secondaryFilter.value,
                         filterValueLabel: this.secondaryFilter.valueLabel,
-                        valueLabel: "No value",
+                        valueLabel: websiteText.noValue,
                         valueLL: "novalue",
                         valueUL: "novalue"
                     });
@@ -331,7 +331,7 @@ var app = new Vue({
                     this.appQuantities[i] = {
                         filterValue: this.currentFilter.value,
                         filterValueLabel: this.currentFilter.valueLabel,
-                        valueLabel: "No value",
+                        valueLabel: websiteText.noValue,
                         valueLL: "novalue",
                         valueUL: "novalue",
                         unit: ""
@@ -355,7 +355,7 @@ var app = new Vue({
                     this.appQuantities.push({
                         filterValue: this.currentFilter.value,
                         filterValueLabel: this.currentFilter.valueLabel,
-                        valueLabel: "No value",
+                        valueLabel: websiteText.noValue,
                         valueLL: "novalue",
                         valueUL: "novalue",
                         unit: ""
@@ -388,7 +388,7 @@ var app = new Vue({
                         parentFilterValueLabel: this.currentFilter.valueLabel,
                         filterValue: this.secondaryFilter.value,
                         filterValueLabel: this.secondaryFilter.valueLabel,
-                        valueLabel: "No value",
+                        valueLabel: websiteText.noValue,
                         valueLL: "novalue",
                         valueUL: "novalue",
                         unit: ""
@@ -416,7 +416,7 @@ var app = new Vue({
                         parentFilterValueLabel: this.currentFilter.valueLabel,
                         filterValue: this.secondaryFilter.value,
                         filterValueLabel: this.secondaryFilter.valueLabel,
-                        valueLabel: "No value",
+                        valueLabel: websiteText.noValue,
                         valueLL: "novalue",
                         valueUL: "novalue",
                         unit: ""
@@ -674,7 +674,7 @@ var app = new Vue({
                                     filterValue: arr[2],
                                     filterValueLabel: arr[2],
                                     value: "novalue",
-                                    valueLabel: "No value"
+                                    valueLabel: websiteText.noValue
                                 })
                                 filterSet.add(arr[2])
                             }
@@ -683,7 +683,7 @@ var app = new Vue({
                                     filterValue: arr[1],
                                     filterValueLabel: arr[1],
                                     value: "novalue",
-                                    valueLabel: "No value"
+                                    valueLabel: websiteText.noValue
                                 })
                             }
                         }
@@ -780,7 +780,7 @@ var app = new Vue({
                                     filterValueLabel: arr[2],
                                     valueLL: "novalue",
                                     valueUL: "novalue",
-                                    valueLabel: "No value"
+                                    valueLabel: websiteText.noValue
                                 })
                                 filters += " wdt:" + arr[1]
                             }
@@ -790,7 +790,7 @@ var app = new Vue({
                                     filterValueLabel: arr[1],
                                     valueLL: "novalue",
                                     valueUL: "novalue",
-                                    valueLabel: "No value"
+                                    valueLabel: websiteText.noValue
                                 })
                             }
                         }
@@ -867,7 +867,7 @@ var app = new Vue({
                                     filterValueLabel: arr[2],
                                     valueLL: "novalue",
                                     valueUL: "novalue",
-                                    valueLabel: "No value",
+                                    valueLabel: websiteText.noValue,
                                     unit: ""
                                 })
                                 filters += " wdt:" + arr[2]
@@ -878,7 +878,7 @@ var app = new Vue({
                                     filterValueLabel: arr[1],
                                     valueLL: "novalue",
                                     valueUL: "novalue",
-                                    valueLabel: "No value",
+                                    valueLabel: websiteText.noValue,
                                     unit: ""
                                 })
                             }
