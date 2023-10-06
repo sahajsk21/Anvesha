@@ -32,7 +32,7 @@ filtervalues = Vue.component('filter-values', {
             <div v-if="secondaryFiltersCount>0" class="property-filter-box">
                 <div class="info">
                     <div style="cursor:pointer"  @click="toggleDropdown">
-                        <img v-bind:style="{ transform:'rotate('+ secondaryFiltersDropdownDisplay*180 + 'deg)' }" src="images/down-arrow.svg" height="14px">
+                        <img v-bind:style="{ transform:'rotate('+ secondaryFiltersDropdownDisplay*90 + 'deg)' }" src="images/side-arrow.svg" height="14px">
                         <span v-html="displayMessage(websiteText.applyLinkedFilter||fallbackText.applyLinkedFilter, currentFilter.valueLabel)"></span>
                     </div>
                     <p v-if="secondaryFiltersDropdownDisplay">{{ websiteText.chooseLinkedFilter||fallbackText.chooseLinkedFilter }}</p>
