@@ -239,6 +239,7 @@ viewallitems = Vue.component('view-all-items', {
                 if (response.data['results']['bindings']) {
                     this.filtersCount = response.data['results']['bindings'].length
                     this.filters = [...response.data['results']['bindings']]
+                    this.filters.sort((a,b)=>(a.valueLabel.value.toLowerCase()<b.valueLabel.value.toLowerCase())?-1:1)
                 }
                 else {
                     this.filters.push({ value: "Empty", valueLabel: "No data" })
