@@ -63,7 +63,7 @@ headerView = Vue.component('header-view',{
                 <span v-if="quantity.valueLL == 'novalue'" :style="{ fontStyle: 'italic' }">
                     {{ quantity.valueLabel }}</span><span v-else>{{ quantity.valueLabel }}
                 </span> 
-                {{quantity.unit}}( <a @click="removeQuantity(quantity)">&#x2715;</a> )
+                {{quantity.unit}}&nbsp;( <a @click="removeQuantity(quantity)">&#x2715;</a> )
             </p>
         </div>
     `,
