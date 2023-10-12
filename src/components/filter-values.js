@@ -818,7 +818,8 @@ filtervalues = Vue.component('filter-values', {
                                         index.push(vm.appliedFilters[i].value)
                                     }
                                 }
-                                arr = arr.filter(x => !index.includes(x.value.value.split('/').slice(-1)[0]))
+                                arr = arr.filter(x => (!x.valueLabel.value.includes(".well-known") &&
+                                        !index.includes(x.value.value.split('/').slice(-1)[0])));
                                 if (arr.length > 0) {
                                     vm.itemsType = "Item"
                                     vm.items = arr
