@@ -59,7 +59,7 @@ viewallitems = Vue.component('view-all-items', {
                 <p v-else-if="items[0].value=='Error'">{{ websiteText.displayItemsError||fallbackText.displayItemsError }}</p>
                 <div v-else>
                         <ul>
-                            <li v-for="item in items">
+                            <li v-for="item in sortSinglePageValues(items,totalValues)">
                                 <a :href="linkToWikidata(item.value.value)">{{item.valueLabel.value}}</a>
                             </li>
                         </ul>
@@ -81,6 +81,15 @@ viewallitems = Vue.component('view-all-items', {
         </div>
     </div>`,
     methods: {
+        sortSinglePageValues(arr,totalValues){
+            if(totalValues<=resultsPerPage){
+                return [...arr].sort((a,b)=>(
+                    a.valueLabel.value.toLowerCase()>b.valueLabel.value.toLowerCase()
+                    ?1:-1
+                ));
+            }
+            return arr
+        },
         displayData(action = '') {
             this.items = []
             // Determine page change action
