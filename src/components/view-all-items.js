@@ -60,7 +60,7 @@ viewallitems = Vue.component('view-all-items', {
                 <div v-else>
                         <ul>
                             <li v-for="item in items">
-                                <a :href="linkToWikidata(item.value.value)">{{item.valueLabel.value}}</a>
+                                <a :href="linkToWikidata(item.value.value)" style="color:#990000">{{item.valueLabel.value}}</a>
                             </li>
                         </ul>
                 </div>
