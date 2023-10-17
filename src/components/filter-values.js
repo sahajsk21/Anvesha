@@ -707,7 +707,7 @@ filtervalues = Vue.component('filter-values', {
                                         "    wd:" + firstItem + " (p:" + vm.currentFilter.value + "/psn:" + vm.currentFilter.value + ") ?v.\n" +
                                         "    ?v wikibase:quantityAmount ?amount;\n" +
                                         "       wikibase:quantityUnit ?unit.\n" +
-                                        "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],"+ lang +"\". }\n" +
+                                        "  SERVICE wikibase:label { bd:serviceParam wikibase:language \""+ lang +",[AUTO_LANGUAGE]\". }\n" +
                                         "}";
                                     fullUrl = sparqlEndpoint + encodeURIComponent(unitQuery);
                                     axios.get(fullUrl)
