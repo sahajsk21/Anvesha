@@ -126,7 +126,6 @@ viewallitems = Vue.component('view-all-items', {
                 this.sparqlParameters[5] +
                 "SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
                 "}\n" +
-                ((this.totalValues > resultsPerPage || this.totalValues == '') ? "" : "ORDER BY ?valueLabel\n") +
                 (this.sparqlParameters[5] != "" ? "LIMIT " + resultsPerPage + " OFFSET " + ((this.currentPage - 1) * resultsPerPage) : "");
             this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
             fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
