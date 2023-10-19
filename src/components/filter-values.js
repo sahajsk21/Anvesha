@@ -787,6 +787,8 @@ filtervalues = Vue.component('filter-values', {
                     // Set the URL parameters for href attribute, i.e., only for display purpose. 
                     var q = window.location.search;
                     parameters = new URLSearchParams(q)
+                    parameters.delete("cf")
+                    parameters.delete("sf")
                     parameters.set("f." + vm.currentFilter.value, "novalue")
                     vm.noValueURL = window.location.pathname + "?" + parameters
                     // Gets items and their count. 
