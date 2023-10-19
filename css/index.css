@@ -221,6 +221,10 @@ a:hover {
   background-color: #f1f0fe;
 }
 
+.wikiDataLink {
+  color: #990000;
+}
+
 @media screen and (max-width: 1200px) {
 	.dropdown-content {
 		column-count: 3;
