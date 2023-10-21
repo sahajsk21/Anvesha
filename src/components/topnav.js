@@ -88,7 +88,7 @@ topnav = Vue.component('top-nav', {
                 <div class="dropdown">
                     <button class="dropbtn" @click="toggleDropdown">{{ urlParams.get('lang')?urlParams.get('lang'): (defaultLanguages[0]?defaultLanguages[0]:'en') }} 
                         <span>
-                            <img v-bind:style="{ transform:'rotate('+ dropdownDisplay*180 + 'deg)' }" src="images/down-arrow.svg" height="14px"/>
+                            <img src="images/down-arrow.svg" height="14px"/>
                         </span>
                     </button>
                     <div class="dropdown-content" v-bind:style="{ display: (dropdownDisplay?'block':'none') }">

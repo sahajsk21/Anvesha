@@ -31,9 +31,9 @@ filtervalues = Vue.component('filter-values', {
         <div class="content">
             <div v-if="secondaryFiltersCount>0" class="property-filter-box">
                 <div class="info">
-                    <div style="cursor:pointer"  @click="toggleDropdown">
-                        <img v-bind:style="{ transform:'rotate('+ secondaryFiltersDropdownDisplay*180 + 'deg)' }" src="images/down-arrow.svg" height="14px">
+                    <div style="cursor:pointer;display:flex;justifyContent:space-between;alignItems:baseline"  @click="toggleDropdown">
                         <span v-html="displayMessage(websiteText.applyLinkedFilter||fallbackText.applyLinkedFilter, currentFilter.valueLabel)"></span>
+                        <img v-bind:style="{ transform:'rotate('+ secondaryFiltersDropdownDisplay*90 + 'deg)' }" src="images/side-arrow.svg" height="14px">
                     </div>
                     <p v-if="secondaryFiltersDropdownDisplay">{{ websiteText.chooseLinkedFilter||fallbackText.chooseLinkedFilter }}</p>
                 </div>
@@ -818,7 +818,8 @@ filtervalues = Vue.component('filter-values', {
                                         index.push(vm.appliedFilters[i].value)
                                     }
                                 }
-                                arr = arr.filter(x => !index.includes(x.value.value.split('/').slice(-1)[0]))
+                                arr = arr.filter(x => (!x.valueLabel.value.includes(".well-known") &&
+                                        !index.includes(x.value.value.split('/').slice(-1)[0])));
                                 if (arr.length > 0) {
                                     vm.itemsType = "Item"
                                     vm.items = arr
