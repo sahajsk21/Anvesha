@@ -59,7 +59,7 @@ viewallitems = Vue.component('view-all-items', {
                 <p v-else-if="items[0].value=='Error'">{{ websiteText.displayItemsError||fallbackText.displayItemsError }}</p>
                 <div v-else>
                         <ul>
-                            <li v-for="item in items">
+                            <li v-for="item in sortSinglePageValues(items)">
                                 <a :href="linkToWikidata(item.value.value)" class="externalLink">{{item.valueLabel.value}}</a>
                             </li>
                         </ul>
@@ -81,6 +81,15 @@ viewallitems = Vue.component('view-all-items', {
         </div>
     </div>`,
     methods: {
+        sortSinglePageValues(arr){
+            if(this.totalValues<=resultsPerPage){
+                return [...arr].sort((a,b)=>(
+                    a.valueLabel.value.toLowerCase()>b.valueLabel.value.toLowerCase()
+                    ?1:-1
+                ));
+            }
+            return arr
+        },
         displayData(action = '') {
             this.items = []
             // Determine page change action
@@ -117,7 +126,6 @@ viewallitems = Vue.component('view-all-items', {
                 this.sparqlParameters[5] +
                 "SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
                 "}\n" +
-                ((this.totalValues > resultsPerPage || this.totalValues == '') ? "" : "ORDER BY ?valueLabel\n") +
                 (this.sparqlParameters[5] != "" ? "LIMIT " + resultsPerPage + " OFFSET " + ((this.currentPage - 1) * resultsPerPage) : "");
             this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
             fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
