@@ -1,5 +1,5 @@
 {
-    "itemCount": "There {{PLURAL:$1|is one item that matches|are $1 items that match}} this description.",
+    "itemCount": "{{PLURAL:$1|There is one item that matches this description.|There are $1 items that match this description.}}",
     "classPlaceholder": "Enter class",
     "browse": "Or, browse any of the following classes:",
     "noFiltersDefined": "No filter is defined for this class.",
