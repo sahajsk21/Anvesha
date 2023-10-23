@@ -84,7 +84,39 @@ subclass = Vue.component('subclass-view', {
             if(message){
 
                 matches = message.match('{{PLURAL:[\\s]*\\$1\\|(.*)}}')
-                str = matches[1].split('|')[(totalValues > 1 ? 1 : 0)]
+                pluralValues = matches[1].split("|")
+                pluralMap = {}
+                pluralConditions = ['zero=', 'one=', 'two=', 'few=', 'many=']
+                pluralCopy = [...pluralValues]
+                pluralConditions.forEach((element, index) => {
+                    pluralOne = pluralValues.filter((obj)=>{
+                        return obj.includes(element)
+                    });
+                    if(pluralOne.length!==0){
+                        pluralMap[index.toString()] = pluralOne[0].replace(element, '')
+                        pluralCopy = pluralCopy.filter((obj)=>{
+                            return !obj.includes(element)
+                        })
+                    }
+                });
+                if(totalValues === 0 && Object.keys(pluralMap).includes('0')){
+                    str = pluralMap['0'];
+                } else if(totalValues === 1 && Object.keys(pluralMap).includes('1')){
+                    str = pluralMap['1'];
+                } else if(totalValues === 2 && Object.keys(pluralMap).includes('2')){
+                    str = pluralMap['2'];
+                } else if((totalValues >2 && totalValues <=6)
+                    && Object.keys(pluralMap).includes('3')){
+                    str = pluralMap['3'];
+                } else if(totalValues >6 && Object.keys(pluralMap).includes('4')){
+                    str = pluralMap['4'];
+                } else{
+                    if(Object.keys(pluralMap).length === 0){
+                        str = matches[1].split('|')[(totalValues > 1 ? 1 : 0)]
+                    } else if(pluralCopy.length !== 0){
+                        str = pluralCopy[0];
+                    }
+                }
                 str = str.replace("$1", (totalValues < 1000000 ? numberWithCommas(totalValues) : '1 million +'))
                 return message.replace(/{{PLURAL:[\s]*\$1\|(.*)}}/g, str)
             }
