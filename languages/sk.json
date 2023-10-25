@@ -24,7 +24,7 @@
 	"specificClass": "Zmenia na viac špecifikovaný typ:",
 	"generalClass": "Zmena na viac všeobecný typ:",
 	"viewList": "Zobraziť zoznam položiek",
-	"results": "({{PLURAL:$1|počet výsledkov: $1 }})",
+	"results": "(počet výsledkov: $1 )",
 	"applyLinkedFilter": "Použiť filter na $1",
 	"chooseLinkedFilter": "Vybrať filter z jedného z nasledovných typov:"
 }
