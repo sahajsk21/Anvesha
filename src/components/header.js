@@ -32,7 +32,7 @@ headerView = Vue.component('header-view',{
                 </b>
                 :
                 <span v-if="filter.value == 'novalue'" :style="{ fontStyle: 'italic' }">
-                    {{ filter.valueLabel }}</span><span v-else><a :href="filter.valueLink">{{ filter.valueLabel }}</a>
+                    {{ filter.valueLabel }}</span><span v-else><a :href="filter.valueLink" class="externalLink">{{ filter.valueLabel }}</a>
                 </span> 
                 ( <a @click="removeFilter(filter)">&#x2715;</a> )
             </p>
