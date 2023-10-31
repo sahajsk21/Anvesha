@@ -4,7 +4,7 @@
 			"McDutchie"
 		]
 	},
-	"itemCount": "Er {{PLURAL:$1|is één item dat|zijn $1 items die}} aan deze beschrijving voldoe{{PLURAL:$1|t|n}}.",
+	"itemCount": "{{PLURAL:$1|Er is één item dat aan deze beschrijving voldoet.|Er zijn $1 items die aan deze beschrijving voldoen.}}",
 	"classPlaceholder": "Geef een klasse op",
 	"browse": "Of blader door een van de volgende klassen:",
 	"noFiltersDefined": "Er is voor deze klasse geen filter gedefinieerd.",
