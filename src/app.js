@@ -751,6 +751,7 @@ var app = new Vue({
                                 index = this.appFilters.findIndex(filter => filter.value == response.data['results']['bindings'][i].value.value.split("/").slice(-1)[0]);
                                 if (index != -1) {
                                     this.appFilters[index].valueLabel = response.data['results']['bindings'][i].valueLabel.value
+                                    this.appFilters[index].valueLink = response.data['results']['bindings'][i].value.value
                                 }
                             }
                         })
