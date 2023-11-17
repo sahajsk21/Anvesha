@@ -12,7 +12,9 @@ filtervalues = Vue.component('filter-values', {
             noValueURL: '',
             secondaryFilters:[],
             secondaryFiltersCount: -1,
-            secondaryFiltersDropdownDisplay: false
+            secondaryFiltersDropdownDisplay: false,
+            clsValue: '',
+            searchResults: ''
         }
     },
     template: `
@@ -113,6 +115,26 @@ filtervalues = Vue.component('filter-values', {
                     </ul>
                 </div>
                 <div v-else-if="itemsType=='ItemFail'">
+                    <div class="classInput">
+                        <input 
+                            v-model="clsValue" 
+                            @input="showClasses" 
+                            style="border: none;outline: none;width: 100%;font-size:1em" 
+                            type="search" 
+                            :placeholder='websiteText.classPlaceholder||fallbackText.classPlaceholder'>
+                    </div>
+                    <div v-if="clsValue.length>0" class="searchOptions">
+                        <a 
+                            class="searchOption" 
+                            v-for="result in searchResults" 
+                            @click="submit(result.id,result.label)">
+                                <b>
+                                    {{ result.label.replace(/^./, result.label[0].toUpperCase()) }}
+                                </b> 
+                                : {{ result.description }}
+                        </a>    
+                    </div>
+                    <br>
                     <p><i v-html="displayMessage(websiteText.filterTimeout||fallbackText.filterTimeout, currentFilter.valueLabel)"></i></p>
                     <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
                     <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel)"></p>
@@ -191,6 +213,26 @@ filtervalues = Vue.component('filter-values', {
                     </ul>
                 </div>
                 <div v-else-if="itemsType=='TimeFail'">
+                    <div class="classInput">
+                        <input 
+                            v-model="clsValue" 
+                            @input="showClasses" 
+                            style="border: none;outline: none;width: 100%;font-size:1em" 
+                            type="search" 
+                            :placeholder='websiteText.classPlaceholder||fallbackText.classPlaceholder'>
+                    </div>
+                    <div v-if="clsValue.length>0" class="searchOptions">
+                        <a 
+                            class="searchOption" 
+                            v-for="result in searchResults" 
+                            @click="submit(result.id,result.label)">
+                                <b>
+                                    {{ result.label.replace(/^./, result.label[0].toUpperCase()) }}
+                                </b> 
+                                : {{ result.description }}
+                        </a>    
+                    </div>
+                    <br>
                     <p><i v-html="displayMessage(websiteText.filterTimeout||fallbackText.filterTimeout, currentFilter.valueLabel)"></i></p>
                     <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
                     <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel)"></p>
@@ -218,6 +260,26 @@ filtervalues = Vue.component('filter-values', {
                     </ul>
                 </div>
                 <div v-else-if="itemsType=='Quantity'">
+                    <div class="classInput">
+                        <input 
+                            v-model="clsValue" 
+                            @input="showClasses" 
+                            style="border: none;outline: none;width: 100%;font-size:1em" 
+                            type="search" 
+                            :placeholder='websiteText.classPlaceholder||fallbackText.classPlaceholder'>
+                    </div>
+                    <div v-if="clsValue.length>0" class="searchOptions">
+                        <a 
+                            class="searchOption" 
+                            v-for="result in searchResults" 
+                            @click="submit(result.id,result.label)">
+                                <b>
+                                    {{ result.label.replace(/^./, result.label[0].toUpperCase()) }}
+                                </b> 
+                                : {{ result.description }}
+                        </a>    
+                    </div>
+                    <br>
                     <p v-if="displayCount == 1 && totalValues!=''" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount,totalValues)"></p>
                     <p v-if="displayCount == 0"><i v-html="displayMessage(websiteText.filterTimeout||fallbackText.filterTimeout, currentFilter.valueLabel)"></i></p>
                     <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
@@ -350,7 +412,19 @@ filtervalues = Vue.component('filter-values', {
             document.body.appendChild(link);
             link.click();
             document.getElementsByTagName("body")[0].style.cursor = "default";
-        }
+        },
+        showClasses() {
+            if (this.clsValue.length > 0) {
+                const fullUrl = 'https://www.wikidata.org/w/api.php?action=wbsearchentities&origin=*&format=json&language=' + lang.split(",")[0] + '&uselang=' + lang.split(",")[0] + '&type=item&search=' + this.clsValue;
+                axios.get(fullUrl)
+                    .then(response => {
+                        this.searchResults = [...response.data['search']]
+                    })
+            }
+        },
+        submit(cv, cl) {
+            this.$emit("update-class", cv, cl);
+        },
     },
     mounted() {
         /* 
