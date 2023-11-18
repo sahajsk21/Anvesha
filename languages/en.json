@@ -1,6 +1,7 @@
 {
     "itemCount": "There {{PLURAL:$1|is one item that matches|are $1 items that match}} this description.",
     "classPlaceholder": "Enter class",
+    "filterValuePlaceholder": "Enter filter value",
     "browse": "Or, browse any of the following classes:",
     "noFiltersDefined": "No filter is defined for this class.",
     "addFilter": "Add a filter",

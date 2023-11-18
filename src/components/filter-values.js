@@ -13,7 +13,7 @@ filtervalues = Vue.component('filter-values', {
             secondaryFilters:[],
             secondaryFiltersCount: -1,
             secondaryFiltersDropdownDisplay: false,
-            clsValue: '',
+            filterValue: '',
             searchResults: ''
         }
     },
@@ -117,13 +117,13 @@ filtervalues = Vue.component('filter-values', {
                 <div v-else-if="itemsType=='ItemFail'">
                     <div class="classInput">
                         <input 
-                            v-model="clsValue" 
-                            @input="showClasses" 
+                            v-model="filterValue" 
+                            @input="showFilterValues" 
                             style="border: none;outline: none;width: 100%;font-size:1em" 
                             type="search" 
-                            :placeholder='websiteText.classPlaceholder||fallbackText.classPlaceholder'>
+                            :placeholder='websiteText.filterValuePlaceholder||fallbackText.filterValuePlaceholder'>
                     </div>
-                    <div v-if="clsValue.length>0" class="searchOptions">
+                    <div v-if="filterValue.length>0" class="searchOptions">
                         <a 
                             class="searchOption" 
                             v-for="result in searchResults" 
@@ -215,13 +215,13 @@ filtervalues = Vue.component('filter-values', {
                 <div v-else-if="itemsType=='TimeFail'">
                     <div class="classInput">
                         <input 
-                            v-model="clsValue" 
-                            @input="showClasses" 
+                            v-model="filterValue" 
+                            @input="showFilterValues" 
                             style="border: none;outline: none;width: 100%;font-size:1em" 
                             type="search" 
-                            :placeholder='websiteText.classPlaceholder||fallbackText.classPlaceholder'>
+                            :placeholder='websiteText.filterValuePlaceholder||fallbackText.filterValuePlaceholder'>
                     </div>
-                    <div v-if="clsValue.length>0" class="searchOptions">
+                    <div v-if="filterValue.length>0" class="searchOptions">
                         <a 
                             class="searchOption" 
                             v-for="result in searchResults" 
@@ -262,13 +262,13 @@ filtervalues = Vue.component('filter-values', {
                 <div v-else-if="itemsType=='Quantity'">
                     <div class="classInput">
                         <input 
-                            v-model="clsValue" 
-                            @input="showClasses" 
+                            v-model="filterValue" 
+                            @input="showFilterValues" 
                             style="border: none;outline: none;width: 100%;font-size:1em" 
                             type="search" 
-                            :placeholder='websiteText.classPlaceholder||fallbackText.classPlaceholder'>
+                            :placeholder='websiteText.filterValuePlaceholder||fallbackText.filterValuePlaceholder'>
                     </div>
-                    <div v-if="clsValue.length>0" class="searchOptions">
+                    <div v-if="filterValue.length>0" class="searchOptions">
                         <a 
                             class="searchOption" 
                             v-for="result in searchResults" 
@@ -413,9 +413,9 @@ filtervalues = Vue.component('filter-values', {
             link.click();
             document.getElementsByTagName("body")[0].style.cursor = "default";
         },
-        showClasses() {
-            if (this.clsValue.length > 0) {
-                const fullUrl = 'https://www.wikidata.org/w/api.php?action=wbsearchentities&origin=*&format=json&language=' + lang.split(",")[0] + '&uselang=' + lang.split(",")[0] + '&type=item&search=' + this.clsValue;
+        showFilterValues() {
+            if (this.filterValue.length > 0) {
+                const fullUrl = 'https://www.wikidata.org/w/api.php?action=wbsearchentities&origin=*&format=json&language=' + lang.split(",")[0] + '&uselang=' + lang.split(",")[0] + '&type=item&search=' + this.filterValue;
                 axios.get(fullUrl)
                     .then(response => {
                         this.searchResults = [...response.data['search']]
