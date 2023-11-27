@@ -155,7 +155,8 @@ var app = new Vue({
                     filterValue: this.currentFilter.value,
                     filterValueLabel: this.currentFilter.valueLabel,
                     value: filter.value.value.split('/').slice(-1)[0],
-                    valueLabel: filter.valueLabel.value
+                    valueLabel: filter.valueLabel.value,
+                    valueLink: filter.value.value
                 });
                 urlParams.set("f." + this.currentFilter.value, existingValues + filter.value.value.split('/').slice(-1)[0])
             }
@@ -190,7 +191,8 @@ var app = new Vue({
                     filterValue: this.secondaryFilter.value,
                     filterValueLabel: this.secondaryFilter.valueLabel,
                     value: filter.value.value.split('/').slice(-1)[0],
-                    valueLabel: filter.valueLabel.value
+                    valueLabel: filter.valueLabel.value,
+                    valueLink: filter.value.value
                 });
                 urlParams.set("f." + this.currentFilter.value + "." + this.secondaryFilter.value, existingValues + filter.value.value.split('/').slice(-1)[0])
             }
