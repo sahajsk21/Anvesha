@@ -152,25 +152,23 @@ axios
               });
               urlParams.set("f." + this.currentFilter.value, "novalue");
             }
-          } else {
-            var existingValues = "";
-            for (let i = 0; i < this.appFilters.length; i++) {
-              if (this.appFilters[i].filterValue == this.currentFilter.value) {
-                existingValues =
-                  existingValues + this.appFilters[i].value + "-";
-              }
-            }
-            this.appFilters.push({
-              filterValue: this.currentFilter.value,
-              filterValueLabel: this.currentFilter.valueLabel,
-              value: filter.value.value.split("/").slice(-1)[0],
-              valueLabel: filter.valueLabel.value,
-            });
-            urlParams.set(
-              "f." + this.currentFilter.value,
-              existingValues + filter.value.value.split("/").slice(-1)[0]
-            );
           }
+          else {
+                var existingValues = ""
+                for (let i = 0; i < this.appFilters.length; i++) {
+                    if (this.appFilters[i].filterValue == this.currentFilter.value) {
+                        existingValues = existingValues + this.appFilters[i].value + "-";
+                    }
+                }
+                this.appFilters.push({
+                    filterValue: this.currentFilter.value,
+                    filterValueLabel: this.currentFilter.valueLabel,
+                    value: filter.value.value.split('/').slice(-1)[0],
+                    valueLabel: filter.valueLabel.value,
+                    valueLink: filter.value.value
+                });
+                urlParams.set("f." + this.currentFilter.value, existingValues + filter.value.value.split('/').slice(-1)[0])
+            }
           urlParams.delete("cf");
           urlParams.delete("sf");
           this.updatePage("view-all-items");
@@ -198,32 +196,24 @@ axios
                 "novalue"
               );
             }
-          } else {
-            var existingValues = "";
-            for (let i = 0; i < this.appFilters.length; i++) {
-              if (
-                this.appFilters[i].filterValue == this.secondaryFilter.value
-              ) {
-                existingValues =
-                  existingValues + this.appFilters[i].value + "-";
-              }
+            } else {
+                var existingValues = ""
+                for (let i = 0; i < this.appFilters.length; i++) {
+                    if (this.appFilters[i].filterValue == this.secondaryFilter.value) {
+                        existingValues = existingValues + this.appFilters[i].value + "-";
+                    }
+                }
+                this.appFilters.push({
+                    parentFilterValue: this.currentFilter.value,
+                    parentFilterValueLabel: this.currentFilter.valueLabel,
+                    filterValue: this.secondaryFilter.value,
+                    filterValueLabel: this.secondaryFilter.valueLabel,
+                    value: filter.value.value.split('/').slice(-1)[0],
+                    valueLabel: filter.valueLabel.value,
+                    valueLink: filter.value.value
+                });
+                urlParams.set("f." + this.currentFilter.value + "." + this.secondaryFilter.value, existingValues + filter.value.value.split('/').slice(-1)[0])
             }
-            this.appFilters.push({
-              parentFilterValue: this.currentFilter.value,
-              parentFilterValueLabel: this.currentFilter.valueLabel,
-              filterValue: this.secondaryFilter.value,
-              filterValueLabel: this.secondaryFilter.valueLabel,
-              value: filter.value.value.split("/").slice(-1)[0],
-              valueLabel: filter.valueLabel.value,
-            });
-            urlParams.set(
-              "f." +
-                this.currentFilter.value +
-                "." +
-                this.secondaryFilter.value,
-              existingValues + filter.value.value.split("/").slice(-1)[0]
-            );
-          }
           urlParams.delete("cf");
           urlParams.delete("sf");
           this.updatePage("view-all-items");
@@ -1032,80 +1022,44 @@ axios
                 filters += " wdt:" + item;
               }
               // Get filter labels
-              var sparqlQuery =
-                "SELECT ?prop ?propLabel WHERE {\n" +
-                "  VALUES ?p {  " +
-                filters +
-                " }\n" +
-                "  ?prop wikibase:directClaim ?p.\n" +
-                '  SERVICE wikibase:label { bd:serviceParam wikibase:language "' +
-                lang +
-                '". }\n' +
-                "}";
-              var fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
-              axios.get(fullUrl).then((response) => {
-                for (
-                  let i = 0;
-                  i < response.data["results"]["bindings"].length;
-                  i++
-                ) {
-                  for (let j = 0; j < this.appFilters.length; j++) {
-                    if (
-                      this.appFilters[j].filterValue ==
-                      response.data["results"]["bindings"][i].prop.value
-                        .split("/")
-                        .slice(-1)[0]
-                    ) {
-                      this.appFilters[j].filterValueLabel =
-                        response.data["results"]["bindings"][i].propLabel.value;
-                    }
-                    if (
-                      this.appFilters[j].parentFilterValue ==
-                      response.data["results"]["bindings"][i].prop.value
-                        .split("/")
-                        .slice(-1)[0]
-                    ) {
-                      this.appFilters[j].parentFilterValueLabel =
-                        response.data["results"]["bindings"][i].propLabel.value;
-                    }
-                  }
-                }
-              });
-              if (values.trim() !== "") {
-                // Get value labels
-                sparqlQuery =
-                  "SELECT ?value ?valueLabel WHERE {\n" +
-                  "  VALUES ?value {  " +
-                  values +
-                  " }\n" +
-                  '  SERVICE wikibase:label { bd:serviceParam wikibase:language "' +
-                  lang +
-                  '". } \n' +
+              var sparqlQuery = "SELECT ?prop ?propLabel WHERE {\n" +
+                  "  VALUES ?p {  " + filters + " }\n" +
+                  "  ?prop wikibase:directClaim ?p.\n" +
+                  "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
                   "}";
-                var fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
-                axios.get(fullUrl).then((response) => {
-                  for (
-                    let i = 0;
-                    i < response.data["results"]["bindings"].length;
-                    i++
-                  ) {
-                    index = this.appFilters.findIndex(
-                      (filter) =>
-                        filter.value ==
-                        response.data["results"]["bindings"][i].value.value
-                          .split("/")
-                          .slice(-1)[0]
-                    );
-                    if (index != -1) {
-                      this.appFilters[index].valueLabel =
-                        response.data["results"]["bindings"][
-                          i
-                        ].valueLabel.value;
-                    }
+              var fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+              axios.get(fullUrl)
+                  .then(response => {
+                      for (let i = 0; i < response.data['results']['bindings'].length; i++) {
+                          for (let j = 0; j < this.appFilters.length; j++) {
+                              if (this.appFilters[j].filterValue == response.data['results']['bindings'][i].prop.value.split("/").slice(-1)[0]) {
+                                  this.appFilters[j].filterValueLabel = response.data['results']['bindings'][i].propLabel.value
+                              }
+                              if (this.appFilters[j].parentFilterValue == response.data['results']['bindings'][i].prop.value.split("/").slice(-1)[0]) {
+                                  this.appFilters[j].parentFilterValueLabel = response.data['results']['bindings'][i].propLabel.value
+                              }
+                          }
+                      }
+                  })
+              if (values.trim() !== "") {
+                  // Get value labels
+                  sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
+                      "  VALUES ?value {  " + values + " }\n" +
+                      "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". } \n" +
+                      "}";
+                  var fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+                  axios.get(fullUrl)
+                      .then(response => {
+                          for (let i = 0; i < response.data['results']['bindings'].length; i++) {
+                              index = this.appFilters.findIndex(filter => filter.value == response.data['results']['bindings'][i].value.value.split("/").slice(-1)[0]);
+                              if (index != -1) {
+                                  this.appFilters[index].valueLabel = response.data['results']['bindings'][i].valueLabel.value
+                                  this.appFilters[index].valueLink = response.data['results']['bindings'][i].value.value
+                              }
+                          }
+                      })
                   }
-                });
               }
-            }
           }
           return this.appFilters;
         },

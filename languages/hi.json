@@ -24,7 +24,7 @@
 	"specificClass": "एक और विशिष्ट वर्ग में बदलें:",
 	"generalClass": "एक और साधारण वर्ग में बदलें:",
 	"viewList": "आयटमों की सूची देखें",
-	"results": "({{PLURAL:$1|$1 अंजाम}})",
+	"results": "($1 अंजाम)",
 	"applyLinkedFilter": "$1 पर फिल्टर लागू करें",
 	"chooseLinkedFilter": "इनमें से किसी एक वर्ग से फ़िल्टर चुनें:"
 }
