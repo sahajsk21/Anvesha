@@ -59,6 +59,10 @@ axios
           );
         }
         window.onpopstate = history.onpushstate = function (e) {
+          urlParams.forEach((key, val) => {
+            console.log(val, key);
+          });
+          console.log(window.location.href);
           if (e.state) {
             app.page = e.state.page;
             app.clsValue = e.state.classValue;
@@ -70,7 +74,16 @@ axios
             app.currentFilterValue = e.state.currentFilterValue;
             app.allItemscomponentKey = e.state.allItemscomponentKey;
             app.filterscomponentKey = e.state.filterscomponentKey;
+            // when the app first loads the window.location.href value for some reason doesn't get created with class query 
+            // even after being clicked, which is why I check for that below.  Also after testing I noticed that the 
+            // href doesn't update properly until applyFilter is called and that only happens after an updateFilter call and 
+            if (window.location.href.split("?")[1].split("&")[0][0] === "c" && urlParams.has("cf") === true) {
+              urlParams = new URLSearchParams((new URL(window.location.href)).search);
+            }
           }
+          urlParams.forEach((key, val) => {
+            console.log(val, key);
+          });
         };
       },
       methods: {
@@ -154,21 +167,21 @@ axios
             }
           }
           else {
-                var existingValues = ""
-                for (let i = 0; i < this.appFilters.length; i++) {
-                    if (this.appFilters[i].filterValue == this.currentFilter.value) {
-                        existingValues = existingValues + this.appFilters[i].value + "-";
-                    }
-                }
-                this.appFilters.push({
-                    filterValue: this.currentFilter.value,
-                    filterValueLabel: this.currentFilter.valueLabel,
-                    value: filter.value.value.split('/').slice(-1)[0],
-                    valueLabel: filter.valueLabel.value,
-                    valueLink: filter.value.value
-                });
-                urlParams.set("f." + this.currentFilter.value, existingValues + filter.value.value.split('/').slice(-1)[0])
+            var existingValues = ""
+            for (let i = 0; i < this.appFilters.length; i++) {
+              if (this.appFilters[i].filterValue == this.currentFilter.value) {
+                existingValues = existingValues + this.appFilters[i].value + "-";
+              }
             }
+            this.appFilters.push({
+              filterValue: this.currentFilter.value,
+              filterValueLabel: this.currentFilter.valueLabel,
+              value: filter.value.value.split('/').slice(-1)[0],
+              valueLabel: filter.valueLabel.value,
+              valueLink: filter.value.value
+            });
+            urlParams.set("f." + this.currentFilter.value, existingValues + filter.value.value.split('/').slice(-1)[0])
+          }
           urlParams.delete("cf");
           urlParams.delete("sf");
           this.updatePage("view-all-items");
@@ -190,30 +203,30 @@ axios
               });
               urlParams.set(
                 "f." +
-                  this.currentFilter.value +
-                  "." +
-                  this.secondaryFilter.value,
+                this.currentFilter.value +
+                "." +
+                this.secondaryFilter.value,
                 "novalue"
               );
             }
-            } else {
-                var existingValues = ""
-                for (let i = 0; i < this.appFilters.length; i++) {
-                    if (this.appFilters[i].filterValue == this.secondaryFilter.value) {
-                        existingValues = existingValues + this.appFilters[i].value + "-";
-                    }
-                }
-                this.appFilters.push({
-                    parentFilterValue: this.currentFilter.value,
-                    parentFilterValueLabel: this.currentFilter.valueLabel,
-                    filterValue: this.secondaryFilter.value,
-                    filterValueLabel: this.secondaryFilter.valueLabel,
-                    value: filter.value.value.split('/').slice(-1)[0],
-                    valueLabel: filter.valueLabel.value,
-                    valueLink: filter.value.value
-                });
-                urlParams.set("f." + this.currentFilter.value + "." + this.secondaryFilter.value, existingValues + filter.value.value.split('/').slice(-1)[0])
+          } else {
+            var existingValues = ""
+            for (let i = 0; i < this.appFilters.length; i++) {
+              if (this.appFilters[i].filterValue == this.secondaryFilter.value) {
+                existingValues = existingValues + this.appFilters[i].value + "-";
+              }
             }
+            this.appFilters.push({
+              parentFilterValue: this.currentFilter.value,
+              parentFilterValueLabel: this.currentFilter.valueLabel,
+              filterValue: this.secondaryFilter.value,
+              filterValueLabel: this.secondaryFilter.valueLabel,
+              value: filter.value.value.split('/').slice(-1)[0],
+              valueLabel: filter.valueLabel.value,
+              valueLink: filter.value.value
+            });
+            urlParams.set("f." + this.currentFilter.value + "." + this.secondaryFilter.value, existingValues + filter.value.value.split('/').slice(-1)[0])
+          }
           urlParams.delete("cf");
           urlParams.delete("sf");
           this.updatePage("view-all-items");
@@ -259,19 +272,19 @@ axios
                 urlParams.set(
                   "r." + this.currentFilter.value,
                   range.bucketLL.year +
-                    "-" +
-                    range.bucketLL.month +
-                    "-" +
-                    range.bucketLL.day
+                  "-" +
+                  range.bucketLL.month +
+                  "-" +
+                  range.bucketLL.day
                 );
               else if (range.size == 5)
                 urlParams.set(
                   "r." + this.currentFilter.value,
                   range.bucketLL.year +
-                    "-" +
-                    range.bucketLL.month +
-                    "-" +
-                    range.bucketLL.day
+                  "-" +
+                  range.bucketLL.month +
+                  "-" +
+                  range.bucketLL.day
                 );
             }
           } else {
@@ -311,19 +324,19 @@ axios
                 urlParams.set(
                   "r." + this.currentFilter.value,
                   range.bucketLL.year +
-                    "-" +
-                    range.bucketLL.month +
-                    "-" +
-                    range.bucketLL.day
+                  "-" +
+                  range.bucketLL.month +
+                  "-" +
+                  range.bucketLL.day
                 );
               else if (range.size == 5)
                 urlParams.set(
                   "r." + this.currentFilter.value,
                   range.bucketLL.year +
-                    "-" +
-                    range.bucketLL.month +
-                    "-" +
-                    range.bucketLL.day
+                  "-" +
+                  range.bucketLL.month +
+                  "-" +
+                  range.bucketLL.day
                 );
             }
           }
@@ -348,9 +361,9 @@ axios
               };
               urlParams.set(
                 "r." +
-                  this.currentFilter.value +
-                  "." +
-                  this.secondaryFilter.value,
+                this.currentFilter.value +
+                "." +
+                this.secondaryFilter.value,
                 "novalue"
               );
             } else {
@@ -366,50 +379,50 @@ axios
               if (range.size == 1)
                 urlParams.set(
                   "r." +
-                    this.currentFilter.value +
-                    "." +
-                    this.secondaryFilter.value,
+                  this.currentFilter.value +
+                  "." +
+                  this.secondaryFilter.value,
                   range.bucketLL.year + "~" + range.bucketUL.year
                 );
               else if (range.size == 2)
                 urlParams.set(
                   "r." +
-                    this.currentFilter.value +
-                    "." +
-                    this.secondaryFilter.value,
+                  this.currentFilter.value +
+                  "." +
+                  this.secondaryFilter.value,
                   range.bucketLL.year
                 );
               else if (range.size == 3)
                 urlParams.set(
                   "r." +
-                    this.currentFilter.value +
-                    "." +
-                    this.secondaryFilter.value,
+                  this.currentFilter.value +
+                  "." +
+                  this.secondaryFilter.value,
                   range.bucketLL.year + "-" + range.bucketLL.month
                 );
               else if (range.size == 4)
                 urlParams.set(
                   "r." +
-                    this.currentFilter.value +
-                    "." +
-                    this.secondaryFilter.value,
+                  this.currentFilter.value +
+                  "." +
+                  this.secondaryFilter.value,
                   range.bucketLL.year +
-                    "-" +
-                    range.bucketLL.month +
-                    "-" +
-                    range.bucketLL.day
+                  "-" +
+                  range.bucketLL.month +
+                  "-" +
+                  range.bucketLL.day
                 );
               else if (range.size == 5)
                 urlParams.set(
                   "r." +
-                    this.currentFilter.value +
-                    "." +
-                    this.secondaryFilter.value,
+                  this.currentFilter.value +
+                  "." +
+                  this.secondaryFilter.value,
                   range.bucketLL.year +
-                    "-" +
-                    range.bucketLL.month +
-                    "-" +
-                    range.bucketLL.day
+                  "-" +
+                  range.bucketLL.month +
+                  "-" +
+                  range.bucketLL.day
                 );
             }
           } else {
@@ -425,9 +438,9 @@ axios
               });
               urlParams.set(
                 "r." +
-                  this.currentFilter.value +
-                  "." +
-                  this.secondaryFilter.value,
+                this.currentFilter.value +
+                "." +
+                this.secondaryFilter.value,
                 "novalue"
               );
             } else {
@@ -443,50 +456,50 @@ axios
               if (range.size == 1)
                 urlParams.set(
                   "r." +
-                    this.currentFilter.value +
-                    "." +
-                    this.secondaryFilter.value,
+                  this.currentFilter.value +
+                  "." +
+                  this.secondaryFilter.value,
                   range.bucketLL.year + "~" + range.bucketUL.year
                 );
               else if (range.size == 2)
                 urlParams.set(
                   "r." +
-                    this.currentFilter.value +
-                    "." +
-                    this.secondaryFilter.value,
+                  this.currentFilter.value +
+                  "." +
+                  this.secondaryFilter.value,
                   range.bucketLL.year
                 );
               else if (range.size == 3)
                 urlParams.set(
                   "r." +
-                    this.currentFilter.value +
-                    "." +
-                    this.secondaryFilter.value,
+                  this.currentFilter.value +
+                  "." +
+                  this.secondaryFilter.value,
                   range.bucketLL.year + "-" + range.bucketLL.month
                 );
               else if (range.size == 4)
                 urlParams.set(
                   "r." +
-                    this.currentFilter.value +
-                    "." +
-                    this.secondaryFilter.value,
+                  this.currentFilter.value +
+                  "." +
+                  this.secondaryFilter.value,
                   range.bucketLL.year +
-                    "-" +
-                    range.bucketLL.month +
-                    "-" +
-                    range.bucketLL.day
+                  "-" +
+                  range.bucketLL.month +
+                  "-" +
+                  range.bucketLL.day
                 );
               else if (range.size == 5)
                 urlParams.set(
                   "r." +
-                    this.currentFilter.value +
-                    "." +
-                    this.secondaryFilter.value,
+                  this.currentFilter.value +
+                  "." +
+                  this.secondaryFilter.value,
                   range.bucketLL.year +
-                    "-" +
-                    range.bucketLL.month +
-                    "-" +
-                    range.bucketLL.day
+                  "-" +
+                  range.bucketLL.month +
+                  "-" +
+                  range.bucketLL.day
                 );
             }
           }
@@ -521,9 +534,9 @@ axios
               urlParams.set(
                 "q." + this.currentFilter.value,
                 range.bucketLL +
-                  "~" +
-                  range.bucketUL +
-                  (range.unit != "" ? "~" + range.unit : "")
+                "~" +
+                range.bucketUL +
+                (range.unit != "" ? "~" + range.unit : "")
               );
             }
           } else {
@@ -549,9 +562,9 @@ axios
               urlParams.set(
                 "q." + this.currentFilter.value,
                 range.bucketLL +
-                  "~" +
-                  range.bucketUL +
-                  (range.unit != "" ? "~" + range.unit : "")
+                "~" +
+                range.bucketUL +
+                (range.unit != "" ? "~" + range.unit : "")
               );
             }
           }
@@ -577,9 +590,9 @@ axios
               };
               urlParams.set(
                 "q." +
-                  this.currentFilter.value +
-                  "." +
-                  this.secondaryFilter.value,
+                this.currentFilter.value +
+                "." +
+                this.secondaryFilter.value,
                 "novalue"
               );
             } else {
@@ -595,13 +608,13 @@ axios
               };
               urlParams.set(
                 "q." +
-                  this.currentFilter.value +
-                  "." +
-                  this.secondaryFilter.value,
+                this.currentFilter.value +
+                "." +
+                this.secondaryFilter.value,
                 range.bucketLL +
-                  "~" +
-                  range.bucketUL +
-                  (range.unit != "" ? "~" + range.unit : "")
+                "~" +
+                range.bucketUL +
+                (range.unit != "" ? "~" + range.unit : "")
               );
             }
           } else {
@@ -618,9 +631,9 @@ axios
               });
               urlParams.set(
                 "q." +
-                  this.currentFilter.value +
-                  "." +
-                  this.secondaryFilter.value,
+                this.currentFilter.value +
+                "." +
+                this.secondaryFilter.value,
                 "novalue"
               );
             } else {
@@ -636,13 +649,13 @@ axios
               });
               urlParams.set(
                 "q." +
-                  this.currentFilter.value +
-                  "." +
-                  this.secondaryFilter.value,
+                this.currentFilter.value +
+                "." +
+                this.secondaryFilter.value,
                 range.bucketLL +
-                  "~" +
-                  range.bucketUL +
-                  (range.unit != "" ? "~" + range.unit : "")
+                "~" +
+                range.bucketUL +
+                (range.unit != "" ? "~" + range.unit : "")
               );
             }
           }
@@ -927,8 +940,8 @@ axios
             .get(fullUrl)
             .then(
               (response) =>
-                (this.currentFilterLabel =
-                  response.data["results"]["bindings"][0].valueLabel.value)
+              (this.currentFilterLabel =
+                response.data["results"]["bindings"][0].valueLabel.value)
             );
           return { value: val, valueLabel: this.currentFilterLabel };
         },
@@ -952,8 +965,8 @@ axios
             .get(fullUrl)
             .then(
               (response) =>
-                (this.secondaryFilterLabel =
-                  response.data["results"]["bindings"][0].valueLabel.value)
+              (this.secondaryFilterLabel =
+                response.data["results"]["bindings"][0].valueLabel.value)
             );
           return { value: val, valueLabel: this.secondaryFilterLabel };
         },
@@ -1023,43 +1036,43 @@ axios
               }
               // Get filter labels
               var sparqlQuery = "SELECT ?prop ?propLabel WHERE {\n" +
-                  "  VALUES ?p {  " + filters + " }\n" +
-                  "  ?prop wikibase:directClaim ?p.\n" +
-                  "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
-                  "}";
+                "  VALUES ?p {  " + filters + " }\n" +
+                "  ?prop wikibase:directClaim ?p.\n" +
+                "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
+                "}";
               var fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
               axios.get(fullUrl)
-                  .then(response => {
-                      for (let i = 0; i < response.data['results']['bindings'].length; i++) {
-                          for (let j = 0; j < this.appFilters.length; j++) {
-                              if (this.appFilters[j].filterValue == response.data['results']['bindings'][i].prop.value.split("/").slice(-1)[0]) {
-                                  this.appFilters[j].filterValueLabel = response.data['results']['bindings'][i].propLabel.value
-                              }
-                              if (this.appFilters[j].parentFilterValue == response.data['results']['bindings'][i].prop.value.split("/").slice(-1)[0]) {
-                                  this.appFilters[j].parentFilterValueLabel = response.data['results']['bindings'][i].propLabel.value
-                              }
-                          }
+                .then(response => {
+                  for (let i = 0; i < response.data['results']['bindings'].length; i++) {
+                    for (let j = 0; j < this.appFilters.length; j++) {
+                      if (this.appFilters[j].filterValue == response.data['results']['bindings'][i].prop.value.split("/").slice(-1)[0]) {
+                        this.appFilters[j].filterValueLabel = response.data['results']['bindings'][i].propLabel.value
                       }
-                  })
-              if (values.trim() !== "") {
-                  // Get value labels
-                  sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
-                      "  VALUES ?value {  " + values + " }\n" +
-                      "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". } \n" +
-                      "}";
-                  var fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
-                  axios.get(fullUrl)
-                      .then(response => {
-                          for (let i = 0; i < response.data['results']['bindings'].length; i++) {
-                              index = this.appFilters.findIndex(filter => filter.value == response.data['results']['bindings'][i].value.value.split("/").slice(-1)[0]);
-                              if (index != -1) {
-                                  this.appFilters[index].valueLabel = response.data['results']['bindings'][i].valueLabel.value
-                                  this.appFilters[index].valueLink = response.data['results']['bindings'][i].value.value
-                              }
-                          }
-                      })
+                      if (this.appFilters[j].parentFilterValue == response.data['results']['bindings'][i].prop.value.split("/").slice(-1)[0]) {
+                        this.appFilters[j].parentFilterValueLabel = response.data['results']['bindings'][i].propLabel.value
+                      }
+                    }
                   }
+                })
+              if (values.trim() !== "") {
+                // Get value labels
+                sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
+                  "  VALUES ?value {  " + values + " }\n" +
+                  "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". } \n" +
+                  "}";
+                var fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+                axios.get(fullUrl)
+                  .then(response => {
+                    for (let i = 0; i < response.data['results']['bindings'].length; i++) {
+                      index = this.appFilters.findIndex(filter => filter.value == response.data['results']['bindings'][i].value.value.split("/").slice(-1)[0]);
+                      if (index != -1) {
+                        this.appFilters[index].valueLabel = response.data['results']['bindings'][i].valueLabel.value
+                        this.appFilters[index].valueLink = response.data['results']['bindings'][i].value.value
+                      }
+                    }
+                  })
               }
+            }
           }
           return this.appFilters;
         },
@@ -1498,8 +1511,8 @@ axios
             .get(fullUrl)
             .then(
               (response) =>
-                (this.total =
-                  response.data["results"]["bindings"][0].count.value)
+              (this.total =
+                response.data["results"]["bindings"][0].count.value)
             )
             .catch((error) => {
               this.total = 1000000;
