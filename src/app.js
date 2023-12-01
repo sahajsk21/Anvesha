@@ -1,4 +1,5 @@
 var allText = null;
+let prevUrlParamsArr = [];
 // Fetching language file
 var fullUrl = "languages/" + primaryLang + ".json";
 axios
@@ -59,10 +60,12 @@ axios
           );
         }
         window.onpopstate = history.onpushstate = function (e) {
-          urlParams.forEach((key, val) => {
-            console.log(val, key);
-          });
-          console.log(window.location.href);
+          // urlParams.forEach((key, val) => {
+          //   console.log(val, key);
+          // });
+          // console.log(window.location.href);
+          // console.log(`urlParams size is ${urlParams.size}`);
+          // console.log(`href array length is ${window.location.href.split("?")[1].split("&").length}`)
           if (e.state) {
             app.page = e.state.page;
             app.clsValue = e.state.classValue;
@@ -74,16 +77,21 @@ axios
             app.currentFilterValue = e.state.currentFilterValue;
             app.allItemscomponentKey = e.state.allItemscomponentKey;
             app.filterscomponentKey = e.state.filterscomponentKey;
-            // when the app first loads the window.location.href value for some reason doesn't get created with class query 
-            // even after being clicked, which is why I check for that below.  Also after testing I noticed that the 
-            // href doesn't update properly until applyFilter is called and that only happens after an updateFilter call and 
-            if (window.location.href.split("?")[1].split("&")[0][0] === "c" && urlParams.has("cf") === true) {
-              urlParams = new URLSearchParams((new URL(window.location.href)).search);
-            }
           }
-          urlParams.forEach((key, val) => {
-            console.log(val, key);
+          // workaround below to update urlParams to desired values on browser back button press
+          // compare contents of urlParams on each popstate.  If the urlParams on the last popstate
+          // is identical to current urlParams, then that means a browser button has been pressed
+          // if browser button has been pressed, update urlParams using href value
+          let urlParamsArr = [];
+          urlParams.forEach((val, key) => {
+            urlParamsArr.push(`${key}=${val}`);
           });
+          if (prevUrlParamsArr.length === urlParamsArr.length && prevUrlParamsArr.every((item, idx) => item === urlParamsArr[idx])) {
+            urlParams = new URLSearchParams((new URL(window.location.href)).search);
+          } else {
+            prevUrlParamsArr = urlParamsArr;
+          }
+          // console.log(prevUrlParamsArr);
         };
       },
       methods: {
