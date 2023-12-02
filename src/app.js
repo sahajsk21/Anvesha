@@ -72,10 +72,7 @@ axios
             app.allItemscomponentKey = e.state.allItemscomponentKey;
             app.filterscomponentKey = e.state.filterscomponentKey;
           }
-          // workaround below to update urlParams to desired values on browser back button press
-          // compare contents of urlParams on each popstate.  If the urlParams on the last popstate
-          // is identical to current urlParams, then that means a browser button has been pressed
-          // if browser button has been pressed, update urlParams using href value
+          // update urlParams on backwards and forwards browser button presses
           let urlParamsArr = [];
           urlParams.forEach((val, key) => {
             urlParamsArr.push(`${key}=${val}`);
