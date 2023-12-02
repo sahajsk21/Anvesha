@@ -60,12 +60,6 @@ axios
           );
         }
         window.onpopstate = history.onpushstate = function (e) {
-          // urlParams.forEach((key, val) => {
-          //   console.log(val, key);
-          // });
-          // console.log(window.location.href);
-          // console.log(`urlParams size is ${urlParams.size}`);
-          // console.log(`href array length is ${window.location.href.split("?")[1].split("&").length}`)
           if (e.state) {
             app.page = e.state.page;
             app.clsValue = e.state.classValue;
@@ -92,7 +86,6 @@ axios
           } else {
             prevUrlParamsArr = urlParamsArr;
           }
-          // console.log(prevUrlParamsArr);
         };
       },
       methods: {
