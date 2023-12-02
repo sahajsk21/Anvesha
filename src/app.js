@@ -80,7 +80,6 @@ axios
           urlParams.forEach((val, key) => {
             urlParamsArr.push(`${key}=${val}`);
           });
-          // check to see if the urlParams on last popstate function call are identical to urlParams in current popstate call
           if (prevUrlParamsArr.length === urlParamsArr.length && prevUrlParamsArr.every((item, idx) => item === urlParamsArr[idx])) {
             urlParams = new URLSearchParams((new URL(window.location.href)).search);
           } else {
