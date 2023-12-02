@@ -544,7 +544,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                         "    ?temp (p:" + vm.secondaryFilter.value + "/psn:" + vm.secondaryFilter.value + ") ?v.\n" +
                                         "    ?v wikibase:quantityAmount ?amount;\n" +
                                         "       wikibase:quantityUnit ?unit.\n" +
-                                        "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }\n" +
+                                        "  SERVICE wikibase:label { bd:serviceParam wikibase:language \""+ lang +",[AUTO_LANGUAGE],en\". }\n" +
                                         "}"
                                     const url = sparqlEndpoint + encodeURIComponent(unitQuery)
                                     axios.get(url)
