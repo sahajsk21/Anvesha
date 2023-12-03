@@ -1,4 +1,5 @@
 var allText = null;
+let prevUrlParamsArr = [];
 // Fetching language file
 var fullUrl = "languages/" + primaryLang + ".json";
 axios
@@ -59,6 +60,7 @@ axios
           );
         }
         window.onpopstate = history.onpushstate = function (e) {
+          // urlParams to update when back/fwd browser buttons pressed in order to prevent filters persisting
           if (e.state) {
             app.page = e.state.page;
             app.clsValue = e.state.classValue;
@@ -70,6 +72,15 @@ axios
             app.currentFilterValue = e.state.currentFilterValue;
             app.allItemscomponentKey = e.state.allItemscomponentKey;
             app.filterscomponentKey = e.state.filterscomponentKey;
+          }
+          let urlParamsArr = [];
+          urlParams.forEach((val, key) => {
+            urlParamsArr.push(`${key}=${val}`);
+          });
+          if (prevUrlParamsArr.length === urlParamsArr.length && prevUrlParamsArr.every((item, idx) => item === urlParamsArr[idx])) {
+            urlParams = new URLSearchParams((new URL(window.location.href)).search);
+          } else {
+            prevUrlParamsArr = urlParamsArr;
           }
         };
       },
