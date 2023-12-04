@@ -673,18 +673,18 @@ axios
               .get("f." + filter.parentFilterValue + "." + filter.filterValue)
               .split("-");
           } else {
-            values = filter.value.split("-");
+            values = urlParams.get("f." + filter.filterValue).split("-");
           }
           if (values.length > 1) {
             i = values.indexOf(filter.value);
             values.splice(i, 1);
             if (filter.parentFilterValue) {
-              urlParams.set("f." + filter.filterValue, values.join("-"));
-            } else {
               urlParams.set(
                 "f." + filter.parentFilterValue + "." + filter.filterValue,
                 values.join("-")
               );
+            } else {
+              urlParams.set("f." + filter.filterValue, values.join("-"));
             }
           } else {
             if (filter.parentFilterValue) {
