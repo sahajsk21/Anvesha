@@ -1,0 +1,18 @@
+{
+	"@metadata": {
+		"authors": [
+			"Smobile",
+			"Thakurji"
+		]
+	},
+	"itemCount": "{{PLURAL:$1 Item}} ii description ke match kare hai.",
+	"classPlaceholder": "Class ke enter karo",
+	"browse": "Nai to, following classes ke browse karo:",
+	"noFiltersDefined": "Ii class ke koi filter defined nai hai.",
+	"addFilter": "Filter jorro",
+	"viewQuery": "View SPARQL query",
+	"noItems": "Ii  description ke koi item nai match kare hai.",
+	"noValue": "Koi value nai hai",
+	"viewList": "Items ke suchi ke dekho",
+	"applyLinkedFilter": "$1 ke filter karo"
+}
