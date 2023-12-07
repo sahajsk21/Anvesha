@@ -1,6 +1,7 @@
 {
 	"@metadata": {
 		"authors": [
+			"Girmitya",
 			"Smobile",
 			"Thakurji"
 		]
@@ -9,7 +10,7 @@
 	"classPlaceholder": "Class ke enter karo",
 	"browse": "Nai to, following classes ke browse karo:",
 	"noFiltersDefined": "Ii class ke koi filter defined nai hai.",
-	"addFilter": "Filter jorro",
+	"addFilter": "Ek filter ke jorro",
 	"viewQuery": "View SPARQL query",
 	"noItems": "Ii  description ke koi item nai match kare hai.",
 	"noValue": "Koi value nai hai",
