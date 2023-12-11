@@ -13,7 +13,19 @@
 	"addFilter": "Ek filter ke jorro",
 	"viewQuery": "View SPARQL query",
 	"noItems": "Ii  description ke koi item nai match kare hai.",
+	"displayItemsError": "Item ke suchi ke dekhae ke try kare me kuchh jaada time lagaa; meharbaani kar ke aur filter ke jorro.",
+	"gettingValues": "Filter $1 ke khatir value laawa jaaawe hai...",
+	"noAdditionalValues": "Filter $1 ke khatir aur value nai hai.",
+	"filterError": "Filter $1 ke value laae me bahut time lagaa.",
+	"filterTimeout": "Filter $1 ke puura value laae me bahut jaada time lagaa; ii khatir hian ek possibly incomplete set hai.",
+	"selectValue": "$1 ke khatir ek value select karo:",
+	"selectAdditionalValue": "$1 ke khatir ek aur value ke select karo:",
 	"noValue": "Koi value nai hai",
+	"changeClassNote": "(Note karo: agar aap class ke badaltaa hai, tab aap abhi ke filter ke lose kar degaa.)",
+	"specificClass": "Ek aur specific class me badlo:",
+	"generalClass": "Ek aur jaada general class me badlo:",
 	"viewList": "Items ke suchi ke dekho",
-	"applyLinkedFilter": "$1 ke filter karo"
+	"results": "({{PLURAL:$1|1 result|$1 results}})",
+	"applyLinkedFilter": "$1 ke filter karo",
+	"chooseLinkedFilter": "Ii sab classes me se ek filter ke choose karo:"
 }
