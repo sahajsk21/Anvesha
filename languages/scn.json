@@ -8,6 +8,9 @@
 	"addFilter": "Agghiunci nu filtru",
 	"viewQuery": "Talìa la query SPARQL",
 	"noValue": "Nuddu valuri",
+	"specificClass": "Cancia a na classi cchiù spicìfica:",
+	"generalClass": "Cancia a na classi cchiù ginirali:",
+	"viewList": "Talìa l'elencu di l'elementi",
 	"results": "({{PLURAL:$1|1 risurtatu|$1 risurtati}})",
 	"chooseLinkedFilter": "Scegghi nu filtru d'una dî classi seguenti:"
 }
