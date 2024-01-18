@@ -1,6 +1,7 @@
 {
 	"@metadata": {
 		"authors": [
+			"Abijeet Patro",
 			"Saurmandal",
 			"ThisIsACreeper0101"
 		]
@@ -24,7 +25,7 @@
 	"specificClass": "एक और विशिष्ट वर्ग में बदलें:",
 	"generalClass": "एक और साधारण वर्ग में बदलें:",
 	"viewList": "आयटमों की सूची देखें",
-	"results": "($1 अंजाम)",
+	"results": "({{PLURAL:$1|1 परिणाम|$1 परिणाम}})",
 	"applyLinkedFilter": "$1 पर फिल्टर लागू करें",
 	"chooseLinkedFilter": "इनमें से किसी एक वर्ग से फ़िल्टर चुनें:"
 }
