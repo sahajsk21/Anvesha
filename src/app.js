@@ -1,16 +1,13 @@
-var allText = null;
 // Fetching language file
 var fullUrl = "languages/" + primaryLang + ".json";
 axios
   .get(fullUrl)
-  .then((response) => (allText = response.data))
+  .then((response) => response.data)
   .catch((_error) => {
     var fallbackUrl = "languages/en.json";
-    axios.get(fallbackUrl).then((res) => {
-      allText = res.data;
-    });
+    return axios.get(fallbackUrl).then((res) => res.data);
   })
-  .then(() => {
+  .then((langResponse) => {
     var app = new Vue({
       data: {
         page: "",
@@ -28,8 +25,8 @@ axios
         allItemscomponentKey: 0,
         filterscomponentKey: 0,
         total: "",
-        siteText: allText,
-        fallbackSiteText: "",
+        siteText: langResponse,
+        fallbackSiteText: langResponse,
         format: "",
       },
       mounted: function () {
