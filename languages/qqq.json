@@ -9,6 +9,7 @@
 	},
 	"itemCount": "Number of items displayed above the results in all pages except home and about pages.\n\nParameters:\n* $1 - a number or '1 million +'",
 	"classPlaceholder": "Placeholder for the search field on home page",
+	"filterValuePlaceholder": "Placeholder for the search filed on filter values page",
 	"browse": "Statement below the search field on home page",
 	"noFiltersDefined": "Displayed on items page when no properties are defined for the class.E.g.:Blood(Q7873)",
 	"addFilter": "Link to add filters. Displayed on items page when more than 40 properties are defined for a class.",
