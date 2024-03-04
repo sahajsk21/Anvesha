@@ -57,6 +57,9 @@ axios
         }
         window.onpopstate = history.onpushstate = function (e) {
           if (e.state) {
+            if (e.state.currentFilterValue=="" && urlParams.has("f."+app.currentFilterValue)) {
+                urlParams.delete("f."+app.currentFilterValue);
+              }
             app.page = e.state.page;
             app.clsValue = e.state.classValue;
             app.getFiltersFromURL = e.state.fromURL;
