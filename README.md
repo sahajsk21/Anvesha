@@ -1,6 +1,6 @@
 # Anvesha
 
-Drill-down browser for any installation of Wikibase, including Wikidata. 
+Drill-down browser for any installation of Wikibase, including Wikidata.
 
 ## Installation and Usage
 
@@ -39,6 +39,14 @@ LINKS_IN_TOPNAV = {
     "Source":"https://github.com/sahajsk21/Anvesha",
 }
 ```
+## Start a local http server
+You can e.g. use
+https://www.npmjs.com/package/http-server
+
+```bash
+http-server
+```
+
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
