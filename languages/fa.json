@@ -1,6 +1,7 @@
 {
 	"@metadata": {
 		"authors": [
+			"Ebraminio",
 			"Jeeputer",
 			"Mahdy Saffar"
 		]
@@ -8,7 +9,7 @@
 	"itemCount": "{{PLURAL:$1|یک مورد منطبق|$1 مورد منطبق}} با این توصیف وجود دارد.",
 	"classPlaceholder": "وارد کردن کلاس",
 	"browse": "یا مرور کردن هریک از کلاس‌های زیر:",
-	"noFiltersDefined": "هیچ پالایه‌ای برای این کلاس تعریف نشده‌است.",
+	"noFiltersDefined": "هیچ پالایه‌ای برای این کلاس تعریف نشده است.",
 	"addFilter": "افزودن پالایه",
 	"viewQuery": "مشاهدهٔ پرسمان SPARQL",
 	"noItems": "هیچ موردی با این توصیف منطبق نیست.",
