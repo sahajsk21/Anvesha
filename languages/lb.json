@@ -9,7 +9,7 @@
 	"browse": "Oder duerchsicht eng vun de follgende Klassen:",
 	"noFiltersDefined": "Fir dës Klass ass kee Filter definéiert.",
 	"addFilter": "E Filter derbäisetzen",
-	"viewQuery": "SPARQL-Ufro weisen",
+	"viewQuery": "SPARQL-Requête weisen",
 	"noAdditionalValues": "Et gëtt keng weider Wäerter fir de Filter $1.",
 	"selectValue": "Wielt e Wäert fir $1:",
 	"selectAdditionalValue": "Wielt en zousätzleche Wäert fir $1:",
