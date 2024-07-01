@@ -2,6 +2,7 @@
 	"@metadata": {
 		"authors": [
 			"Jaroslav.micek",
+			"Oujon",
 			"Yardom78"
 		]
 	},
@@ -24,7 +25,7 @@
 	"specificClass": "Zmenia na viac špecifikovaný typ:",
 	"generalClass": "Zmena na viac všeobecný typ:",
 	"viewList": "Zobraziť zoznam položiek",
-	"results": "(počet výsledkov: $1 )",
+	"results": "( {{PLURAL:$1| 1 výsledok| $1 výsledkov}})",
 	"applyLinkedFilter": "Použiť filter na $1",
 	"chooseLinkedFilter": "Vybrať filter z jedného z nasledovných typov:"
 }
