@@ -333,7 +333,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                     parameters.set("r." + vm.currentFilter.value + "." + vm.secondaryFilter.value, "novalue")
                     vm.noValueURL = window.location.pathname + "?" + parameters
                     
-                    var sparqlQuery = "ELECT ?time WHERE {\n" +
+                    var sparqlQuery = "SELECT ?time WHERE {\n" +
                         "?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
                         "?item wdt:" + vm.currentFilter.value +" ?temp.\n" +
                         filterString +
@@ -693,7 +693,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                 "    SELECT DISTINCT ?value WHERE {\n" +
                                 "      SELECT ?value WHERE {\n" +
                                 "        hint:Query hint:optimizer \"None\".\n" +
-                                "        ?item wdt:" + instanceOf + " wd:Q5398426.\n" +
+                                "        ?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
                                 "        ?item wdt:" + vm.currentFilter.value + " ?temp.\n" +
                                 "        ?temp wdt:" + vm.secondaryFilter.value + " ?value.\n" +
                                 filterString +
