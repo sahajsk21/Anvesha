@@ -396,6 +396,7 @@ filtervalues = Vue.component('filter-values', {
                 }
             })
 
+        this.classSelector = "?item wdt:" + instanceOf + " wd:" + this.classValue + ".\n";
         // Convert the applied filters/time ranges/quantities into SPARQL equivalents
         var filterString = "";
         var noValueString = "";
@@ -499,7 +500,7 @@ filtervalues = Vue.component('filter-values', {
                     vm.noValueURL = window.location.pathname + "?" + parameters
                     
                     var sparqlQuery = "SELECT ?time WHERE {\n" +
-                        "?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
+                        this.classSelector +
                         filterString +
                         filterRanges +
                         timeString +
@@ -549,7 +550,7 @@ filtervalues = Vue.component('filter-values', {
                             */
                             sparqlQuery = "SELECT ?time WHERE{SELECT ?time WHERE {\n" +
                                 "hint:Query hint:optimizer \"None\".\n" +
-                                "?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
+                                this.classSelector +
                                 filterString +
                                 "?item wdt:" + vm.currentFilter.value + " ?time.\n" +
                                 filterRanges +
@@ -603,7 +604,7 @@ filtervalues = Vue.component('filter-values', {
                      Query for quantities with units. 
                     */
                     var sparqlQuery = "SELECT ?item ?amount WHERE {\n" +
-                        "?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
+                        this.classSelector +
                         filterString +
                         "?item (p:" + vm.currentFilter.value + "/psn:" + vm.currentFilter.value + ") ?v.\n" +
                         "?v wikibase:quantityAmount ?amount.\n" +
@@ -620,7 +621,7 @@ filtervalues = Vue.component('filter-values', {
                                 if (response == "") {
                                     // If the above query returns null then try for un-normalized values.
                                     sparqlQuery = "SELECT ?amount WHERE {\n" +
-                                        "?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
+                                        this.classSelector +
                                         filterString +
                                         "?item (p:" + vm.currentFilter.value + "/psv:" + vm.currentFilter.value + ") ?v.\n" +
                                         "?v wikibase:quantityAmount ?amount.\n" +
@@ -664,7 +665,7 @@ filtervalues = Vue.component('filter-values', {
                                                 "{\n" +
                                                 "SELECT ?amount WHERE {\n" +
                                                 "hint:Query hint:optimizer \"None\".\n" +
-                                                "?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
+                                                this.classSelector +
                                                 "?item (p:" + vm.currentFilter.value + "/psv:" + vm.currentFilter.value + ") ?v.\n" +
                                                 "?v wikibase:quantityAmount ?amount.\n" +
                                                 "}\n" +
@@ -750,7 +751,7 @@ filtervalues = Vue.component('filter-values', {
                                     "{\n" +
                                     "SELECT ?item ?amount WHERE {\n" +
                                     "hint:Query hint:optimizer \"None\".\n" +
-                                    "?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
+                                    this.classSelector +
                                     "?item (p:" + vm.currentFilter.value + "/psn:" + vm.currentFilter.value + ") ?v.\n" +
                                     "?v wikibase:quantityAmount ?amount.\n" +
                                     "}\n" +
@@ -795,7 +796,7 @@ filtervalues = Vue.component('filter-values', {
                     var sparqlQuery = "SELECT ?value ?valueLabel ?count WHERE {\n" +
                         "{\n" +
                         "SELECT ?value (COUNT(?value) AS ?count) WHERE {\n" +
-                        "?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
+                        this.classSelector +
                         "?item wdt:" + vm.currentFilter.value + " ?value.\n" +
                         filterString +
                         filterRanges +
@@ -865,7 +866,7 @@ filtervalues = Vue.component('filter-values', {
                                 "{\n" +
                                 "SELECT ?value WHERE {\n" +
                                 "hint:Query hint:optimizer \"None\".\n" +
-                                "?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
+                                this.classSelector +
                                 "?item wdt:" + vm.currentFilter.value + " ?value.\n" +
                                 filterString +
                                 filterRanges +

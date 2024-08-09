@@ -233,6 +233,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
         } 
     },
     mounted() {
+        this.classSelector = "?item wdt:" + instanceOf + " wd:" + this.classValue + ".\n";
         // Convert the applied filters/time ranges/quantities into SPARQL equivalents
         var filterString = "";
         var noValueString = "";
@@ -334,7 +335,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                     vm.noValueURL = window.location.pathname + "?" + parameters
                     
                     var sparqlQuery = "SELECT ?time WHERE {\n" +
-                        "?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
+                        vm.classSelector +
                         "?item wdt:" + vm.currentFilter.value +" ?temp.\n" +
                         filterString +
                         filterRanges +
@@ -385,7 +386,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                             */
                             sparqlQuery = "SELECT ?time WHERE{SELECT ?time WHERE {\n" +
                                 "  hint:Query hint:optimizer \"None\".\n" +
-                                "?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
+                                vm.classSelector +
                                 "?item wdt:" + vm.currentFilter.value + " ?temp.\n" +
                                 filterString +
                                 "?temp wdt:" + vm.secondaryFilter.value + " ?time.\n" +
@@ -441,7 +442,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                      Query for quantities with units. 
                     */
                     sparqlQuery = "SELECT ?item ?amount WHERE {\n" +
-                        "?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
+                        vm.classSelector +
                         filterString +
                         "{#Current filter\n?item wdt:"+vm.currentFilter.value+" ?temp.\n" +
                         "?temp (p:" + vm.secondaryFilter.value + "/psn:" + vm.secondaryFilter.value + ") ?v.\n" +
@@ -459,7 +460,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                 if (response == "") {
                                     // If the above query returns null then try for un-normalized values.
                                     sparqlQuery = "SELECT ?amount WHERE {\n" +
-                                    "?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
+                                    vm.classSelector +
                                     filterString +
                                     "{#Current filter\n?item wdt:" + vm.currentFilter.value + " ?temp.\n" +
                                     "?temp (p:" + vm.secondaryFilter.value + "/psv:" + vm.secondaryFilter.value + ") ?v.\n" +
@@ -504,7 +505,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                                 "{\n" +
                                                 "  SELECT ?amount WHERE {\n" +
                                                 "    hint:Query hint:optimizer \"None\".\n" +
-                                                "    ?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
+                                                "    " + vm.classSelector +
                                                 "    ?item wdt:" + vm.currentFilter.value + " ?temp.\n" +
                                                 "    ?temp (p:" + vm.secondaryFilter.value + "/psv:" + vm.secondaryFilter.value + ") ?v.\n" +
                                                 "    ?v wikibase:quantityAmount ?amount.\n" +
@@ -582,7 +583,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                 "{\n" +
                                 "  SELECT ?item ?amount WHERE {\n" +
                                 "  hint:Query hint:optimizer \"None\".\n" +
-                                "    ?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
+                                "    " + vm.classSelector +
                                 "    ?item (p:" + vm.secondaryFilter.value + "/psn:" + vm.secondaryFilter.value + ") ?v.\n" +
                                 "    ?v wikibase:quantityAmount ?amount.\n" +
                                 "}\n" +
@@ -623,7 +624,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                     var sparqlQuery = "SELECT ?value ?valueLabel ?count WHERE {\n" +
                         "{\n" +
                         "SELECT ?value (COUNT(?value) AS ?count) WHERE {\n" +
-                        "?item wdt:" + instanceOf + " wd:" + vm.classValue +".\n" +
+                        vm.classSelector +
                         "{\n?item wdt:" + vm.currentFilter.value + " ?temp.\n" +
                         "?temp wdt:" + vm.secondaryFilter.value + " ?value.\n}" +
                         filterString +
@@ -693,7 +694,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                 "    SELECT DISTINCT ?value WHERE {\n" +
                                 "      SELECT ?value WHERE {\n" +
                                 "        hint:Query hint:optimizer \"None\".\n" +
-                                "        ?item wdt:" + instanceOf + " wd:" + vm.classValue + ".\n" +
+                                "        " + vm.classSelector +
                                 "        ?item wdt:" + vm.currentFilter.value + " ?temp.\n" +
                                 "        ?temp wdt:" + vm.secondaryFilter.value + " ?value.\n" +
                                 filterString +

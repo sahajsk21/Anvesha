@@ -110,6 +110,7 @@ axios
           urlParams = new URLSearchParams("");
           urlParams.set("c", classValue);
           this.clsValue = classValue;
+          this.classSelector = "?value wdt:" + instanceOf + " wd:" + classValue + ".\n";
           this.classLabel = classLabel;
           this.currentFilterLabel = "";
           this.currentFilterValue = "";
@@ -1483,11 +1484,7 @@ axios
           }
           sparqlQuery =
             "SELECT (COUNT(DISTINCT ?value) AS ?count) WHERE {\n" +
-            "  ?value wdt:" +
-            instanceOf +
-            " wd:" +
-            this.classValue +
-            ".  \n" +
+            this.classSelector +
             filterString +
             filterRanges +
             filterQuantities +
