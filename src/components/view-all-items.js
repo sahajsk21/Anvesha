@@ -114,7 +114,7 @@ viewallitems = Vue.component('view-all-items', {
             sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
                 "{\n" +
                 "SELECT ?value  " + this.sparqlParameters[4] + " WHERE {\n" +
-                "?value wdt:" + instanceOf + " wd:" + this.classValue + ".  \n" +
+                this.classSelector +
                 this.sparqlParameters[0] +
                 this.sparqlParameters[1] +
                 this.sparqlParameters[2] +
@@ -185,7 +185,7 @@ viewallitems = Vue.component('view-all-items', {
             var sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
                 "{\n" +
                 "SELECT ?value  " + this.sparqlParameters[4] + " WHERE {\n" +
-                "?value wdt:" + instanceOf + " wd:" + this.classValue + ".  \n" +
+                this.classSelector +
                 this.sparqlParameters[0] +
                 this.sparqlParameters[1] +
                 this.sparqlParameters[2] +
@@ -256,6 +256,7 @@ viewallitems = Vue.component('view-all-items', {
             .catch(_error => {
                 this.items.push({ value: "Error" })
             })
+        this.classSelector = "?value wdt:" + instanceOf + " wd:" + this.classValue + ".\n";
         // Change applied filters/ranges/quantities to SPARQL equivalents
         let filterString = "";
         let noValueString = "";
