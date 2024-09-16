@@ -1,4 +1,5 @@
 <html>
+<!-- see https://github.com/sahajsk21/Anvesha -->
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta charset="utf-8">
@@ -44,12 +45,12 @@
                 :format="format">
             </view-all-items>
 
-            <filters-view 
+            <filters-view
                 @change-page="updatePage"
                 @update-filter="updateFilter"
                 @remove-filter="removeFilter"
                 @remove-range="removeRange"
-                @remove-quantity="removeQuantity"  
+                @remove-quantity="removeQuantity"
                 v-if="view =='filters'"
                 :website-text="siteText"
                 :fallback-text="fallbackSiteText"
@@ -61,18 +62,18 @@
                 :applied-quantities="appliedQuantities">
             </filters-view>
 
-            <filter-values 
+            <filter-values
                 @change-page="updatePage"
                 @apply-filter="applyFilter"
-                @apply-range="applyRange" 
-                @apply-quantity="applyQuantityRange" 
+                @apply-range="applyRange"
+                @apply-quantity="applyQuantityRange"
                 @update-filter="updateFilter"
                 @update-secondary="updateSecondaryFilter"
                 @update-class="updateClassValue"
                 @remove-filter="removeFilter"
                 @remove-range="removeRange"
-                @remove-quantity="removeQuantity"            
-                v-if="view =='filter-values'" 
+                @remove-quantity="removeQuantity"
+                v-if="view =='filter-values'"
                 :website-text="siteText"
                 :fallback-text="fallbackSiteText"
                 :key="filterscomponentKey"
@@ -86,15 +87,15 @@
                 :format="format">
             </filter-values>
 
-            <secondary-filters 
+            <secondary-filters
                 @change-page="updatePage"
                 @apply-secondary-filter="applySecondaryFilter"
-                @apply-secondary-range="applySecondaryRange" 
-                @apply-secondary-quantity="applySecondaryQuantityRange" 
+                @apply-secondary-range="applySecondaryRange"
+                @apply-secondary-quantity="applySecondaryQuantityRange"
                 @remove-filter="removeFilter"
                 @remove-range="removeRange"
-                @remove-quantity="removeQuantity"            
-                v-if="view =='secondary-filter-values'" 
+                @remove-quantity="removeQuantity"
+                v-if="view =='secondary-filter-values'"
                 :website-text="siteText"
                 :fallback-text="fallbackSiteText"
                 :key="filterscomponentKey"
@@ -112,7 +113,7 @@
             <subclass-view
                 @change-page="updatePage"
                 @update-class="updateClassValue"
-                v-if="view =='subclass'" 
+                v-if="view =='subclass'"
                 :website-text="siteText"
                 :fallback-text="fallbackSiteText"
                 :class-label="classLabel"
@@ -125,7 +126,7 @@
             <superclass-view
                 @change-page="updatePage"
                 @update-class="updateClassValue"
-                v-if="view =='superclass'" 
+                v-if="view =='superclass'"
                 :website-text="siteText"
                 :fallback-text="fallbackSiteText"
                 :class-label="classLabel"
