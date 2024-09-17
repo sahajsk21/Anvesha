@@ -112,7 +112,7 @@ subclass = Vue.component('subclass-view', {
             "{\n" +
             "  SELECT ?value (COUNT(?value) AS ?count) WHERE {\n" +
             "  ?v wdt:" + instanceOf + " ?value.\n" +
-            "  ?value wdt:P279 wd:" + this.classValue + ".\n" +
+            "  ?value wdt:" + subclassOf + " wd:" + this.classValue + ".\n" +
             "}\n" +
             "GROUP BY ?value\n" +
             "}\n" +
