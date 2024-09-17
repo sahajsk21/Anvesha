@@ -10,6 +10,7 @@ SUGGESTED_CLASSES = [ "Q5", "Q515", "Q523", "Q4022", "Q7397", "Q7889", "Q8502",
 SPARQL_ENDPOINT = "https://query.wikidata.org/sparql?query="
 INSTANCE_OF_PID = "P31"
 PROPERTIES_FOR_THIS_TYPE_PID = "P1963"
+SUBCLASS_OF_PID = "P279"
 LINKS_IN_TOPNAV = {
     "Source":"https://github.com/sahajsk21/Anvesha",
 }
