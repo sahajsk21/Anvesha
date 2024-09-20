@@ -111,7 +111,7 @@ superclass = Vue.component('superclass-view', {
             "  {\n" +
             "    SELECT ?value ?valueLabel (COUNT(?value) AS ?count) WHERE {\n" +
             "      ?v wdt:" + instanceOf + " ?value.\n" +
-            "      wd:" + this.classValue + " wdt:P279 ?value.\n" +
+            "      wd:" + this.classValue + " wdt:" + subclassOf + " ?value.\n" +
             "    }\n" +
             "    GROUP BY ?value ?valueLabel\n" +
             "  }\n" +
@@ -126,7 +126,7 @@ superclass = Vue.component('superclass-view', {
                 sparqlQuery = "SELECT DISTINCT ?value ?valueLabel WHERE\n" +
                     "{SELECT ?value ?valueLabel WHERE {\n" +
                     "  ?v wdt:" + instanceOf + " ?value.\n" +
-                    "  wd:" + vm.classValue + " wdt:P279 ?value. \n" +
+                    "  wd:" + vm.classValue + " wdt:" + subclassOf + " ?value. \n" +
                     "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
                     "}\n" +
                     "LIMIT " + resultsPerPage + "\n" +
