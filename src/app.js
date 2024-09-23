@@ -110,7 +110,7 @@ axios
           urlParams = new URLSearchParams("");
           urlParams.set("c", classValue);
           this.clsValue = classValue;
-          // Find both items in this class, and in any of its subclasses.
+          // Find items both in this class and in any of its subclasses.
           this.classSelector = "{\n" +
             "    ?value wdt:" + instanceOf + " wd:" + classValue + "\n" +
             "} UNION {\n" +
