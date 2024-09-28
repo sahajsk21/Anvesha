@@ -4,7 +4,7 @@
 			"Eleassar"
 		]
 	},
-	"itemCount": "Temu opisu {{PLURAL:$1|ustreza en predmet|two=ustrezata dva predmeta|few=ustrezajo $1 predmeti|ustreza $1 predmetov}}.",
+	"itemCount": "Temu opisu {{PLURAL:$1|one=ustreza en predmet|two=ustrezata dva predmeta|few=ustrezajo $1 predmeti|ustreza $1 predmetov}}.",
 	"classPlaceholder": "Vnesite skupino",
 	"browse": "Ali prebrskajte katerega od naslednjih razredov:",
 	"noFiltersDefined": "Za ta razred ni opredeljen noben filter.",
