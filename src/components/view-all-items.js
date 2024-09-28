@@ -256,7 +256,13 @@ viewallitems = Vue.component('view-all-items', {
             .catch(_error => {
                 this.items.push({ value: "Error" })
             })
-        this.classSelector = "?value wdt:" + instanceOf + " wd:" + this.classValue + ".\n";
+        // Find items both in this class and in any of its subclasses.
+        this.classSelector = "{\n" +
+            "    ?value wdt:" + instanceOf + " wd:" + this.classValue + "\n" +
+            "} UNION {\n" +
+            "    ?value wdt:" + instanceOf + " ?subclass .\n" +
+            "    ?subclass wdt:" + subclassOf + " wd:" + this.classValue + "\n" +
+            "}\n";
         // Change applied filters/ranges/quantities to SPARQL equivalents
         let filterString = "";
         let noValueString = "";

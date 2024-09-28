@@ -233,7 +233,13 @@ secondayFilterValues = Vue.component('secondary-filters', {
         } 
     },
     mounted() {
-        this.classSelector = "?item wdt:" + instanceOf + " wd:" + this.classValue + ".\n";
+        // Find items both in this class and in any of its subclasses.
+        this.classSelector = "{\n" +
+            "    ?item wdt:" + instanceOf + " wd:" + this.classValue + "\n" +
+            "} UNION {\n" +
+            "    ?item wdt:" + instanceOf + " ?subclass .\n" +
+            "    ?subclass wdt:" + subclassOf + " wd:" + this.classValue + "\n" +
+            "}\n";
         // Convert the applied filters/time ranges/quantities into SPARQL equivalents
         var filterString = "";
         var noValueString = "";

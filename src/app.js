@@ -110,7 +110,13 @@ axios
           urlParams = new URLSearchParams("");
           urlParams.set("c", classValue);
           this.clsValue = classValue;
-          this.classSelector = "?value wdt:" + instanceOf + " wd:" + classValue + ".\n";
+          // Find items both in this class and in any of its subclasses.
+          this.classSelector = "{\n" +
+            "    ?value wdt:" + instanceOf + " wd:" + classValue + "\n" +
+            "} UNION {\n" +
+            "    ?value wdt:" + instanceOf + " ?subclass .\n" +
+            "    ?subclass wdt:" + subclassOf + " wd:" + classValue + "\n" +
+            "}\n";
           this.classLabel = classLabel;
           this.currentFilterLabel = "";
           this.currentFilterValue = "";
