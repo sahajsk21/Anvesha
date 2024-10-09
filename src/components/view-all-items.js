@@ -111,7 +111,7 @@ viewallitems = Vue.component('view-all-items', {
              at a time based on the current page number.
              Sort only in case of single page results.
             */
-            sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
+            sparqlQuery = "SELECT DISTINCT ?value ?valueLabel WHERE {\n" +
                 "{\n" +
                 "SELECT ?value  " + this.sparqlParameters[4] + " WHERE {\n" +
                 this.classSelector +
@@ -182,7 +182,7 @@ viewallitems = Vue.component('view-all-items', {
              In case of item has multiple values for quantity, 
              max value is considered.
             */
-            var sparqlQuery = "SELECT ?value ?valueLabel WHERE {\n" +
+            var sparqlQuery = "SELECT DISTINCT ?value ?valueLabel WHERE {\n" +
                 "{\n" +
                 "SELECT ?value  " + this.sparqlParameters[4] + " WHERE {\n" +
                 this.classSelector +
@@ -230,7 +230,7 @@ viewallitems = Vue.component('view-all-items', {
     },
     mounted() {
         // Check available filters and exclude ones with distinct type value constraint.
-        var sparqlQuery = "SELECT ?value ?valueLabel ?property WHERE {\n" +
+        var sparqlQuery = "SELECT DISTINCT ?value ?valueLabel ?property WHERE {\n" +
             "wd:" + this.classValue + " wdt:" + propertiesForThisType + " ?value.\n" +
             "?value wikibase:propertyType ?property.\n" +
             "FILTER(NOT EXISTS {\n" +
