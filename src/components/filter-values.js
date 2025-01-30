@@ -254,7 +254,7 @@ filtervalues = Vue.component('filter-values', {
                                     :href="noValueURL" 
                                     onclick="return false;" 
                                     @click.exact="applyQuantityRange('novalue')" 
-                                    @click.ctrl="window.open(noValueURL, '_blank'>
+                                    @click.ctrl="window.open(noValueURL, '_blank')">
                                     {{ websiteText.noValue||fallbackText.noValue }}
                                 </a>
                             </i>
