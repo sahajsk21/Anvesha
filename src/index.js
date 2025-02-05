@@ -9,6 +9,7 @@ sparqlEndpoint = SPARQL_ENDPOINT || "https||//query.wikidata.org/sparql?query=";
 instanceOf = INSTANCE_OF_PID || "P31";
 propertiesForThisType = PROPERTIES_FOR_THIS_TYPE_PID || "P1963";
 subclassOf = SUBCLASS_OF_PID || "P279";
+fallbackQueryLimit = FALLBACK_QUERY_LIMIT || 300;
 linksInTopNav = LINKS_IN_TOPNAV || {};
 
 // Website name
