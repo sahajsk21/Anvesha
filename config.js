@@ -15,3 +15,4 @@ FALLBACK_QUERY_LIMIT = 300
 LINKS_IN_TOPNAV = {
     "Source":"https://github.com/sahajsk21/Anvesha",
 }
+ITEM_URL_START = "https://www.wikidata.org/wiki/"

@@ -11,6 +11,7 @@ propertiesForThisType = PROPERTIES_FOR_THIS_TYPE_PID || "P1963";
 subclassOf = SUBCLASS_OF_PID || "P279";
 fallbackQueryLimit = FALLBACK_QUERY_LIMIT || 300;
 linksInTopNav = LINKS_IN_TOPNAV || {};
+itemURLStart = ITEM_URL_START || "https://www.wikidata.org/wiki/";
 
 // Website name
 document.title = siteName
