@@ -60,7 +60,7 @@ viewallitems = Vue.component('view-all-items', {
                 <div v-else>
                         <ul>
                             <li v-for="item in sortSinglePageValues(items)">
-                                <a :href="linkToWikidata(item.value.value)" class="externalLink">{{item.valueLabel.value}}</a>
+                                <a :href="linkToActualItem(item.value.value)" class="externalLink">{{item.valueLabel.value}}</a>
                             </li>
                         </ul>
                 </div>
@@ -172,8 +172,8 @@ viewallitems = Vue.component('view-all-items', {
         showFilter(filter) {
             this.$emit('update-filter', filter)
         },
-        linkToWikidata(item) {
-            return "https://www.wikidata.org/wiki/" + item.split('/').slice(-1)[0] + "?uselang=" + (urlParams.get('lang') ? urlParams.get('lang') : (defaultLanguages[0] ? defaultLanguages[0] : 'en'))
+        linkToActualItem(item) {
+            return itemURLStart + item.split('/').slice(-1)[0] + "?uselang=" + (urlParams.get('lang') ? urlParams.get('lang') : (defaultLanguages[0] ? defaultLanguages[0] : 'en'))
         },
         exportAsFormat(format) {
             document.getElementsByTagName("body")[0].style.cursor = "progress";
