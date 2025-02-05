@@ -562,7 +562,7 @@ filtervalues = Vue.component('filter-values', {
                                 filterRanges +
                                 filterQuantities +
                                 "}\n" +
-                                "LIMIT " + resultsPerPage + "\n" +
+                                "LIMIT " + fallbackQueryLimit + "\n" +
                                 "}\n" +
                                 "ORDER BY ?time";
                             fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
@@ -675,7 +675,7 @@ filtervalues = Vue.component('filter-values', {
                                                 "?item (p:" + vm.currentFilter.value + "/psv:" + vm.currentFilter.value + ") ?v.\n" +
                                                 "?v wikibase:quantityAmount ?amount.\n" +
                                                 "}\n" +
-                                                "LIMIT " + resultsPerPage + "\n" +
+                                                "LIMIT " + fallbackQueryLimit + "\n" +
                                                 "}\n" +
                                                 "ORDER BY ?amount";
                                             fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
@@ -761,7 +761,7 @@ filtervalues = Vue.component('filter-values', {
                                     "?item (p:" + vm.currentFilter.value + "/psn:" + vm.currentFilter.value + ") ?v.\n" +
                                     "?v wikibase:quantityAmount ?amount.\n" +
                                     "}\n" +
-                                    "LIMIT " + resultsPerPage + "\n" +
+                                    "LIMIT " + fallbackQueryLimit + "\n" +
                                     "}\n" +
                                     "ORDER BY ?amount";
                                 vm.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
@@ -863,9 +863,8 @@ filtervalues = Vue.component('filter-values', {
                         })
                         .catch(_error => {
                             /*
-                                Gets fallback results in case the primary query fails or times out.
-                                Finds random 300 values.
-                            */
+                             * Gets random fallback results in case the primary query fails or times out.
+                             */
                             sparqlQuery = "SELECT ?value ?valueLabel WHERE{\n" +
                                 "{\n" +
                                 "SELECT DISTINCT ?value\n" +
@@ -878,7 +877,7 @@ filtervalues = Vue.component('filter-values', {
                                 filterRanges +
                                 filterQuantities +
                                 "}\n" +
-                                "LIMIT 300\n" +
+                                "LIMIT " + fallbackQueryLimit + "\n" +
                                 "}\n" +
                                 "\n" +
                                 "}\n" +
