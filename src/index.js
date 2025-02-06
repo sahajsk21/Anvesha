@@ -13,6 +13,8 @@ subclassOf = window.SUBCLASS_OF_PID || "P279";
 fallbackQueryLimit = window.FALLBACK_QUERY_LIMIT || 300;
 linksInTopNav = window.LINKS_IN_TOPNAV || {};
 itemURLStart = window.ITEM_URL_START || "https://www.wikidata.org/wiki/";
+showThumbnails = window.SHOW_THUMBNAILS || false;
+thumbnailURLStart = window.THUMBNAIL_URL_START;
 
 // Website name
 document.title = siteName

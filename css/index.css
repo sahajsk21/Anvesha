@@ -225,6 +225,29 @@ a:hover {
   color: #990000;
 }
 
+.thumbnailImage {
+  display: inline-block;
+  word-wrap: break-word;
+  border: 1px solid #ffcccc;
+  border-radius: 7px;
+  width: 150px;
+  padding: 15px;
+  margin: 10px;
+}
+
+.thumbnailImage figure {
+  margin: 0;
+}
+
+.thumbnailImage figcaption {
+  font-size: 10pt;
+}
+
+.thumbnailImage:hover {
+  background: #f9f9f9;
+  border: 1px solid #eebbbb;
+}
+
 @media screen and (max-width: 1200px) {
 	.dropdown-content {
 		column-count: 3;
