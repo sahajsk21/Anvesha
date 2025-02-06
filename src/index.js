@@ -5,7 +5,7 @@ resultsPerPage = RESULTS_PER_PAGE || 200;
 favicon = FAVICON || "images/favicon.png";
 logo = LOGO || "images/logo.png";
 classes = SUGGESTED_CLASSES.map(function(v){return {value:v}}) || [];
-sparqlEndpoint = SPARQL_ENDPOINT || "https||//query.wikidata.org/sparql?query=";
+sparqlEndpoint = SPARQL_ENDPOINT || "https://query.wikidata.org/sparql?query=";
 queryServiceWebsiteURL = QUERY_SERVICE_WEBSITE_URL || "https://query.wikidata.org/#";
 instanceOf = INSTANCE_OF_PID || "P31";
 propertiesForThisType = PROPERTIES_FOR_THIS_TYPE_PID || "P1963";
