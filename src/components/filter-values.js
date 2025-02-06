@@ -301,26 +301,26 @@ filtervalues = Vue.component('filter-values', {
             this.$emit('update-class', cls[0].class.value.split('/').slice(-1)[0], cls[0].class.value.split('/').slice(-1)[0])
         },
         displayMessage(message, value) {
-            if(message){
-                return message.replace("$1", "<b>" + value + "</b>")
+            if (message) {
+                return message.replace("$1", "<b>" + value + "</b>");
             }
         },
-        displayPluralCount(message,totalValues){
-            if(message){
-                matches = message.match('{{PLURAL:[\\s]*\\$1\\|(.*)}}')
-                str = matches[1].split('|')[(totalValues > 1 ? 1 : 0)]
-                str = str.replace("$1", (totalValues < 1000000 ? numberWithCommas(totalValues) : '1 million +'))
-                return message.replace(/{{PLURAL:[\s]*\$1\|(.*)}}/g,str)
+        displayPluralCount(message,totalValues) {
+            if (message) {
+                matches = message.match('{{PLURAL:[\\s]*\\$1\\|(.*)}}');
+                str = matches[1].split('|')[(totalValues > 1 ? 1 : 0)];
+                str = str.replace("$1", (totalValues < 1000000 ? numberWithCommas(totalValues) : '1 million +'));
+                return message.replace(/{{PLURAL:[\s]*\$1\|(.*)}}/g,str);
             }
         },
         applyFilter(filter) {
-            this.$emit('apply-filter', filter)
+            this.$emit('apply-filter', filter);
         },
         applyRange(range) {
-            this.$emit('apply-range', range)
+            this.$emit('apply-range', range);
         },
         applyQuantityRange(range) {
-            this.$emit('apply-quantity', range)
+            this.$emit('apply-quantity', range);
         },
         removeFilter(value) {
             this.$emit("remove-filter", value, 'filter-values');
@@ -334,7 +334,7 @@ filtervalues = Vue.component('filter-values', {
         exportCSV() {
             document.getElementsByTagName("body")[0].style.cursor = "progress";
             let csvHeader = encodeURI("data:text/csv;charset=utf-8,");
-            if (this.itemsType == 'Item' || this.itemsType == 'ItemFail'){
+            if (this.itemsType == 'Item' || this.itemsType == 'ItemFail') {
                 var csvContent = this.items.map(e => e.value.value.split('/').slice(-1)[0] + "," + `\"${e.valueLabel.value}\"` + (this.displayCount == 1 ? "," + e.count.value : '')).join("\n");
             }
             else if (this.itemsType == 'Time' || this.itemsType == 'TimeFail') {
@@ -372,29 +372,29 @@ filtervalues = Vue.component('filter-values', {
             "})\n" +
             "FILTER (?property in (wikibase:Time, wikibase:Quantity, wikibase:WikibaseItem))\n" +
             "SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
-            "}"+
+            "}" +
             "ORDER BY ?classLabel ?valueLabel";
         const url = sparqlEndpoint + encodeURIComponent(sparqlQuery);
         axios.get(url)
             .then(response =>{
                 var filtersByClass = {};
-                if(response.data['results']['bindings']){
+                if (response.data['results']['bindings']) {
                     var arr = response.data['results']['bindings'];
                     for (let i = 0; i < arr.length; i++) {
-                        if(filtersByClass.hasOwnProperty(arr[i].classLabel.value)){
-                            filtersByClass[arr[i].classLabel.value].push(arr[i])
+                        if (filtersByClass.hasOwnProperty(arr[i].classLabel.value)) {
+                            filtersByClass[arr[i].classLabel.value].push(arr[i]);
                         }
-                        else{
-                            filtersByClass[arr[i].classLabel.value] = [arr[i]]
+                        else {
+                            filtersByClass[arr[i].classLabel.value] = [arr[i]];
                         }
                     }
-                    this.secondaryFilters = filtersByClass
-                    this.secondaryFiltersCount = Object.keys(this.secondaryFilters).length
+                    this.secondaryFilters = filtersByClass;
+                    this.secondaryFiltersCount = Object.keys(this.secondaryFilters).length;
                 }
-                else{
-                    this.secondaryFilters.push({ value: "Empty", valueLabel: "No data" })
+                else {
+                    this.secondaryFilters.push({ value: "Empty", valueLabel: "No data" });
                 }
-            })
+            });
 
         // Find items both in this class and in any of its subclasses.
         this.classSelector = "{\n" +
@@ -424,9 +424,9 @@ filtervalues = Vue.component('filter-values', {
             if (this.appliedRanges[i].valueLL == "novalue") {
                 noValueString += "{#date range " + i +"\n FILTER(NOT EXISTS { ?item wdt:" + this.appliedRanges[i].filterValue + " ?no. }).\n}"
             }
-            else if(this.appliedRanges[i].parentFilterValue){
+            else if (this.appliedRanges[i].parentFilterValue) {
                 timePrecision = getTimePrecision(this.appliedRanges[i].valueLL, this.appliedRanges[i].valueUL, 1)
-                filterRanges += "{#date range " + i + "\n?item wdt:" + this.appliedRanges[i].parentFilterValue+ " ?temp" + i + ".\n"+
+                filterRanges += "{#date range " + i + "\n?item wdt:" + this.appliedRanges[i].parentFilterValue+ " ?temp" + i + ".\n" +
                     "?temp" + i + " (p:" + this.appliedRanges[i].filterValue + "/psv:" + this.appliedRanges[i].filterValue + ") ?timenode" + i + ".\n" +
                     "?timenode" + i + " wikibase:timeValue ?time" + i + ".\n" +
                     "?timenode" + i + " wikibase:timePrecision ?timeprecision" + i + ".\n" +
@@ -453,7 +453,7 @@ filtervalues = Vue.component('filter-values', {
         }
         var filterQuantities = "";
         for (let i = 0; i < this.appliedQuantities.length; i++) {
-            if(this.appliedQuantities[i].parentFilterValue){
+            if (this.appliedQuantities[i].parentFilterValue) {
                 if (this.appliedQuantities[i].valueLL == "novalue") {
                     noValueString += "{#quantity range " + i +"\n FILTER(NOT EXISTS { ?item wdt:" + this.appliedQuantities[i].filterValue + " ?no. }).\n}"
                 }
@@ -714,7 +714,7 @@ filtervalues = Vue.component('filter-values', {
                                         "    wd:" + firstItem + " (p:" + vm.currentFilter.value + "/psn:" + vm.currentFilter.value + ") ?v.\n" +
                                         "    ?v wikibase:quantityAmount ?amount;\n" +
                                         "       wikibase:quantityUnit ?unit.\n" +
-                                        "  SERVICE wikibase:label { bd:serviceParam wikibase:language \""+ lang +",[AUTO_LANGUAGE],en\". }\n" +
+                                        "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + ",[AUTO_LANGUAGE],en\". }\n" +
                                         "}";
                                     fullUrl = sparqlEndpoint + encodeURIComponent(unitQuery);
                                     axios.get(fullUrl)
