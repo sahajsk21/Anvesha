@@ -56,7 +56,25 @@ viewallitems = Vue.component('view-all-items', {
             <div v-if="websiteText!=''">
                 <img v-if="!items.length" src='images/loading.gif'>
                 <p v-else-if="items[0].value=='Empty'">{{ websiteText.noItems||fallbackText.noItems }}</p>
-                <p v-else-if="items[0].value=='Error'">{{ websiteText.displayItemsError||fallbackText.displayItemsError }}</p>
+                <p v-else-if="items[0].value=='Error'">{{ websiteText.displayItemsError||fallbackText.displayItemsError }}</p>>
+                <div v-else-if="showingThumbnails()">
+                    <a v-for="item in sortSinglePageValues(items)" :href="linkToActualItem(item.value.value)" :title="item.overlay" class="externalLink">
+                        <div v-if="item.thumbnailURL" class="thumbnailImage">
+                            <figure>
+                                <img :src="item.thumbnailURL" />
+                                <figcaption>
+                                        {{item.caption}}
+                                        <span v-if="item.icon" v-html="item.icon" style="margin-left: 5px;">
+                                </figcaption>
+                            </figure>
+                        </div>
+                        <div v-else class="thumbnailImage">
+                                {{item.caption}}
+                                <span v-if="item.icon" v-html="item.icon" style="margin-left: 5px;">
+                                </span>
+                        </div>
+                    </a>
+                </div>
                 <div v-else>
                         <ul>
                             <li v-for="item in sortSinglePageValues(items)">
@@ -81,6 +99,11 @@ viewallitems = Vue.component('view-all-items', {
         </div>
     </div>`,
     methods: {
+        // A method so that the Vue code can get the value of this global variable.
+        // Is there a less hacky way to do this?
+        showingThumbnails() {
+            return showThumbnails;
+        },
         sortSinglePageValues(arr){
             if(this.totalValues<=resultsPerPage){
                 return [...arr].sort((a,b)=>(
@@ -111,9 +134,17 @@ viewallitems = Vue.component('view-all-items', {
              at a time based on the current page number.
              Sort only in case of single page results.
             */
-            sparqlQuery = "SELECT DISTINCT ?value ?valueLabel WHERE {\n" +
+            var outerFileVar = '';
+            var innerFileVar = '';
+            if ( showThumbnails ) {
+                outerFileVar = '?file';
+                // These two variables depend on whether there's a "GROUP BY".
+                innerFileVar = this.sparqlParameters[4] == "" ? "?file" : "(MAX(?fil) AS ?file)";
+                this.classSelector = this.sparqlParameters[4] == "" ? "?value schema:url ?file" : "?value schema:url $fil";
+            }
+            sparqlQuery = "SELECT DISTINCT ?value ?valueLabel " + outerFileVar + " WHERE {\n" +
                 "{\n" +
-                "SELECT ?value  " + this.sparqlParameters[4] + " WHERE {\n" +
+                "SELECT ?value " + innerFileVar + " " + this.sparqlParameters[4] + " WHERE {\n" +
                 this.classSelector +
                 this.sparqlParameters[0] +
                 this.sparqlParameters[1] +
@@ -133,6 +164,9 @@ viewallitems = Vue.component('view-all-items', {
                 .then(response => {
                     if (response.data['results']['bindings'].length) {
                         this.items = [...response.data['results']['bindings']]
+                        if ( showThumbnails ) {
+                            this.addFileInformationToItems();
+                        }
                     }
                     else {
                         this.items.push({ value: "Empty" })
@@ -174,6 +208,52 @@ viewallitems = Vue.component('view-all-items', {
         },
         linkToActualItem(item) {
             return itemURLStart + item.split('/').slice(-1)[0] + "?uselang=" + (urlParams.get('lang') ? urlParams.get('lang') : (defaultLanguages[0] ? defaultLanguages[0] : 'en'))
+        },,
+        addFileInformationToItems() {
+            for ( i = 0; i < this.items.length; i++ ) {
+                var fileName = decodeURIComponent( this.items[i].file.value.substring(51) ); // Remove URL stuff
+                var fileSuffix = fileName.substring(fileName.length - 4).toLowerCase();
+                var isImage = [ '.gif', '.jpg', 'jpeg', '.png' ].includes( fileSuffix );
+                var isVideo = [ '.mpg', '.ogv',  'webm', 'webp' ].includes( fileSuffix );
+                var notImageButHasThumbnail = isVideo || [ 'djvu', '.pdf', '.svg', '.tif', 'tiff' ].includes( fileSuffix );
+                var isAudio = [ 'flac', '.mid', '.mp3', '.oga', '.ogg', 'opus', '.wav' ].includes( fileSuffix );
+                if ( isImage || notImageButHasThumbnail ) {
+                        // We could use the API to get the thumbnail image for
+                        // each file, but it's easier (and faster) to just
+                        // figure it out ourselves, based on the MD5 hash of
+                        // the filename, plus the file extension. If the
+                        // hashing code, or algorithm, ever change on Commons,
+                        // this code will break.
+                        // Note that the MD5 library matters - the function
+                        // being used here is from a Wikimedia script. Other
+                        // MD5 JS libraries handle non-ASCII characters in
+                        // filenames differently, for some reason, thus
+                        // returning the "wrong" hash for those filenames.
+                        var fileNameWithUnderscores = fileName.replace(/ /g, '_');
+                        var md5Hash = hex_md5(fileNameWithUnderscores);
+                        var firstCharacter = md5Hash.substring(0, 1);
+                        var firstTwoCharacters = md5Hash.substring(0, 2);
+                        this.items[i].thumbnailURL = thumbnailURLStart + firstCharacter + '/' + firstTwoCharacters +
+                                '/' + encodeURIComponent(fileNameWithUnderscores) + '/' + '150px-' +
+                                encodeURIComponent(fileNameWithUnderscores) + (notImageButHasThumbnail ? '.jpg' : '');
+                }
+                if ( itemURLStart + this.items[i].valueLabel.value == this.items[i].value.value ) {
+                        this.items[i].caption = fileName;
+                        this.items[i].overlay = fileName;
+                } else {
+                        this.items[i].caption = this.items[i].valueLabel.value;
+                        this.items[i].overlay = this.items[i].valueLabel.value + ' (' + fileName + ')';
+                }
+                if ( (isImage || notImageButHasThumbnail) && this.items[i].caption.length > 60 ) {
+                        this.items[i].caption = this.items[i].caption.substring(0, 60) + '...';
+                }
+                if ( isAudio ) {
+                        this.items[i].icon = '&#127925;';
+                }
+                if ( isVideo ) {
+                        this.items[i].icon = '&#127909;';
+                }
+            }
         },
         exportAsFormat(format) {
             document.getElementsByTagName("body")[0].style.cursor = "progress";
@@ -263,6 +343,9 @@ viewallitems = Vue.component('view-all-items', {
             "    ?value wdt:" + instanceOf + " ?subclass .\n" +
             "    ?subclass wdt:" + subclassOf + " wd:" + this.classValue + "\n" +
             "}\n";
+        if ( showThumbnails ) {
+            this.classSelector += "?value schema:url ?file";
+        }
         // Change applied filters/ranges/quantities to SPARQL equivalents
         let filterString = "";
         let noValueString = "";
