@@ -1,18 +1,18 @@
 // Configuration variables
-siteName = SITE_NAME || "Anvesha";
-defaultLanguages = PREFERRED_LANGUAGES || [];
-resultsPerPage = RESULTS_PER_PAGE || 200;
-favicon = FAVICON || "images/favicon.png";
-logo = LOGO || "images/logo.png";
-classes = SUGGESTED_CLASSES.map(function(v){return {value:v}}) || [];
-sparqlEndpoint = SPARQL_ENDPOINT || "https://query.wikidata.org/sparql?query=";
-queryServiceWebsiteURL = QUERY_SERVICE_WEBSITE_URL || "https://query.wikidata.org/#";
-instanceOf = INSTANCE_OF_PID || "P31";
-propertiesForThisType = PROPERTIES_FOR_THIS_TYPE_PID || "P1963";
-subclassOf = SUBCLASS_OF_PID || "P279";
-fallbackQueryLimit = FALLBACK_QUERY_LIMIT || 300;
-linksInTopNav = LINKS_IN_TOPNAV || {};
-itemURLStart = ITEM_URL_START || "https://www.wikidata.org/wiki/";
+siteName = window.SITE_NAME || "Anvesha";
+defaultLanguages = window.PREFERRED_LANGUAGES || [];
+resultsPerPage = window.RESULTS_PER_PAGE || 200;
+favicon = window.FAVICON || "images/favicon.png";
+logo = window.LOGO || "images/logo.png";
+classes = window.SUGGESTED_CLASSES.map(function(v){return {value:v}}) || [];
+sparqlEndpoint = window.SPARQL_ENDPOINT || "https://query.wikidata.org/sparql?query=";
+queryServiceWebsiteURL = window.QUERY_SERVICE_WEBSITE_URL || "https://query.wikidata.org/#";
+instanceOf = window.INSTANCE_OF_PID || "P31";
+propertiesForThisType = window.PROPERTIES_FOR_THIS_TYPE_PID || "P1963";
+subclassOf = window.SUBCLASS_OF_PID || "P279";
+fallbackQueryLimit = window.FALLBACK_QUERY_LIMIT || 300;
+linksInTopNav = window.LINKS_IN_TOPNAV || {};
+itemURLStart = window.ITEM_URL_START || "https://www.wikidata.org/wiki/";
 
 // Website name
 document.title = siteName
