@@ -350,7 +350,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                         noValueString +
                         "}\n" +
                         "ORDER by ?time";
-                    vm.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
+                    vm.query = queryServiceWebsiteURL + encodeURIComponent(sparqlQuery);
                     const fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
                     axios.get(fullUrl)
                         .then(response => {
@@ -458,7 +458,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                         noValueString +
                         "}\n" +
                         "ORDER BY ?amount";
-                    vm.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
+                    vm.query = queryServiceWebsiteURL + encodeURIComponent(sparqlQuery);
                     var fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
                     axios.get(fullUrl)
                         .then(response => (response.data['results']['bindings'].length ? response : ''))
@@ -476,7 +476,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                     noValueString +
                                     "\n}\n" +
                                     "ORDER BY ?amount"
-                                    vm.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery)
+                                    vm.query = queryServiceWebsiteURL + encodeURIComponent(sparqlQuery)
                                     fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery)
                                     axios.get(fullUrl)
                                         .then(res => {
@@ -596,7 +596,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                 "LIMIT " + resultsPerPage + "\n" +
                                 "}\n" +
                                 "ORDER BY ?amount";
-                            vm.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
+                            vm.query = queryServiceWebsiteURL + encodeURIComponent(sparqlQuery);
                             const url = sparqlEndpoint + encodeURIComponent(sparqlQuery);
                             axios.get(url)
                                 .then(res => {
@@ -643,7 +643,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                         "SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
                         "}\n" +
                         "ORDER BY DESC (?count)";
-                    vm.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
+                    vm.query = queryServiceWebsiteURL + encodeURIComponent(sparqlQuery);
                     var fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
                     axios.get(fullUrl)
                         .then(response => {

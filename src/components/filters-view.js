@@ -67,7 +67,7 @@ filtersview = Vue.component('filters-view', {
             "}\n" +
             "ORDER BY ?valueLabel";
         const fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
-        this.query = 'https://query.wikidata.org/#' + encodeURIComponent(sparqlQuery);
+        this.query = queryServiceWebsiteURL + encodeURIComponent(sparqlQuery);
         axios.get(fullUrl)
             .then(response => (response.data['results']['bindings'].length ? this.filters = [...response.data['results']['bindings']] : this.filters.push({ value: "Empty", valueLabel: "No data" })))
             .catch(error => {
