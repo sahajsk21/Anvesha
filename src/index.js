@@ -261,12 +261,20 @@ function yearToBCFormat(year) {
     }
     return year
 }
-function getDateObject(date) {
-    s = date.split("-")
+function getDateObject(dateStr) {
+    s = dateStr.split("-")
     if (s.length == 3) {
+        if ( s[0] == '0000' ) {
+            // There's no "year 0", right?
+            return null;
+        }
         return { year: s[0], month: s[1], day: s[2] }
     }
     else {
+        if ( Number(s[1]) > 15000000000 ) {
+          // Older than the universe - presumably this is an incorrect value.
+          return null;
+        }
         return { year: "-" + "0".repeat(6 - s[1].length) + s[1], month: s[2], day: s[3] }
     }
 }
@@ -274,8 +282,12 @@ function generateDateBuckets(rawData) {
     dates = []
     for (let i = 0; i < rawData.length; i++) {
         if (rawData[i].time.hasOwnProperty("datatype")) {
-            date = rawData[i].time.value.split("T")[0]
-            dates.push(getDateObject(date))
+            dateStr = rawData[i].time.value.split("T")[0];
+            var dateObj = getDateObject(dateStr);
+            if ( dateObj == null ) {
+                continue;
+            }
+            dates.push(dateObj);
         }
     }
     var earliestYear = Number(dates[0].year);
