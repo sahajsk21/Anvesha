@@ -57,7 +57,7 @@ viewallitems = Vue.component('view-all-items', {
                 <img v-if="!items.length" src='images/loading.gif'>
                 <p v-else-if="items[0].value=='Empty'">{{ websiteText.noItems||fallbackText.noItems }}</p>
                 <p v-else-if="items[0].value=='Error'">{{ websiteText.displayItemsError||fallbackText.displayItemsError }}</p>>
-                <div v-else-if="showingThumbnails()">
+                <div v-else-if="window.showThumbnails">
                     <a v-for="item in sortSinglePageValues(items)" :href="linkToActualItem(item.value.value)" :title="item.overlay" class="externalLink">
                         <div v-if="item.thumbnailURL" class="thumbnailImage">
                             <figure>
@@ -99,11 +99,6 @@ viewallitems = Vue.component('view-all-items', {
         </div>
     </div>`,
     methods: {
-        // A method so that the Vue code can get the value of this global variable.
-        // Is there a less hacky way to do this?
-        showingThumbnails() {
-            return showThumbnails;
-        },
         sortSinglePageValues(arr){
             if(this.totalValues<=resultsPerPage){
                 return [...arr].sort((a,b)=>(
