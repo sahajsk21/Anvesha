@@ -27,22 +27,22 @@ secondayFilterValues = Vue.component('secondary-filters', {
         </header-view>
         <div class="content">
             <div v-if="itemsType==''">
-                <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
+                <a @click="changePage('view-all-items')">{{ viewItemsText() }}</a>
                 <p v-html="displayMessage(websiteText.gettingValues||fallbackText.gettingValues, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
                 <img src='images/loading.gif'>
             </div>
             <div v-else-if="itemsType=='Additionalempty'">
-                <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
+                <a @click="changePage('view-all-items')">{{ viewItemsText() }}</a>
                 <p v-html="displayMessage(websiteText.noAdditionalValues||fallbackText.noAdditionalValues, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
             </div>
             <div v-else-if="itemsType=='Error'">
-                <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
+                <a @click="changePage('view-all-items')">{{ viewItemsText() }}</a>
                 <p v-html="displayMessage(websiteText.filterError||fallbackText.filterError, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
             </div>
             <div v-else>
                 <div v-if="itemsType=='Item'">
                     <p v-if="totalValues!=''" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount,totalValues)"></p>
-                    <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
+                    <a @click="changePage('view-all-items')">{{ viewItemsText() }}</a>
                     <p v-if="appliedFilters.findIndex(filter => filter.filterValue == secondaryFilter.value) != -1" v-html="displayMessage(websiteText.selectAdditionalValue||fallbackText.selectAdditionalValue, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
                     <p v-else v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
                     <div v-if="items.length>resultsPerPage && itemsType=='Item'" style="text-align: center">
@@ -71,7 +71,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                 </div>
                 <div v-else-if="itemsType=='ItemFail'">
                     <p><i v-html="displayMessage(websiteText.filterTimeout||fallbackText.filterTimeout, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></i></p>
-                    <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
+                    <a @click="changePage('view-all-items')">{{ viewItemsText() }}</a>
                     <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
                     <ul>
                         <li v-for="item in items">
@@ -87,7 +87,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                 </div>
                 <div v-else-if="itemsType=='Time'">
                     <p v-if="totalValues!=''" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount,totalValues)"></p>
-                    <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
+                    <a @click="changePage('view-all-items')">{{ viewItemsText() }}</a>
                     <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
                     <ul v-if="displayCount == 1">
                         <li v-for="item in items" v-if="item.numValues>0">
@@ -117,7 +117,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                 </div>
                 <div v-else-if="itemsType=='TimeFail'">
                     <p><i v-html="displayMessage(websiteText.filterTimeout||fallbackText.filterTimeout, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></i></p>
-                    <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
+                    <a @click="changePage('view-all-items')">{{ viewItemsText() }}</a>
                     <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
                     <ul>
                         <li v-for="item in items">
@@ -134,7 +134,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                 <div v-else-if="itemsType=='Quantity'">
                     <p v-if="(displayCount == 1) && totalValues!=''" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount,totalValues)"></p>
                     <p v-if="displayCount == 0"><i v-html="displayMessage(websiteText.filterTimeout||fallbackText.filterTimeout, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></i></p>
-                    <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
+                    <a @click="changePage('view-all-items')">{{ viewItemsText() }}</a>
                     <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
                     <ul v-if="displayCount == 1">
                         <li v-for="item in items" v-if="item.numValues>0">
@@ -164,7 +164,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                 </div>
                 <div v-else-if="itemsType=='QuantityFail'">
                     <p><i v-html="displayMessage(websiteText.filterTimeout||fallbackText.filterTimeout, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></i></p>
-                    <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
+                    <a @click="changePage('view-all-items')">{{ viewItemsText() }}</a>
                     <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
                     <ul>
                         <li v-for="item in items">
@@ -207,6 +207,15 @@ secondayFilterValues = Vue.component('secondary-filters', {
                 str = matches[1].split('|')[(totalValues > 1 ? 1 : 0)]
                 str = str.replace("$1", (totalValues < 1000000 ? numberWithCommas(totalValues) : '1 million +'))
                 return message.replace(/{{PLURAL:[\s]*\$1\|(.*)}}/g, str)
+            }
+        },
+        viewItemsText() {
+            // Show "Back to main page" if there have been no filters applied,
+            // and there's text on the main page - i.e., there is no list to see.
+            if ( window.mainPageText && this.appliedFilters.length == 0 && this.appliedRanges.length == 0 && this.appliedQuantities.length == 0 ) {
+                return this.websiteText.backToMain || this.falbackText.backToMain;
+            } else {
+                return this.websiteText.viewList || this.fallbackText.viewList;
             }
         },
         applyFilter(filter) {

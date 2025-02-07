@@ -341,6 +341,15 @@ viewallitems = Vue.component('view-all-items', {
         if ( showThumbnails ) {
             this.classSelector += "?value schema:url ?file";
         }
+
+        if ( mainPageText && this.appliedFilters.length == 0 && this.appliedRanges.length == 0 && this.appliedQuantities.length == 0 ) {
+                this.items = [];
+                this.items.push({ value: 'Error' });
+                this.websiteText.displayItemsError = mainPageText;
+                this.websiteText.viewQuery = '';
+                return;
+        }
+
         // Change applied filters/ranges/quantities to SPARQL equivalents
         let filterString = "";
         let noValueString = "";

@@ -18,6 +18,7 @@
     "specificClass": "Change to a more specific class:",
     "generalClass": "Change to a more general class:",
     "viewList": "View list of items",
+    "backToMain": "Back to main page",
     "results": "({{PLURAL:$1|1 result|$1 results}})",
     "applyLinkedFilter": "Apply filter on $1",
     "chooseLinkedFilter": "Choose a filter from one of the following classes:"
