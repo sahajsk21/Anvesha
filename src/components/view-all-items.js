@@ -203,7 +203,7 @@ viewallitems = Vue.component('view-all-items', {
         },
         linkToActualItem(item) {
             return itemURLStart + item.split('/').slice(-1)[0] + "?uselang=" + (urlParams.get('lang') ? urlParams.get('lang') : (defaultLanguages[0] ? defaultLanguages[0] : 'en'))
-        },,
+        },
         addFileInformationToItems() {
             for ( i = 0; i < this.items.length; i++ ) {
                 var fileName = decodeURIComponent( this.items[i].file.value.substring(51) ); // Remove URL stuff
