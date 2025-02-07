@@ -26,6 +26,7 @@
 	"specificClass": "Message on subclass page",
 	"generalClass": "Message on superclass page",
 	"viewList": "Link to return to items page present on subclass, superclass and filters page",
+        "backToMain": "Link to resturn to the site's main page",
 	"results": "Number of results displayed alongside every value on filter values page.\n\nParameters:\n* $1 - a number",
 	"applyLinkedFilter": "Text displayed on filter values page for additional linked filters.\n\nParameters:\n* $1 - filter name,like genre",
 	"chooseLinkedFilter": "Message displayed when linked filter dropdown is open."
