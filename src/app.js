@@ -106,10 +106,7 @@ axios
             window.location.pathname + "?" + urlParams
           );
         },
-        updateClassValue: function (classValue, classLabel = "") {
-          urlParams = new URLSearchParams("");
-          urlParams.set("c", classValue);
-          this.clsValue = classValue;
+        setClassSelectorSPARQL(classValue) {
           // Find items both in this class and in any of its subclasses.
           this.classSelector = "{\n" +
             "    ?value wdt:" + instanceOf + " wd:" + classValue + "\n" +
@@ -117,6 +114,12 @@ axios
             "    ?value wdt:" + instanceOf + " ?subclass .\n" +
             "    ?subclass wdt:" + subclassOf + " wd:" + classValue + "\n" +
             "}\n";
+        },
+        updateClassValue: function (classValue, classLabel = "") {
+          urlParams = new URLSearchParams("");
+          urlParams.set("c", classValue);
+          this.clsValue = classValue;
+          this.setClassSelectorSPARQL(classValue);
           this.classLabel = classLabel;
           this.currentFilterLabel = "";
           this.currentFilterValue = "";
@@ -1487,6 +1490,10 @@ axios
                   ")\n";
               }
             }
+          }
+          if ( this.classSelector == undefined ) {
+              classValue = urlParams.get('c');
+              this.setClassSelectorSPARQL(classValue);
           }
           sparqlQuery =
             "SELECT (COUNT(DISTINCT ?value) AS ?count) WHERE {\n" +
