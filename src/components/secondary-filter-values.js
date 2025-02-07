@@ -162,6 +162,22 @@ secondayFilterValues = Vue.component('secondary-filters', {
                         </li>
                     </ul>
                 </div>
+                <div v-else-if="itemsType=='QuantityFail'">
+                    <p><i v-html="displayMessage(websiteText.filterTimeout||fallbackText.filterTimeout, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></i></p>
+                    <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
+                    <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
+                    <ul>
+                        <li v-for="item in items">
+                            <a
+                                :href="item.href"
+                                onclick="return false;"
+                                @click.exact="applyQuantityRange(item)"
+                                @click.ctrl="window.open(item.href, '_blank')">
+                                {{item.bucketName}}
+                            </a>
+                        </li>
+                    </ul>
+                </div>
                 <div v-if="items.length>resultsPerPage && itemsType=='Item'" style="text-align: center">
                     <a v-if="currentPage>1" @click="currentPage>1?currentPage--:''">&lt;</a>
                     <input 
@@ -220,7 +236,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
             else if (this.itemsType == 'Time' || this.itemsType == 'TimeFail') {
                 var csvContent = this.items.map(e => `\"${e.bucketName}\" ` + (this.displayCount == 1 ? "," + e.numValues : '')).join("\n");
             }
-            else if (this.itemsType == 'Quantity') {
+            else if (this.itemsType == 'Quantity' || this.itemsType == 'QuantityFail') {
                 var csvContent = this.items.map(e => `\"${e.bucketName}\" ` + e.unit + (this.displayCount == 1 ? "," + e.numValues : '')).join("\n");
             }
             let downloadURI = csvHeader + encodeURIComponent(csvContent);
@@ -533,10 +549,12 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                                             parameters.set("q." + vm.currentFilter.value + "." + vm.secondaryFilter.value, arr[i].bucketLL + "~" + arr[i].bucketUL + (arr[i].unit != "" ? ("~" + arr[i].unit) : ""))
                                                             arr[i]['href'] = window.location.pathname + "?" + parameters
                                                         }
-                                                        vm.items = arr
+                                                        vm.items = arr;
+                                                        vm.itemsType = 'Quantity';
                                                         vm.displayCount = 0;
+                                                    } else {
+                                                        vm.itemsType = 'QuantityFail';
                                                     }
-                                                    vm.itemsType = 'Quantity'
 
                                                 })
                                                 .catch(_error => {

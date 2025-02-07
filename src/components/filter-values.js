@@ -270,6 +270,33 @@ filtervalues = Vue.component('filter-values', {
                         </li>
                     </ul>
                 </div>
+                <div v-else-if="itemsType=='QuantityFail'">
+                    <p><i v-html="displayMessage(websiteText.filterTimeout||fallbackText.filterTimeout, currentFilter.valueLabel)"></i></p>
+                    <a @click="changePage('view-all-items')">{{ websiteText.viewList||fallbackText.viewList }}</a>
+                    <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel)"></p>
+                    <ul>
+                        <li>
+                            <i>
+                                <a
+                                    :href="noValueURL"
+                                    onclick="return false;"
+                                    @click.exact="applyFilter('novalue')"
+                                    @click.ctrl="window.open(noValueURL, '_blank')">
+                                    {{ websiteText.noValue||fallbackText.noValue }}
+                                </a>
+                                </i>
+                            </li>
+                        <li v-for="item in items">
+                            <a
+                                :href="item.href"
+                                onclick="return false;"
+                                @click.exact="applyQuantityRange(item)"
+                                @click.ctrl="window.open(item.href, '_blank')">
+                                {{item.bucketName}}
+                            </a>
+                        </li>
+                    </ul>
+                </div>
                 <div v-if="items.length>resultsPerPage && itemsType=='Item'" style="text-align: center">
                     <a v-if="currentPage>1" @click="currentPage>1?currentPage--:''">&lt;</a>
                     <input 
@@ -340,7 +367,7 @@ filtervalues = Vue.component('filter-values', {
             else if (this.itemsType == 'Time' || this.itemsType == 'TimeFail') {
                 var csvContent = this.items.map(e => `\"${e.bucketName}\" ` + (this.displayCount == 1 ? "," + e.numValues : '')).join("\n");
             }
-            else if (this.itemsType == 'Quantity') {
+            else if (this.itemsType == 'Quantity' || this.itemsType == 'QuantityFail') {
                 var csvContent = this.items.map(e => `\"${e.bucketName}\" ` + e.unit + (this.displayCount == 1 ? "," + e.numValues : '')).join("\n");
             }
             let downloadURI = csvHeader + encodeURIComponent(csvContent);
@@ -693,9 +720,11 @@ filtervalues = Vue.component('filter-values', {
                                                             arr[i]['href'] = window.location.pathname + "?" + parameters;
                                                         }
                                                         vm.items = arr;
+                                                        vm.itemsType = 'Quantity';
                                                         vm.displayCount = 0;
+                                                    } else {
+                                                        vm.itemsType = 'QuantityFail';
                                                     }
-                                                    vm.itemsType = 'Quantity';
                                                 })
                                                 .catch(_error => {
                                                     vm.itemsType = 'Error';
