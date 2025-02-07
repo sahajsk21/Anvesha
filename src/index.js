@@ -4,6 +4,7 @@ defaultLanguages = window.PREFERRED_LANGUAGES || [];
 resultsPerPage = window.RESULTS_PER_PAGE || 200;
 favicon = window.FAVICON || "images/favicon.png";
 logo = window.LOGO || "images/logo.png";
+mainPageText = window.MAIN_PAGE_TEXT || null;
 classes = window.SUGGESTED_CLASSES.map(function(v){return {value:v}}) || [];
 sparqlEndpoint = window.SPARQL_ENDPOINT || "https://query.wikidata.org/sparql?query=";
 queryServiceWebsiteURL = window.QUERY_SERVICE_WEBSITE_URL || "https://query.wikidata.org/#";
