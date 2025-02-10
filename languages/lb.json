@@ -17,6 +17,7 @@
 	"specificClass": "Wiesselt op méi eng spezifesch Klass:",
 	"generalClass": "Wiesselt op méi eng allgemeng Klass:",
 	"viewList": "Lëscht vun den Elementer weisen",
+	"backToMain": "Zréck op d'Haaptsäit",
 	"results": "({{PLURAL:$1|1 Resultat|$1 Resultater}})",
 	"applyLinkedFilter": "Filter op $1 applizéieren",
 	"chooseLinkedFilter": "Wielt ee Filter aus enger vun de follgende Klassen:"

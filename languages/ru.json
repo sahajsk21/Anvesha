@@ -1,6 +1,7 @@
 {
 	"@metadata": {
 		"authors": [
+			"Cabadeck",
 			"DDPAT",
 			"Ice bulldog",
 			"Kareyac",
@@ -27,6 +28,7 @@
 	"specificClass": "Замените на более конкретный класс:",
 	"generalClass": "Замените на более общий класс:",
 	"viewList": "Посмотреть список элементов",
+	"backToMain": "Вернуться на главную страницу",
 	"results": "({{PLURAL:$1|$1 результат|$1 результата|$1 результатов}})",
 	"applyLinkedFilter": "Применить фильтр к $1",
 	"chooseLinkedFilter": "Выберите фильтр в одном из следующих классов:"
