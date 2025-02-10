@@ -61,7 +61,9 @@ viewallitems = Vue.component('view-all-items', {
                     <a v-for="item in sortSinglePageValues(items)" :href="linkToActualItem(item.value.value)" :title="item.overlay" class="externalLink">
                         <div v-if="item.thumbnailURL" class="thumbnailImage">
                             <figure>
-                                <img :src="item.thumbnailURL" />
+                                <div class="imageWrapper">
+                                    <img :src="item.thumbnailURL" />
+                                </div>
                                 <figcaption>
                                         {{item.caption}}
                                         <span v-if="item.icon" v-html="item.icon" style="margin-left: 5px;">

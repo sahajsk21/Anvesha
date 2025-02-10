@@ -235,6 +235,14 @@ a:hover {
   margin: 10px;
 }
 
+.thumbnailImage .imageWrapper {
+  text-align: center;
+}
+
+.thumbnailImage .imageWrapper img {
+  max-height: 150px;
+}
+
 .thumbnailImage figure {
   margin: 0;
 }
