@@ -212,7 +212,7 @@ viewallitems = Vue.component('view-all-items', {
                 var fileSuffix = fileName.substring(fileName.length - 4).toLowerCase();
                 var isImage = [ '.gif', '.jpg', 'jpeg', '.png' ].includes( fileSuffix );
                 var isVideo = [ '.mpg', '.ogv',  'webm', 'webp' ].includes( fileSuffix );
-                var notImageButHasThumbnail = isVideo || [ 'djvu', '.pdf', '.svg', '.tif', 'tiff' ].includes( fileSuffix );
+                var notImageButHasThumbnail = isVideo || [ 'djvu', '.pdf', '.stl', '.svg', '.tif', 'tiff' ].includes( fileSuffix );
                 var isAudio = [ 'flac', '.mid', '.mp3', '.oga', '.ogg', 'opus', '.wav' ].includes( fileSuffix );
                 if ( isImage || notImageButHasThumbnail ) {
                         // We could use the API to get the thumbnail image for
