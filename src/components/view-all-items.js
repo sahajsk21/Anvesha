@@ -43,15 +43,15 @@ viewallitems = Vue.component('view-all-items', {
                 <a class="classOptions" @click="changePage('filters')">{{ websiteText.addFilter||fallbackText.addFilter }}</a>
             </div>
             <div v-if="totalValues>0" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount,totalValues)"></div>
-            <div v-if="totalValues>resultsPerPage" style="text-align: center">
+            <div v-if="!totalValues || totalValues > resultsPerPage" style="text-align: center">
                 <a v-if="currentPage>1" @click="displayData('back')">&lt;</a>
                 <input 
                     v-model.lazy="currentPage" 
                     @keyup.enter="displayData"
                     type="text" 
                     style="margin-bottom: 15px;width: 48px;text-align: center"> 
-                {{totalValues<1000000?" / " + Math.ceil(totalValues/resultsPerPage):''}}
-                <a v-if="currentPage<totalValues/resultsPerPage" @click="displayData('next')">&gt;</a>
+                {{totalValues && totalValues < 1000000 ? " / " + Math.ceil(totalValues/resultsPerPage) : ''}}
+                <a v-if="!totalValues || currentPage < totalValues/resultsPerPage" @click="displayData('next')">&gt;</a>
             </div>
             <div v-if="websiteText!=''">
                 <img v-if="!items.length" src='images/loading.gif'>
@@ -100,7 +100,7 @@ viewallitems = Vue.component('view-all-items', {
     </div>`,
     methods: {
         sortSinglePageValues(arr){
-            if(this.totalValues<=resultsPerPage){
+            if (this.totalValues && this.totalValues <= resultsPerPage) {
                 return [...arr].sort((a,b)=>(
                     a.valueLabel.value.toLowerCase()>b.valueLabel.value.toLowerCase()
                     ?1:-1
@@ -117,7 +117,7 @@ viewallitems = Vue.component('view-all-items', {
                 }
             }
             else if (action == 'next') {
-                if (this.currentPage < this.totalValues / resultsPerPage) {
+                if (!this.totalValues || this.currentPage < this.totalValues / resultsPerPage) {
                     this.currentPage++;
                 }
             }
