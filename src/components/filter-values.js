@@ -901,6 +901,7 @@ filtervalues = Vue.component('filter-values', {
                             }
                         })
                         .catch(_error => {
+                            var offset = veryLargeClasses.includes(this.classValue) ? Math.floor(Math.random() * 50000) : 0;
                             /*
                              * Gets random fallback results in case the primary query fails or times out.
                              */
@@ -916,6 +917,7 @@ filtervalues = Vue.component('filter-values', {
                                 filterRanges +
                                 filterQuantities +
                                 "}\n" +
+                                "OFFSET " + offset + "\n" +
                                 "LIMIT " + fallbackQueryLimit + "\n" +
                                 "}\n" +
                                 "\n" +
