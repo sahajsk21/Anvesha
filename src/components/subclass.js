@@ -71,7 +71,7 @@ subclass = Vue.component('subclass-view', {
                             {{item.valueLabel.value}}
                         </a>
                         <span class="result-count" v-if="displayCount==0">
-                            {{ displayPluralCount(websiteText.results||fallbackText.results,item.count.value) }}
+                            {{ displayPluralCount(websiteText.results||fallbackText.results, item.count.value, false) }}
                         </span>
                     </li>
                 </ul>
@@ -80,15 +80,6 @@ subclass = Vue.component('subclass-view', {
     </div>
     `,
     methods: {
-        displayPluralCount(message, totalValues) {
-            if(message){
-
-                matches = message.match('{{PLURAL:[\\s]*\\$1\\|(.*)}}')
-                str = matches[1].split('|')[(totalValues > 1 ? 1 : 0)]
-                str = str.replace("$1", (totalValues < 1000000 ? numberWithCommas(totalValues) : '1 million +'))
-                return message.replace(/{{PLURAL:[\s]*\$1\|(.*)}}/g, str)
-            }
-        },
         pathFor(item) {
             var newURL = window.location.pathname + '?';
             var curLang = urlParams.get('lang');
