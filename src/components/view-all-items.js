@@ -170,7 +170,7 @@ viewallitems = Vue.component('view-all-items', {
                 this.sparqlParameters[5] +
                 "SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
                 "}\n" +
-                (this.sparqlParameters[5] != "" ? "LIMIT " + resultsPerPage + " OFFSET " + ((this.currentPage - 1) * resultsPerPage) : "");
+                (this.sparqlParameters[5] != "" ? "LIMIT " + resultsPerPage + " OFFSET " + offset : "");
             this.query = queryServiceWebsiteURL + encodeURIComponent(sparqlQuery);
             fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
             axios.get(fullUrl)
