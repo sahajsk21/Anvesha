@@ -139,6 +139,22 @@ viewallitems = Vue.component('view-all-items', {
                 innerFileVar = this.sparqlParameters[4] == "" ? "?file" : "(MAX(?fil) AS ?file)";
                 this.classSelector = this.sparqlParameters[4] == "" ? "?value schema:url ?file" : "?value schema:url $fil";
             }
+
+            var offset = (this.currentPage - 1) * resultsPerPage;
+            // If it's specified to be a "very large class" (which hopefully
+            // doesn't apply to anything with less than 50,000 items), and no
+            // filters have been applied, add a random offset to the query, so
+            // that the same items aren't shown every time a user goes to that
+            // class.
+            // (This will mean that the user will never see the first X items
+            // if they just scroll through all the items, but then again
+            // there's probably no way they will scroll through everything.)
+            if ( veryLargeClasses.includes(this.classValue) && this.appliedFilters.length == 0 && this.appliedRanges.length == 0 && this.appliedQuantities.length == 0  ) {
+                if ( !this.additionalOffset ) {
+                    this.additionalOffset = Math.floor(Math.random() * 50000);
+                }
+                offset = offset + this.additionalOffset;
+            }
             sparqlQuery = "SELECT DISTINCT ?value ?valueLabel " + outerFileVar + " WHERE {\n" +
                 "{\n" +
                 "SELECT ?value " + innerFileVar + " " + this.sparqlParameters[4] + " WHERE {\n" +
@@ -149,7 +165,7 @@ viewallitems = Vue.component('view-all-items', {
                 this.sparqlParameters[3] +
                 "}\n" +
                 (this.sparqlParameters[4] == "" ? "" : "GROUP BY ?value \n") +
-                (this.sparqlParameters[5] == "" ? "LIMIT " + resultsPerPage + " OFFSET " + ((this.currentPage - 1) * resultsPerPage) : "") +
+                (this.sparqlParameters[5] == "" ? "LIMIT " + resultsPerPage + " OFFSET " + offset : "") +
                 "}\n" +
                 this.sparqlParameters[5] +
                 "SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
