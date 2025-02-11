@@ -464,3 +464,21 @@ function getTimePrecision(ear, lat, num=0) {
     else if (yearDifference <= 1e8) return 1+num;
     return 0
 }
+function displayPluralCount(message, totalValues, addBolding) {
+    if (! message) {
+        return '';
+    }
+
+    /*
+     * Replace the PLURAL segment in language file with
+     * either the first or second half based on number of values.
+     */
+    matches = message.match('{{PLURAL:[\\s]*\\$1\\|(.*)}}');
+    str = matches[1].split('|')[(totalValues > 1 ? 1 : 0)];
+    totalValuesStr = totalValues < 1000000 ? numberWithCommas(totalValues) : '1 million +';
+    if (addBolding) {
+        totalValuesStr = '<b>' + totalValuesStr + '</b>';
+    }
+    str = str.replace("$1", totalValuesStr);
+    return message.replace(/{{PLURAL:[\s]*\$1\|(.*)}}/g, str);
+}
