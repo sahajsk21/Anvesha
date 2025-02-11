@@ -42,7 +42,7 @@ viewallitems = Vue.component('view-all-items', {
             <div v-else>
                 <a class="classOptions" @click="changePage('filters')">{{ websiteText.addFilter||fallbackText.addFilter }}</a>
             </div>
-            <div v-if="totalValues>0" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount,totalValues)"></div>
+            <div v-if="totalValues>0" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount, totalValues, true)"></div>
             <div v-if="!totalValues || totalValues > resultsPerPage" style="text-align: center">
                 <a v-if="currentPage>1" @click="displayData('back')">&lt;</a>
                 <input 
@@ -191,18 +191,6 @@ viewallitems = Vue.component('view-all-items', {
         },
         pathForFilter(filter) {
             return window.location.href + '&cf=' + filter.value.value.split('/').slice(-1)[0];
-        },
-        displayPluralCount(message, totalValues) {
-            if (message) {
-                /* 
-                 Replace the PLURAL segment in language file with 
-                 either the first or second half based on number of values.
-                */  
-                matches = message.match('{{PLURAL:[\\s]*\\$1\\|(.*)}}')
-                str = matches[1].split('|')[(totalValues > 1 ? 1 : 0)]
-                str = str.replace("$1", "<b>" + (totalValues < 1000000 ? numberWithCommas(totalValues) : '1 million +') + "</b>")
-                return message.replace(/{{PLURAL:[\s]*\$1\|(.*)}}/g, str)
-            }
         },
         changePage(page) {
             this.$emit('change-page', page)

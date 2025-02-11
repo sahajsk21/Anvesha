@@ -41,7 +41,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
             </div>
             <div v-else>
                 <div v-if="itemsType=='Item'">
-                    <p v-if="totalValues!=''" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount,totalValues)"></p>
+                    <p v-if="totalValues!=''" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount, totalValues, true)"></p>
                     <a @click="changePage('view-all-items')">{{ viewItemsText() }}</a>
                     <p v-if="appliedFilters.findIndex(filter => filter.filterValue == secondaryFilter.value) != -1" v-html="displayMessage(websiteText.selectAdditionalValue||fallbackText.selectAdditionalValue, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
                     <p v-else v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
@@ -64,7 +64,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                 {{item.valueLabel.value}}
                             </a> 
                             <span class="result-count">
-                                {{ displayPluralCount(websiteText.results||fallbackText.results,item.count.value) }}
+                                {{ displayPluralCount(websiteText.results||fallbackText.results, item.count.value, false) }}
                             <span>
                         </li>
                     </ul>
@@ -86,7 +86,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                     </ul>
                 </div>
                 <div v-else-if="itemsType=='Time'">
-                    <p v-if="totalValues!=''" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount,totalValues)"></p>
+                    <p v-if="totalValues!=''" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount, totalValues, true)"></p>
                     <a @click="changePage('view-all-items')">{{ viewItemsText() }}</a>
                     <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
                     <ul v-if="displayCount == 1">
@@ -99,7 +99,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                 {{item.bucketName}} 
                             </a> 
                             <span class="result-count">
-                                {{ displayPluralCount(websiteText.results||fallbackText.results,item.numValues) }}
+                                {{ displayPluralCount(websiteText.results||fallbackText.results, item.numValues, false) }}
                             <span>
                         </li>
                     </ul>
@@ -132,7 +132,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                     </ul>
                 </div>
                 <div v-else-if="itemsType=='Quantity'">
-                    <p v-if="(displayCount == 1) && totalValues!=''" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount,totalValues)"></p>
+                    <p v-if="(displayCount == 1) && totalValues!=''" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount, totalValues, true)"></p>
                     <p v-if="displayCount == 0"><i v-html="displayMessage(websiteText.filterTimeout||fallbackText.filterTimeout, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></i></p>
                     <a @click="changePage('view-all-items')">{{ viewItemsText() }}</a>
                     <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
@@ -146,7 +146,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                 {{item.bucketName}} {{item.unit}} 
                             </a> 
                             <span class="result-count">
-                                {{ displayPluralCount(websiteText.results||fallbackText.results,item.numValues) }}
+                                {{ displayPluralCount(websiteText.results||fallbackText.results, item.numValues, false) }}
                             <span>
                         </li>
                     </ul>
@@ -199,14 +199,6 @@ secondayFilterValues = Vue.component('secondary-filters', {
         displayMessage(message, value) {
             if(message){
                 return message.replace("$1", "<b>" + value + "</b>")
-            }
-        },
-        displayPluralCount(message, totalValues) {
-            if(message){
-                matches = message.match('{{PLURAL:[\\s]*\\$1\\|(.*)}}')
-                str = matches[1].split('|')[(totalValues > 1 ? 1 : 0)]
-                str = str.replace("$1", (totalValues < 1000000 ? numberWithCommas(totalValues) : '1 million +'))
-                return message.replace(/{{PLURAL:[\s]*\$1\|(.*)}}/g, str)
             }
         },
         viewItemsText() {
