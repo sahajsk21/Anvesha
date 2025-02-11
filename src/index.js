@@ -475,7 +475,7 @@ function displayPluralCount(message, totalValues, addBolding) {
      */
     matches = message.match('{{PLURAL:[\\s]*\\$1\\|(.*)}}');
     str = matches[1].split('|')[(totalValues > 1 ? 1 : 0)];
-    totalValuesStr = totalValues < 1000000 ? numberWithCommas(totalValues) : '1 million +';
+    totalValuesStr = numberWithCommas(totalValues);
     if (addBolding) {
         totalValuesStr = '<b>' + totalValuesStr + '</b>';
     }
