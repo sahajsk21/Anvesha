@@ -50,7 +50,7 @@ viewallitems = Vue.component('view-all-items', {
                     @keyup.enter="displayData"
                     type="text" 
                     style="margin-bottom: 15px;width: 48px;text-align: center"> 
-                {{totalValues && totalValues < 1000000 ? " / " + Math.ceil(totalValues/resultsPerPage) : ''}}
+                {{totalValues && totalValues < resultsPerPage * 100 ? " / " + Math.ceil(totalValues/resultsPerPage) : ''}}
                 <a v-if="!totalValues || currentPage < totalValues/resultsPerPage" @click="displayData('next')">&gt;</a>
             </div>
             <div v-if="websiteText!=''">
@@ -92,7 +92,7 @@ viewallitems = Vue.component('view-all-items', {
                     @keyup.enter="displayData"
                     type="text" 
                     style="margin-bottom: 15px;width: 48px;text-align: center"> 
-                {{totalValues<1000000?" / " + Math.ceil(totalValues/resultsPerPage):''}}
+                {{totalValues && totalValues < resultsPerPage * 100 ? " / " + Math.ceil(totalValues/resultsPerPage) : ''}}
                 <a v-if="currentPage<totalValues/resultsPerPage" @click="displayData('next')">&gt;</a>
             </div>
             <div><a :href="query">{{ websiteText.viewQuery||fallbackText.viewQuery }}</a></div>
