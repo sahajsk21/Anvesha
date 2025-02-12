@@ -16,6 +16,8 @@
 	"noItems": "Displayed on items page when no items are found for the given class and applied filters. E.g.:Blood(Q7873)",
 	"displayItemsError": "This is an error message which is displayed on items page when a SPARQL query times out and returns no data.",
 	"gettingValues": "Text displayed on every page while data is being fetched. \n\nParameters:\n* $1 - filter name. E.g: Getting values for filter genre...",
+	"filterValuePlaceholder": "Placeholder for the search field on the filter values screen",
+	"customFilterValue": "Text displayed above an input",
 	"noAdditionalValues": "Message displayed on filter values page if no more values exists for a filter.",
 	"filterError": "Error displayed on filter values page when getting filters for a class times out or throws some error. \n\nParameters:\n* $1 - filter name,like genre",
 	"filterTimeout": "Note displayed on filter values page when fallback results are given due to timeout of SPARQL query.\n\nParameters:\n* $1 - filter name,like genre",

@@ -58,9 +58,30 @@ filtervalues = Vue.component('filter-values', {
                     </li>
                 </ul>
             </div>
-            <div v-if="itemsType==''">
+            <div v-if="itemsType=='' || itemsType=='ItemLoading'">
                 <a @click="changePage('view-all-items')">{{ viewItemsText() }}</a>
                 <p v-html="displayMessage(websiteText.gettingValues||fallbackText.gettingValues, currentFilter.valueLabel)"></p>
+                <div v-if="itemsType=='ItemLoading'" class="filterValueInputWrapper">
+                    <p v-html="websiteText.customFilterValue||fallbackText.customFilterValue"></p>
+                    <div class="filterValueInput">
+                        <input
+                            v-model="filterValue"
+                            @input="showFilterValues"
+                            type="search"
+                            :placeholder='websiteText.filterValuePlaceholder||fallbackText.filterValuePlaceholder'>
+                    </div>
+                    <div v-if="filterValue.length>0" class="searchOptions">
+                        <a
+                            class="searchOption"
+                            v-for="searchResult in searchResults"
+                            @click="submitFreeFormFilterValue(searchResult)">
+                                <b>
+                                    {{ searchResult.label.replace(/^./, searchResult.label[0].toUpperCase()) }}
+                                </b>
+                                : {{ searchResult.description }}
+                        </a>
+                    </div>
+                </div>
                 <img src='images/loading.gif'>
             </div>
             <div v-else-if="itemsType=='Additionalempty'">
@@ -85,6 +106,27 @@ filtervalues = Vue.component('filter-values', {
                             style="margin-bottom: 15px;width: 48px;text-align: center"> 
                         {{items.length<1000000?" / " + Math.ceil(items.length/resultsPerPage):''}}
                         <a v-if="currentPage<items.length/resultsPerPage" @click="currentPage<items.length/resultsPerPage?currentPage++:''">&gt;</a>
+                    </div>
+                    <div v-if="items.length > 100" class="filterValueInputWrapper">
+                        <p v-html="websiteText.customFilterValue||fallbackText.customFilterValue"></p>
+                        <div class="filterValueInput">
+                            <input
+                                v-model="filterValue"
+                                @input="showFilterValues"
+                                type="search"
+                                :placeholder='websiteText.filterValuePlaceholder||fallbackText.filterValuePlaceholder'>
+                        </div>
+                        <div v-if="filterValue.length>0" class="searchOptions">
+                            <a
+                                class="searchOption"
+                                v-for="searchResult in searchResults"
+                                @click="submitFreeFormFilterValue(searchResult)">
+                                    <b>
+                                        {{ searchResult.label.replace(/^./, searchResult.label[0].toUpperCase()) }}
+                                    </b>
+                                    : {{ searchResult.description }}
+                            </a>
+                        </div>
                     </div>
                     <ul>
                         <li v-if="appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) ==-1">
@@ -116,6 +158,28 @@ filtervalues = Vue.component('filter-values', {
                     <p><i v-html="displayMessage(websiteText.filterTimeout||fallbackText.filterTimeout, currentFilter.valueLabel)"></i></p>
                     <a @click="changePage('view-all-items')">{{ viewItemsText() }}</a>
                     <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel)"></p>
+                    <div class="filterValueInputWrapper">
+                        <p v-html="websiteText.customFilterValue||fallbackText.customFilterValue"></p>
+                        <div class="filterValueInput">
+                            <input
+                                v-model="filterValue"
+                                @input="showFilterValues"
+                                style="border: none;outline: none;width: 100%;font-size:1em"
+                                type="search"
+                                :placeholder='websiteText.filterValuePlaceholder||fallbackText.filterValuePlaceholder'>
+                        </div>
+                        <div v-if="filterValue.length>0" class="searchOptions">
+                            <a
+                                class="searchOption"
+                                v-for="searchResult in searchResults"
+                                @click="submitFreeFormFilterValue(searchResult)">
+                                    <b>
+                                        {{ searchResult.label.replace(/^./, searchResult.label[0].toUpperCase()) }}
+                                    </b>
+                                    : {{ searchResult.description }}
+                            </a>
+                        </div>
+                    </div>
                     <ul>
                         <li>
                             <i>
@@ -379,7 +443,29 @@ filtervalues = Vue.component('filter-values', {
             document.body.appendChild(link);
             link.click();
             document.getElementsByTagName("body")[0].style.cursor = "default";
-        }
+        },
+        showFilterValues() {
+            if (this.filterValue.length > 0) {
+                const fullURL = entityAPIURL + '?action=wbsearchentities&origin=*&format=json&language=' +
+                        lang.split(",")[0] + '&uselang=' + lang.split(",")[0] +
+                        '&type=item&search=' + this.filterValue;
+                axios.get(fullURL)
+                    .then(response => {
+                        this.searchResults = [...response.data['search']]
+                    })
+            }
+        },
+        submitFreeFormFilterValue(searchResult) {
+            var filter = {
+                value: {
+                        value: searchResult.url
+                },
+                valueLabel: {
+                        value: searchResult.label
+                }
+            };
+            this.$emit('apply-filter', filter);
+        },
     },
     mounted() {
         /* 
@@ -821,6 +907,7 @@ filtervalues = Vue.component('filter-values', {
                             })
                 }
                 else {
+                    vm.itemsType = "ItemLoading";
                     // Item property type
                     // Set the URL parameters for href attribute, i.e., only for display purpose. 
                     var q = window.location.search;
