@@ -443,7 +443,29 @@ filtervalues = Vue.component('filter-values', {
             document.body.appendChild(link);
             link.click();
             document.getElementsByTagName("body")[0].style.cursor = "default";
-        }
+        },
+        showFilterValues() {
+            if (this.filterValue.length > 0) {
+                const fullURL = entityAPIURL + '?action=wbsearchentities&origin=*&format=json&language=' +
+                        lang.split(",")[0] + '&uselang=' + lang.split(",")[0] +
+                        '&type=item&search=' + this.filterValue;
+                axios.get(fullURL)
+                    .then(response => {
+                        this.searchResults = [...response.data['search']]
+                    })
+            }
+        },
+        submitFreeFormFilterValue(searchResult) {
+            var filter = {
+                value: {
+                        value: searchResult.url
+                },
+                valueLabel: {
+                        value: searchResult.label
+                }
+            };
+            this.$emit('apply-filter', filter);
+        },
     },
     mounted() {
         /* 
