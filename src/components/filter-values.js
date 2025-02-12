@@ -8,6 +8,8 @@ filtervalues = Vue.component('filter-values', {
             displayCount: 1,
             currentPage: 1,
             filterProperty: '',
+            filterValue: '',
+            searchResults: '',
             query: '#',
             noValueURL: '',
             secondaryFilters:[],
@@ -98,16 +100,7 @@ filtervalues = Vue.component('filter-values', {
                     <a @click="changePage('view-all-items')">{{ viewItemsText() }}</a>
                     <p v-if="appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) != -1" v-html="displayMessage(websiteText.selectAdditionalValue||fallbackText.selectAdditionalValue, currentFilter.valueLabel)"></p>
                     <p v-else v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel)"></p>
-                    <div v-if="items.length>resultsPerPage && itemsType=='Item'" style="text-align: center">
-                        <a v-if="currentPage>1" @click="currentPage>1?currentPage--:''">&lt;</a>
-                        <input 
-                            v-model.lazy="currentPage" 
-                            type="text" 
-                            style="margin-bottom: 15px;width: 48px;text-align: center"> 
-                        {{items.length<1000000?" / " + Math.ceil(items.length/resultsPerPage):''}}
-                        <a v-if="currentPage<items.length/resultsPerPage" @click="currentPage<items.length/resultsPerPage?currentPage++:''">&gt;</a>
-                    </div>
-                    <div v-if="items.length > 100" class="filterValueInputWrapper">
+                    <div v-if="items.length > 150" class="filterValueInputWrapper">
                         <p v-html="websiteText.customFilterValue||fallbackText.customFilterValue"></p>
                         <div class="filterValueInput">
                             <input
@@ -127,6 +120,15 @@ filtervalues = Vue.component('filter-values', {
                                     : {{ searchResult.description }}
                             </a>
                         </div>
+                    </div>
+                    <div v-if="items.length>resultsPerPage && itemsType=='Item'" style="text-align: center">
+                        <a v-if="currentPage>1" @click="currentPage>1?currentPage--:''">&lt;</a>
+                        <input 
+                            v-model.lazy="currentPage" 
+                            type="text" 
+                            style="margin-bottom: 15px;width: 48px;text-align: center"> 
+                        {{items.length<1000000?" / " + Math.ceil(items.length/resultsPerPage):''}}
+                        <a v-if="currentPage<items.length/resultsPerPage" @click="currentPage<items.length/resultsPerPage?currentPage++:''">&gt;</a>
                     </div>
                     <ul>
                         <li v-if="appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) ==-1">
