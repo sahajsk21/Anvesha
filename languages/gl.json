@@ -23,6 +23,7 @@
 	"specificClass": "Cambiar a unha clase máis específica:",
 	"generalClass": "Cambiar a unha clase máis xeral:",
 	"viewList": "Ver a lista de elementos",
+	"backToMain": "Volver á páxina principal",
 	"results": "({{PLURAL:$1|1 resultado|$1 resultados}})",
 	"applyLinkedFilter": "Aplicar o filtro en \"$1\"",
 	"chooseLinkedFilter": "Escolle un filtro dunha das seguintes clases:"

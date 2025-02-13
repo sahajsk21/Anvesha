@@ -14,6 +14,7 @@
 	"noItems": "일치하눈 항목이 없습니다.",
 	"displayItemsError": "항목을 표시하는 데 너무 오래 걸립니다. 다른 필터를 추가해보세요.",
 	"gettingValues": "$1 필터에 대한 데이터 불러오는 중...",
+	"filterValuePlaceholder": "필터 값을 입력하세요",
 	"noAdditionalValues": "$1 필터에 대하여 다른 값을 찾을 수 없습니다.",
 	"filterError": "$1 필터에 대한 데이터를 불러오는 데 너무 오래 걸립니다.",
 	"filterTimeout": "($1 필터에 대한 모든 값을 불러오는 데 너무 오래 걸립니다. 대신, 이미 불러온 값만 표시해드리겠습니다.)",
