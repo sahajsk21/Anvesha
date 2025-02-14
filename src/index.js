@@ -465,17 +465,54 @@ function getTimePrecision(ear, lat, num=0) {
     else if (yearDifference <= 1e8) return 1+num;
     return 0
 }
+// Some languages, such as Slovenian, have different words for the plural of
+// a noun depending on the number (2, a few, etc.) - handle messages defined
+// in this way.
+function createPluralMap(pluralValues) {
+    pluralMap = {};
+    pluralConditions = ['zero=', 'one=', 'two=', 'few=', 'many='];
+    pluralConditions.forEach((element, index) => {
+        pluralOne = pluralValues.filter((obj)=>{
+            return obj.includes(element);
+        });
+        if (pluralOne.length!==0) {
+            pluralMap[index] = pluralOne[0].replace(element, '');
+        }
+    });
+    return pluralMap;
+}
+function usePluralMap(pluralMap, totalValues ) {
+    var str = null;
+    var pluralMapKeys = Object.keys(pluralMap);
+    if (totalValues == 0 && pluralMapKeys.includes('0')) {
+        str = pluralMap[0];
+    } else if (totalValues == 1 && pluralMapKeys.includes('1')) {
+        str = pluralMap[1];
+    } else if (totalValues == 2 && pluralMapKeys.includes('2')) {
+        str = pluralMap[2];
+    } else if ((totalValues > 2 && totalValues <= 6) && pluralMapKeys.includes('3')) {
+        str = pluralMap[3];
+    } else if (totalValues > 6 && pluralMapKeys.includes('4')) {
+        str = pluralMap[4];
+    } else {
+        str = pluralMap[pluralMapKeys[0]];
+   }
+    return str;
+}
 function displayPluralCount(message, totalValues, addBolding) {
     if (! message) {
         return '';
     }
 
-    /*
-     * Replace the PLURAL segment in language file with
-     * either the first or second half based on number of values.
-     */
     matches = message.match('{{PLURAL:[\\s]*\\$1\\|(.*)}}');
-    str = matches[1].split('|')[(totalValues > 1 ? 1 : 0)];
+    pluralValues = matches[1].split('|')
+    var pluralMap = createPluralMap(pluralValues);
+    if ( Object.keys(pluralMap).length > 0 ) {
+        str = usePluralMap(pluralMap, totalValues);
+    } else {
+        // We assume the message takes the form "single|multiple".
+        str = pluralValues[(totalValues > 1 ? 1 : 0)];
+    }
     totalValuesStr = numberWithCommas(totalValues);
     if (addBolding) {
         totalValuesStr = '<b>' + totalValuesStr + '</b>';
