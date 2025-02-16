@@ -13,6 +13,8 @@
 	"noItems": "Gnun element a corëspond a sa descrision.",
 	"displayItemsError": "Ël tentativ dë smon-e la lista dj'element a l'ha pijà tròp temp; ch'a sërca ëd gionté d'àutri filtr.",
 	"gettingValues": "Oteniment dij valor për ël filtr $1 an cors ...",
+	"filterValuePlaceholder": "Anserì ël valor dël filtr",
+	"customFilterValue": "A peul ëdcò serne un valor përsonalisà për cost filtr:",
 	"noAdditionalValues": "A-i é gnun valor adissional për ël filtr $1.",
 	"filterError": "Ël tentativ d'oten-e dij valor për ël filtr $1 a l'ha pijà tròp temp.",
 	"filterTimeout": "(L'oteniment ëd n'ansem ëd valor complet për ël filtr $1 a l'ha pijà tròp temp; al pòst, valà n'ansem peul desse incomplet.)",
@@ -23,6 +25,7 @@
 	"specificClass": "Passé a na classa pi spessìfica:",
 	"generalClass": "Passé a na classa pi general:",
 	"viewList": "Smon-e la lista d'element",
+	"backToMain": "André a la pàgina prinsipal",
 	"results": "({{PLURAL:$1|1 arzultà|$1 arzultà}})",
 	"applyLinkedFilter": "Apliché ël filtr su $1",
 	"chooseLinkedFilter": "Serne un filtr da un-a dle classe sì-sota:"

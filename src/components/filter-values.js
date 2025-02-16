@@ -8,6 +8,8 @@ filtervalues = Vue.component('filter-values', {
             displayCount: 1,
             currentPage: 1,
             filterProperty: '',
+            filterValue: '',
+            searchResults: '',
             query: '#',
             noValueURL: '',
             secondaryFilters:[],
@@ -58,9 +60,30 @@ filtervalues = Vue.component('filter-values', {
                     </li>
                 </ul>
             </div>
-            <div v-if="itemsType==''">
+            <div v-if="itemsType=='' || itemsType=='ItemLoading'">
                 <a @click="changePage('view-all-items')">{{ viewItemsText() }}</a>
                 <p v-html="displayMessage(websiteText.gettingValues||fallbackText.gettingValues, currentFilter.valueLabel)"></p>
+                <div v-if="itemsType=='ItemLoading'" class="filterValueInputWrapper">
+                    <p v-html="websiteText.customFilterValue||fallbackText.customFilterValue"></p>
+                    <div class="filterValueInput">
+                        <input
+                            v-model="filterValue"
+                            @input="showFilterValues"
+                            type="search"
+                            :placeholder='websiteText.filterValuePlaceholder||fallbackText.filterValuePlaceholder'>
+                    </div>
+                    <div v-if="filterValue.length>0" class="searchOptions">
+                        <a
+                            class="searchOption"
+                            v-for="searchResult in searchResults"
+                            @click="submitFreeFormFilterValue(searchResult)">
+                                <b>
+                                    {{ searchResult.label.replace(/^./, searchResult.label[0].toUpperCase()) }}
+                                </b>
+                                : {{ searchResult.description }}
+                        </a>
+                    </div>
+                </div>
                 <img src='images/loading.gif'>
             </div>
             <div v-else-if="itemsType=='Additionalempty'">
@@ -73,10 +96,31 @@ filtervalues = Vue.component('filter-values', {
             </div>
             <div v-else>
                 <div v-if="itemsType=='Item'">
-                    <p v-if="totalValues!=''" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount,totalValues)"></p>
+                    <p v-if="totalValues!=''" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount, totalValues, true)"></p>
                     <a @click="changePage('view-all-items')">{{ viewItemsText() }}</a>
                     <p v-if="appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) != -1" v-html="displayMessage(websiteText.selectAdditionalValue||fallbackText.selectAdditionalValue, currentFilter.valueLabel)"></p>
                     <p v-else v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel)"></p>
+                    <div v-if="items.length > 150" class="filterValueInputWrapper">
+                        <p v-html="websiteText.customFilterValue||fallbackText.customFilterValue"></p>
+                        <div class="filterValueInput">
+                            <input
+                                v-model="filterValue"
+                                @input="showFilterValues"
+                                type="search"
+                                :placeholder='websiteText.filterValuePlaceholder||fallbackText.filterValuePlaceholder'>
+                        </div>
+                        <div v-if="filterValue.length>0" class="searchOptions">
+                            <a
+                                class="searchOption"
+                                v-for="searchResult in searchResults"
+                                @click="submitFreeFormFilterValue(searchResult)">
+                                    <b>
+                                        {{ searchResult.label.replace(/^./, searchResult.label[0].toUpperCase()) }}
+                                    </b>
+                                    : {{ searchResult.description }}
+                            </a>
+                        </div>
+                    </div>
                     <div v-if="items.length>resultsPerPage && itemsType=='Item'" style="text-align: center">
                         <a v-if="currentPage>1" @click="currentPage>1?currentPage--:''">&lt;</a>
                         <input 
@@ -107,7 +151,7 @@ filtervalues = Vue.component('filter-values', {
                                 {{item.valueLabel.value}}
                             </a> 
                             <span class="result-count">
-                                {{ displayPluralCount(websiteText.results||fallbackText.results,item.count.value) }}
+                                {{ displayPluralCount(websiteText.results||fallbackText.results, item.count.value, false) }}
                             <span>
                         </li>
                     </ul>
@@ -116,6 +160,28 @@ filtervalues = Vue.component('filter-values', {
                     <p><i v-html="displayMessage(websiteText.filterTimeout||fallbackText.filterTimeout, currentFilter.valueLabel)"></i></p>
                     <a @click="changePage('view-all-items')">{{ viewItemsText() }}</a>
                     <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel)"></p>
+                    <div class="filterValueInputWrapper">
+                        <p v-html="websiteText.customFilterValue||fallbackText.customFilterValue"></p>
+                        <div class="filterValueInput">
+                            <input
+                                v-model="filterValue"
+                                @input="showFilterValues"
+                                style="border: none;outline: none;width: 100%;font-size:1em"
+                                type="search"
+                                :placeholder='websiteText.filterValuePlaceholder||fallbackText.filterValuePlaceholder'>
+                        </div>
+                        <div v-if="filterValue.length>0" class="searchOptions">
+                            <a
+                                class="searchOption"
+                                v-for="searchResult in searchResults"
+                                @click="submitFreeFormFilterValue(searchResult)">
+                                    <b>
+                                        {{ searchResult.label.replace(/^./, searchResult.label[0].toUpperCase()) }}
+                                    </b>
+                                    : {{ searchResult.description }}
+                            </a>
+                        </div>
+                    </div>
                     <ul>
                         <li>
                             <i>
@@ -139,7 +205,7 @@ filtervalues = Vue.component('filter-values', {
                     </ul>
                 </div>
                 <div v-else-if="itemsType=='Time'">
-                    <p v-if="totalValues!=''" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount,totalValues)"></p>
+                    <p v-if="totalValues!=''" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount, totalValues, true)"></p>
                     <a @click="changePage('view-all-items')">{{ viewItemsText() }}</a>
                     <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel)"></p>
                     <ul v-if="displayCount == 1">
@@ -163,7 +229,7 @@ filtervalues = Vue.component('filter-values', {
                                 {{item.bucketName}} 
                             </a> 
                             <span class="result-count">
-                                {{ displayPluralCount(websiteText.results||fallbackText.results,item.numValues) }}
+                                {{ displayPluralCount(websiteText.results||fallbackText.results, item.numValues, false) }}
                             <span>
                         </li>
                     </ul>
@@ -218,7 +284,7 @@ filtervalues = Vue.component('filter-values', {
                     </ul>
                 </div>
                 <div v-else-if="itemsType=='Quantity'">
-                    <p v-if="displayCount == 1 && totalValues!=''" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount,totalValues)"></p>
+                    <p v-if="displayCount == 1 && totalValues!=''" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount, totalValues, true)"></p>
                     <p v-if="displayCount == 0"><i v-html="displayMessage(websiteText.filterTimeout||fallbackText.filterTimeout, currentFilter.valueLabel)"></i></p>
                     <a @click="changePage('view-all-items')">{{ viewItemsText() }}</a>
                     <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel)"></p>
@@ -243,7 +309,7 @@ filtervalues = Vue.component('filter-values', {
                                 {{item.bucketName}} {{item.unit}} 
                             </a> 
                             <span class="result-count">
-                                {{ displayPluralCount(websiteText.results||fallbackText.results,item.numValues) }}
+                                {{ displayPluralCount(websiteText.results||fallbackText.results, item.numValues, false) }}
                             <span>
                         </li>
                     </ul>
@@ -332,14 +398,6 @@ filtervalues = Vue.component('filter-values', {
                 return message.replace("$1", "<b>" + value + "</b>");
             }
         },
-        displayPluralCount(message,totalValues) {
-            if (message) {
-                matches = message.match('{{PLURAL:[\\s]*\\$1\\|(.*)}}');
-                str = matches[1].split('|')[(totalValues > 1 ? 1 : 0)];
-                str = str.replace("$1", (totalValues < 1000000 ? numberWithCommas(totalValues) : '1 million +'));
-                return message.replace(/{{PLURAL:[\s]*\$1\|(.*)}}/g,str);
-            }
-        },
         viewItemsText() {
             // Show "Back to main page" for link text if there have been
             // no filters applied, and there's text on the main page - i.e.,
@@ -387,7 +445,29 @@ filtervalues = Vue.component('filter-values', {
             document.body.appendChild(link);
             link.click();
             document.getElementsByTagName("body")[0].style.cursor = "default";
-        }
+        },
+        showFilterValues() {
+            if (this.filterValue.length > 0) {
+                const fullURL = entityAPIURL + '?action=wbsearchentities&origin=*&format=json&language=' +
+                        lang.split(",")[0] + '&uselang=' + lang.split(",")[0] +
+                        '&type=item&search=' + this.filterValue;
+                axios.get(fullURL)
+                    .then(response => {
+                        this.searchResults = [...response.data['search']]
+                    })
+            }
+        },
+        submitFreeFormFilterValue(searchResult) {
+            var filter = {
+                value: {
+                        value: searchResult.url
+                },
+                valueLabel: {
+                        value: searchResult.label
+                }
+            };
+            this.$emit('apply-filter', filter);
+        },
     },
     mounted() {
         /* 
@@ -829,6 +909,7 @@ filtervalues = Vue.component('filter-values', {
                             })
                 }
                 else {
+                    vm.itemsType = "ItemLoading";
                     // Item property type
                     // Set the URL parameters for href attribute, i.e., only for display purpose. 
                     var q = window.location.search;
@@ -901,6 +982,7 @@ filtervalues = Vue.component('filter-values', {
                             }
                         })
                         .catch(_error => {
+                            var offset = veryLargeClasses.includes(this.classValue) ? Math.floor(Math.random() * 50000) : 0;
                             /*
                              * Gets random fallback results in case the primary query fails or times out.
                              */
@@ -916,6 +998,7 @@ filtervalues = Vue.component('filter-values', {
                                 filterRanges +
                                 filterQuantities +
                                 "}\n" +
+                                "OFFSET " + offset + "\n" +
                                 "LIMIT " + fallbackQueryLimit + "\n" +
                                 "}\n" +
                                 "\n" +

@@ -22,7 +22,7 @@ filtersview = Vue.component('filters-view', {
             <img v-if="!filters.length" src='images/loading.gif'>
             <p v-else-if="filters[0].value=='Empty'">No filters available</p>
             <div v-else>
-                <p v-if="totalValues>0" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount,totalValues)"></p>
+                <p v-if="totalValues>0" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount, totalValues, true)"></p>
                 <p><b>Add a filter:</b></p> 
                 <ul>
                     <li v-for="filter in filters">
@@ -36,14 +36,6 @@ filtersview = Vue.component('filters-view', {
     methods: {
         changePage(page) {
             this.$emit('change-page', page)
-        },
-        displayPluralCount(message,totalValues) {
-            if(message){
-                matches = message.match('{{PLURAL:[\\s]*\\$1\\|(.*)}}')
-                str = matches[1].split('|')[(totalValues > 1 ? 1 : 0)]
-                str = str.replace("$1", "<b>" + (totalValues < 1000000 ? numberWithCommas(totalValues) : '1 million +') + "</b>")
-                return message.replace(/{{PLURAL:[\s]*\$1\|(.*)}}/g, str)
-            }
         },
         showFilter(filter) {
             this.$emit('update-filter', filter)

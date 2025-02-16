@@ -5,6 +5,7 @@
 			"DraconicDark",
 			"FF-11",
 			"FF11",
+			"Justman10000",
 			"Magiczocker",
 			"ManuelFranz",
 			"Pittigrilli"
@@ -29,6 +30,7 @@
 	"specificClass": "Wechsel zu einer spezifischeren Klasse:",
 	"generalClass": "Wechsel zu einer allgemeineren Klasse:",
 	"viewList": "Betrachte eine Liste der Objekte",
+	"backToMain": "Zurück zur Hauptseite",
 	"results": "({{PLURAL:$1|1 Ergebnis|$1 Ergebnisse}})",
 	"applyLinkedFilter": "Filter auf $1 anwenden",
 	"chooseLinkedFilter": "Wähle einen Filter aus einer der folgenden Klassen aus:"

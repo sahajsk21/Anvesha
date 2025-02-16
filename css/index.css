@@ -72,7 +72,33 @@ a:hover {
   text-decoration: none;
 }
 
-.classInput:focus {
+.filterValueInputWrapper {
+    margin: 15px;
+    padding: 10px;
+    border: 1px #cca solid;
+    background-color: #ffd;
+}
+
+.filterValueInputWrapper p {
+    margin-top: 0;
+}
+
+.filterValueInput {
+    height:18px;
+    border-radius: 5px;
+    border: 1px solid #6B34FF;
+    padding: 1%;
+    background-color: white;
+}
+
+.filterValueInput input {
+        border: none;
+        outline: none;
+        width: 100%;
+        font-size: 1em;
+}
+
+.classInput:focus, .filterValueInput:focus {
     outline: none;
     box-shadow: 1px 1px #6B34FF;
 }
@@ -233,6 +259,14 @@ a:hover {
   width: 150px;
   padding: 15px;
   margin: 10px;
+}
+
+.thumbnailImage .imageWrapper {
+  text-align: center;
+}
+
+.thumbnailImage .imageWrapper img {
+  max-height: 150px;
 }
 
 .thumbnailImage figure {

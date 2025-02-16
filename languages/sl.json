@@ -4,7 +4,7 @@
 			"Eleassar"
 		]
 	},
-	"itemCount": "Temu opisu {{PLURAL:$1|ustreza en predmet|two=ustrezata dva predmeta|few=ustrezajo $1 predmeti|ustreza $1 predmetov}}.",
+	"itemCount": "Temu opisu {{PLURAL:$1|one=ustreza en predmet|two=ustrezata dva predmeta|few=ustrezajo $1 predmeti|many=ustreza $1 predmetov}}.",
 	"classPlaceholder": "Vnesite skupino",
 	"browse": "Ali prebrskajte katerega od naslednjih razredov:",
 	"noFiltersDefined": "Za ta razred ni opredeljen noben filter.",
@@ -23,7 +23,7 @@
 	"specificClass": "Spremeni v bolj specifično skupino:",
 	"generalClass": "Spremeni v bolj splošno skupino:",
 	"viewList": "Prikaži seznam predmetov",
-	"results": "({{PLURAL:$1|one=1 zadetek|two=Dva zadetka|few=$1 zadetki|$1 zadetkov}})",
+	"results": "({{PLURAL:$1|one=1 zadetek|two=dva zadetka|few=$1 zadetki|many=$1 zadetkov}})",
 	"applyLinkedFilter": "Uporabi filter na $1",
 	"chooseLinkedFilter": "Izberite filter iz ene od naslednjih skupin:"
 }

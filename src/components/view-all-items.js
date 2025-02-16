@@ -42,16 +42,16 @@ viewallitems = Vue.component('view-all-items', {
             <div v-else>
                 <a class="classOptions" @click="changePage('filters')">{{ websiteText.addFilter||fallbackText.addFilter }}</a>
             </div>
-            <div v-if="totalValues>0" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount,totalValues)"></div>
-            <div v-if="totalValues>resultsPerPage" style="text-align: center">
+            <div v-if="totalValues>0" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount, totalValues, true)"></div>
+            <div v-if="!totalValues || totalValues > resultsPerPage" style="text-align: center">
                 <a v-if="currentPage>1" @click="displayData('back')">&lt;</a>
                 <input 
                     v-model.lazy="currentPage" 
                     @keyup.enter="displayData"
                     type="text" 
                     style="margin-bottom: 15px;width: 48px;text-align: center"> 
-                {{totalValues<1000000?" / " + Math.ceil(totalValues/resultsPerPage):''}}
-                <a v-if="currentPage<totalValues/resultsPerPage" @click="displayData('next')">&gt;</a>
+                {{totalValues && totalValues < resultsPerPage * 100 ? " / " + Math.ceil(totalValues/resultsPerPage) : ''}}
+                <a v-if="!totalValues || currentPage < totalValues/resultsPerPage" @click="displayData('next')">&gt;</a>
             </div>
             <div v-if="websiteText!=''">
                 <img v-if="!items.length" src='images/loading.gif'>
@@ -61,7 +61,9 @@ viewallitems = Vue.component('view-all-items', {
                     <a v-for="item in sortSinglePageValues(items)" :href="linkToActualItem(item.value.value)" :title="item.overlay" class="externalLink">
                         <div v-if="item.thumbnailURL" class="thumbnailImage">
                             <figure>
-                                <img :src="item.thumbnailURL" />
+                                <div class="imageWrapper">
+                                    <img :src="item.thumbnailURL" />
+                                </div>
                                 <figcaption>
                                         {{item.caption}}
                                         <span v-if="item.icon" v-html="item.icon" style="margin-left: 5px;">
@@ -90,7 +92,7 @@ viewallitems = Vue.component('view-all-items', {
                     @keyup.enter="displayData"
                     type="text" 
                     style="margin-bottom: 15px;width: 48px;text-align: center"> 
-                {{totalValues<1000000?" / " + Math.ceil(totalValues/resultsPerPage):''}}
+                {{totalValues && totalValues < resultsPerPage * 100 ? " / " + Math.ceil(totalValues/resultsPerPage) : ''}}
                 <a v-if="currentPage<totalValues/resultsPerPage" @click="displayData('next')">&gt;</a>
             </div>
             <div><a :href="query">{{ websiteText.viewQuery||fallbackText.viewQuery }}</a></div>
@@ -100,7 +102,7 @@ viewallitems = Vue.component('view-all-items', {
     </div>`,
     methods: {
         sortSinglePageValues(arr){
-            if(this.totalValues<=resultsPerPage){
+            if (this.totalValues && this.totalValues <= resultsPerPage) {
                 return [...arr].sort((a,b)=>(
                     a.valueLabel.value.toLowerCase()>b.valueLabel.value.toLowerCase()
                     ?1:-1
@@ -117,7 +119,7 @@ viewallitems = Vue.component('view-all-items', {
                 }
             }
             else if (action == 'next') {
-                if (this.currentPage < this.totalValues / resultsPerPage) {
+                if (!this.totalValues || this.currentPage < this.totalValues / resultsPerPage) {
                     this.currentPage++;
                 }
             }
@@ -137,6 +139,22 @@ viewallitems = Vue.component('view-all-items', {
                 innerFileVar = this.sparqlParameters[4] == "" ? "?file" : "(MAX(?fil) AS ?file)";
                 this.classSelector = this.sparqlParameters[4] == "" ? "?value schema:url ?file" : "?value schema:url $fil";
             }
+
+            var offset = (this.currentPage - 1) * resultsPerPage;
+            // If it's specified to be a "very large class" (which hopefully
+            // doesn't apply to anything with less than 50,000 items), and no
+            // filters have been applied, add a random offset to the query, so
+            // that the same items aren't shown every time a user goes to that
+            // class.
+            // (This will mean that the user will never see the first X items
+            // if they just scroll through all the items, but then again
+            // there's probably no way they will scroll through everything.)
+            if ( veryLargeClasses.includes(this.classValue) && this.appliedFilters.length == 0 && this.appliedRanges.length == 0 && this.appliedQuantities.length == 0  ) {
+                if ( !this.additionalOffset ) {
+                    this.additionalOffset = Math.floor(Math.random() * 50000);
+                }
+                offset = offset + this.additionalOffset;
+            }
             sparqlQuery = "SELECT DISTINCT ?value ?valueLabel " + outerFileVar + " WHERE {\n" +
                 "{\n" +
                 "SELECT ?value " + innerFileVar + " " + this.sparqlParameters[4] + " WHERE {\n" +
@@ -147,12 +165,12 @@ viewallitems = Vue.component('view-all-items', {
                 this.sparqlParameters[3] +
                 "}\n" +
                 (this.sparqlParameters[4] == "" ? "" : "GROUP BY ?value \n") +
-                (this.sparqlParameters[5] == "" ? "LIMIT " + resultsPerPage + " OFFSET " + ((this.currentPage - 1) * resultsPerPage) : "") +
+                (this.sparqlParameters[5] == "" ? "LIMIT " + resultsPerPage + " OFFSET " + offset : "") +
                 "}\n" +
                 this.sparqlParameters[5] +
                 "SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
                 "}\n" +
-                (this.sparqlParameters[5] != "" ? "LIMIT " + resultsPerPage + " OFFSET " + ((this.currentPage - 1) * resultsPerPage) : "");
+                (this.sparqlParameters[5] != "" ? "LIMIT " + resultsPerPage + " OFFSET " + offset : "");
             this.query = queryServiceWebsiteURL + encodeURIComponent(sparqlQuery);
             fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
             axios.get(fullUrl)
@@ -173,18 +191,6 @@ viewallitems = Vue.component('view-all-items', {
         },
         pathForFilter(filter) {
             return window.location.href + '&cf=' + filter.value.value.split('/').slice(-1)[0];
-        },
-        displayPluralCount(message, totalValues) {
-            if (message) {
-                /* 
-                 Replace the PLURAL segment in language file with 
-                 either the first or second half based on number of values.
-                */  
-                matches = message.match('{{PLURAL:[\\s]*\\$1\\|(.*)}}')
-                str = matches[1].split('|')[(totalValues > 1 ? 1 : 0)]
-                str = str.replace("$1", "<b>" + (totalValues < 1000000 ? numberWithCommas(totalValues) : '1 million +') + "</b>")
-                return message.replace(/{{PLURAL:[\s]*\$1\|(.*)}}/g, str)
-            }
         },
         changePage(page) {
             this.$emit('change-page', page)
@@ -210,7 +216,7 @@ viewallitems = Vue.component('view-all-items', {
                 var fileSuffix = fileName.substring(fileName.length - 4).toLowerCase();
                 var isImage = [ '.gif', '.jpg', 'jpeg', '.png' ].includes( fileSuffix );
                 var isVideo = [ '.mpg', '.ogv',  'webm', 'webp' ].includes( fileSuffix );
-                var notImageButHasThumbnail = isVideo || [ 'djvu', '.pdf', '.svg', '.tif', 'tiff' ].includes( fileSuffix );
+                var notImageButHasThumbnail = isVideo || [ 'djvu', '.pdf', '.stl', '.svg', '.tif', 'tiff' ].includes( fileSuffix );
                 var isAudio = [ 'flac', '.mid', '.mp3', '.oga', '.ogg', 'opus', '.wav' ].includes( fileSuffix );
                 if ( isImage || notImageButHasThumbnail ) {
                         // We could use the API to get the thumbnail image for

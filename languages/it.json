@@ -6,6 +6,8 @@
 		]
 	},
 	"addFilter": "Aggiungi un filtro",
+	"filterValuePlaceholder": "Inserisci il valore del filtro",
+	"customFilterValue": "Puoi anche scegliere un valore personalizzato per questo filtro:",
 	"selectValue": "Seleziona un valore per $1:",
 	"noValue": "Nessun valore",
 	"results": "({{PLURAL:$1|1 risultato|$1 risultati}})",

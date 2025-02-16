@@ -1512,7 +1512,7 @@ axios
                   response.data["results"]["bindings"][0].count.value)
             )
             .catch((error) => {
-              this.total = 1000000;
+              this.total = null;
             });
           return this.total;
         },

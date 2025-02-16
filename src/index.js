@@ -5,9 +5,11 @@ resultsPerPage = window.RESULTS_PER_PAGE || 200;
 favicon = window.FAVICON || "images/favicon.png";
 logo = window.LOGO || "images/logo.png";
 mainPageText = window.MAIN_PAGE_TEXT || null;
-classes = window.SUGGESTED_CLASSES.map(function(v){return {value:v}}) || [];
+classes = window.SUGGESTED_CLASSES.map(function(v){return {value:v}}) || [];;
+veryLargeClasses = window.VERY_LARGE_CLASSES || [];
 sparqlEndpoint = window.SPARQL_ENDPOINT || "https://query.wikidata.org/sparql?query=";
 queryServiceWebsiteURL = window.QUERY_SERVICE_WEBSITE_URL || "https://query.wikidata.org/#";
+entityAPIURL = window.ENTITY_API_URL || 'https://www.wikidata.org/w/api.php';
 instanceOf = window.INSTANCE_OF_PID || "P31";
 propertiesForThisType = window.PROPERTIES_FOR_THIS_TYPE_PID || "P1963";
 subclassOf = window.SUBCLASS_OF_PID || "P279";
@@ -462,4 +464,59 @@ function getTimePrecision(ear, lat, num=0) {
     else if (yearDifference <= 1e6) return 3+num;
     else if (yearDifference <= 1e8) return 1+num;
     return 0
+}
+// Some languages, such as Slovenian, have different words for the plural of
+// a noun depending on the number (2, a few, etc.) - handle messages defined
+// in this way.
+function createPluralMap(pluralValues) {
+    pluralMap = {};
+    pluralConditions = ['zero=', 'one=', 'two=', 'few=', 'many='];
+    pluralConditions.forEach((element, index) => {
+        pluralOne = pluralValues.filter((obj)=>{
+            return obj.includes(element);
+        });
+        if (pluralOne.length!==0) {
+            pluralMap[index] = pluralOne[0].replace(element, '');
+        }
+    });
+    return pluralMap;
+}
+function usePluralMap(pluralMap, totalValues ) {
+    var str = null;
+    var pluralMapKeys = Object.keys(pluralMap);
+    if (totalValues == 0 && pluralMapKeys.includes('0')) {
+        str = pluralMap[0];
+    } else if (totalValues == 1 && pluralMapKeys.includes('1')) {
+        str = pluralMap[1];
+    } else if (totalValues == 2 && pluralMapKeys.includes('2')) {
+        str = pluralMap[2];
+    } else if ((totalValues > 2 && totalValues <= 6) && pluralMapKeys.includes('3')) {
+        str = pluralMap[3];
+    } else if (totalValues > 6 && pluralMapKeys.includes('4')) {
+        str = pluralMap[4];
+    } else {
+        str = pluralMap[pluralMapKeys[0]];
+   }
+    return str;
+}
+function displayPluralCount(message, totalValues, addBolding) {
+    if (! message) {
+        return '';
+    }
+
+    matches = message.match('{{PLURAL:[\\s]*\\$1\\|(.*)}}');
+    pluralValues = matches[1].split('|')
+    var pluralMap = createPluralMap(pluralValues);
+    if ( Object.keys(pluralMap).length > 0 ) {
+        str = usePluralMap(pluralMap, totalValues);
+    } else {
+        // We assume the message takes the form "single|multiple".
+        str = pluralValues[(totalValues > 1 ? 1 : 0)];
+    }
+    totalValuesStr = numberWithCommas(totalValues);
+    if (addBolding) {
+        totalValuesStr = '<b>' + totalValuesStr + '</b>';
+    }
+    str = str.replace("$1", totalValuesStr);
+    return message.replace(/{{PLURAL:[\s]*\$1\|(.*)}}/g, str);
 }
