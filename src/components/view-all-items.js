@@ -368,12 +368,15 @@ viewallitems = Vue.component('view-all-items', {
                 noValueString += "{#filter " + i + "\n FILTER(NOT EXISTS { ?value wdt:" + this.appliedFilters[i].filterValue + " ?no. }).\n}"
             }
             else {
-                filterString += "{#filter " + i + "\n?value wdt:" + this.appliedFilters[i].filterValue
-                if (this.appliedFilters[i].filterValue == "P1195"){
-                    filterString += "\"" +this.appliedFilters[i].value + "\".\n}"
-                } else{
-                    filterString +=  " wd:" + this.appliedFilters[i].value + ".\n}";
-                }
+                filterString += "OPTIONAL{\n?value wdt:" + this.appliedFilters[i].filterValue + " ?propValue .\n}\n";
+                filterString += "FILTER (\n(datatype(?propValue) = xsd:string && ?propValue =\"" +this.appliedFilters[i].value + "\") ||\n";
+                filterString += "(BOUND(?propValue) && datatype(?propValue) != xsd:string && ?propValue = wd:" + this.appliedFilters[i].value + ")\n)";
+                // filterString += "{#filter " + i + "\n?value wdt:" + this.appliedFilters[i].filterValue
+                // if (this.appliedFilters[i].filterValue == "P1195"){
+                //     filterString += "\"" +this.appliedFilters[i].value + "\".\n}"
+                // } else{
+                //     filterString +=  " wd:" + this.appliedFilters[i].value + ".\n}";
+                // }
             }
         }
         let filterRanges = "", maxString = "", constraintString = "";
