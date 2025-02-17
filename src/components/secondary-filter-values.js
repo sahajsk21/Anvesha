@@ -269,8 +269,9 @@ secondayFilterValues = Vue.component('secondary-filters', {
                 noValueString += "{#filter " + i +"\n FILTER(NOT EXISTS { ?value wdt:" + this.appliedFilters[i].filterValue + " ?no. }).\n}"
             }
             else {
-                filterString += "{#filter " + i +"\n?item wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n}";
-            }
+                filterString += "OPTIONAL{\n?value wdt:" + this.appliedFilters[i].filterValue + " ?propValue .\n}\n";
+                filterString += "FILTER (\n(datatype(?propValue) = xsd:string && ?propValue =\"" +this.appliedFilters[i].value + "\") ||\n";
+                filterString += "(BOUND(?propValue) && datatype(?propValue) != xsd:string && ?propValue = wd:" + this.appliedFilters[i].value + ")\n)";
         }
         var filterRanges = "";
         timeString = "?temp wdt:" + this.secondaryFilter.value + " ?time.\n";
