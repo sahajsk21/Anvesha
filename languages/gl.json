@@ -13,6 +13,8 @@
 	"noItems": "Ningún elemento coincide con esta descrición.",
 	"displayItemsError": "O intento de amosar a lista de elementos tardou demasiado tempo; considera engadir máis filtros.",
 	"gettingValues": "Obtendo os valores para o filtro \"$1\"...",
+	"filterValuePlaceholder": "Introduce o valor do filtro",
+	"customFilterValue": "Tamén podes escoller un valor personalizado para este filtro:",
 	"noAdditionalValues": "Non hai valores adicionais para o filtro \"$1\".",
 	"filterError": "O intento de obter os valores tardou demasiado tempo para o filtro \"$1\".",
 	"filterTimeout": "(A obtención dun conxunto completo de valores para o filtro \"$1\" tardou demasiado tempo; no entanto, aquí tes un conxunto posiblemente incompleto.)",
