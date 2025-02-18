@@ -92,10 +92,10 @@ a:hover {
 }
 
 .filterValueInput input {
-        border: none;
-        outline: none;
-        width: 100%;
-        font-size: 1em;
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 1em;
 }
 
 .classInput:focus, .filterValueInput:focus {
@@ -252,44 +252,44 @@ a:hover {
 }
 
 .thumbnailImage {
-  display: inline-block;
-  word-wrap: break-word;
-  border: 1px solid #ffcccc;
-  border-radius: 7px;
-  width: 150px;
-  padding: 15px;
-  margin: 10px;
+    display: inline-block;
+    word-wrap: break-word;
+    border: 1px solid #ffcccc;
+    border-radius: 7px;
+    width: 150px;
+    padding: 15px;
+    margin: 10px;
 }
 
 .thumbnailImage .imageWrapper {
-  text-align: center;
+    text-align: center;
 }
 
 .thumbnailImage .imageWrapper img {
-  max-height: 150px;
+    max-height: 150px;
 }
 
 .thumbnailImage figure {
-  margin: 0;
+    margin: 0;
 }
 
 .thumbnailImage figcaption {
-  font-size: 10pt;
+    font-size: 10pt;
 }
 
 .thumbnailImage:hover {
-  background: #f9f9f9;
-  border: 1px solid #eebbbb;
+    background: #f9f9f9;
+    border: 1px solid #eebbbb;
 }
 
 @media screen and (max-width: 1200px) {
-	.dropdown-content {
-		column-count: 3;
-	}
+    .dropdown-content {
+        column-count: 3;
+    }
 }
 
 @media screen and (max-width: 800px) {
-	.dropdown-content {
-		column-count: 2;
-	}
+    .dropdown-content {
+        column-count: 2;
+    }
 }
