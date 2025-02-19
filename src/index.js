@@ -8,6 +8,7 @@ mainPageText = window.MAIN_PAGE_TEXT || null;
 classes = window.SUGGESTED_CLASSES.map(function(v){return {value:v}}) || [];
 veryLargeClasses = window.VERY_LARGE_CLASSES || [];
 sparqlEndpoint = window.SPARQL_ENDPOINT || "https://query.wikidata.org/sparql?query=";
+labelsSPARQLEndpoint = window.LABELS_SPARQL_ENDPOINT || sparqlEndpoint;
 queryServiceWebsiteURL = window.QUERY_SERVICE_WEBSITE_URL || "https://query.wikidata.org/#";
 entityAPIURL = window.ENTITY_API_URL || 'https://www.wikidata.org/w/api.php';
 instanceOf = window.INSTANCE_OF_PID || "P31";
