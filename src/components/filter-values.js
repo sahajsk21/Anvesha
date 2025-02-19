@@ -982,10 +982,14 @@ filtervalues = Vue.component('filter-values', {
                             }
                         })
                         .catch(_error => {
-                            var offset = veryLargeClasses.includes(this.classValue) ? Math.floor(Math.random() * 50000) : 0;
                             /*
                              * Gets random fallback results in case the primary query fails or times out.
                              */
+                            if (veryLargeClasses.includes(this.classValue) && this.appliedFilters.length == 0 && this.appliedRanges.length == 0 && this.appliedQuantities.length == 0) {
+                                offset = Math.floor(Math.random() * (fallbackQueryLimit * 30));
+                            } else {
+                                offset = 0;
+                            }
                             sparqlQuery = "SELECT ?value ?valueLabel WHERE{\n" +
                                 "{\n" +
                                 "SELECT DISTINCT ?value\n" +
