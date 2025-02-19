@@ -909,7 +909,7 @@ axios
               lang +
               '". }\n' +
               "}";
-            const fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+            const fullUrl = labelsSPARQLEndpoint + encodeURIComponent(sparqlQuery);
             axios.get(fullUrl).then((response) => {
               str = response.data["results"]["bindings"][0].valueLabel.value;
               this.classLabel = str.replace(/^./, str[0].toUpperCase());
@@ -932,7 +932,7 @@ axios
             lang +
             '". }\n' +
             "}";
-          const fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+          const fullUrl = labelsSPARQLEndpoint + encodeURIComponent(sparqlQuery);
           axios
             .get(fullUrl)
             .then(
@@ -957,7 +957,7 @@ axios
             lang +
             '". }\n' +
             "}";
-          const fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+          const fullUrl = labelsSPARQLEndpoint + encodeURIComponent(sparqlQuery);
           axios
             .get(fullUrl)
             .then(
@@ -1037,7 +1037,7 @@ axios
                   "  ?prop wikibase:directClaim ?p.\n" +
                   "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
                   "}";
-              var fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+              var fullUrl = labelsSPARQLEndpoint + encodeURIComponent(sparqlQuery);
               axios.get(fullUrl)
                   .then(response => {
                       for (let i = 0; i < response.data['results']['bindings'].length; i++) {
@@ -1057,7 +1057,7 @@ axios
                       "  VALUES ?value {  " + values + " }\n" +
                       "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". } \n" +
                       "}";
-                  var fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+                  var fullUrl = labelsSPARQLEndpoint + encodeURIComponent(sparqlQuery);
                   axios.get(fullUrl)
                       .then(response => {
                           for (let i = 0; i < response.data['results']['bindings'].length; i++) {
@@ -1143,7 +1143,7 @@ axios
                 lang +
                 '". }\n' +
                 "}";
-              var fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+              var fullUrl = labelsSPARQLEndpoint + encodeURIComponent(sparqlQuery);
               axios.get(fullUrl).then((response) => {
                 for (
                   let i = 0;
@@ -1268,7 +1268,7 @@ axios
                 lang +
                 '". }\n' +
                 "}";
-              var fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+              var fullUrl = labelsSPARQLEndpoint + encodeURIComponent(sparqlQuery);
               axios.get(fullUrl).then((response) => {
                 for (
                   let i = 0;
