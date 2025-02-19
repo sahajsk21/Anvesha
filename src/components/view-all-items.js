@@ -56,7 +56,7 @@ viewallitems = Vue.component('view-all-items', {
             <div v-if="websiteText!=''">
                 <img v-if="!items.length" src='images/loading.gif'>
                 <p v-else-if="items[0].value=='Empty'">{{ websiteText.noItems||fallbackText.noItems }}</p>
-                <p v-else-if="items[0].value=='Error'">{{ websiteText.displayItemsError||fallbackText.displayItemsError }}</p>>
+                <p v-else-if="items[0].value=='Error'">{{ websiteText.displayItemsError||fallbackText.displayItemsError }}</p>
                 <div v-else-if="window.showThumbnails">
                     <a v-for="item in sortSinglePageValues(items)" :href="linkToActualItem(item.value.value)" :title="item.overlay" class="externalLink">
                         <div v-if="item.thumbnailURL" class="thumbnailImage">
