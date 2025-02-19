@@ -85,7 +85,7 @@ viewallitems = Vue.component('view-all-items', {
                         </ul>
                 </div>
             </div>
-            <div v-if="totalValues>resultsPerPage" style="text-align: center">
+            <div v-if="!totalValues || totalValues > resultsPerPage" style="text-align: center">
                 <a v-if="currentPage>1" @click="displayData('back')">&lt;</a>
                 <input 
                     v-model.lazy="currentPage" 
@@ -93,7 +93,7 @@ viewallitems = Vue.component('view-all-items', {
                     type="text" 
                     style="margin-bottom: 15px;width: 48px;text-align: center"> 
                 {{totalValues && totalValues < resultsPerPage * 100 ? " / " + Math.ceil(totalValues/resultsPerPage) : ''}}
-                <a v-if="currentPage<totalValues/resultsPerPage" @click="displayData('next')">&gt;</a>
+                <a v-if="!totalValues || currentPage < totalValues/resultsPerPage" @click="displayData('next')">&gt;</a>
             </div>
             <div><a :href="query">{{ websiteText.viewQuery||fallbackText.viewQuery }}</a></div>
             <div><a @click="exportAsFormat('csv')">Export as CSV</a></div>
