@@ -322,7 +322,7 @@ viewallitems = Vue.component('view-all-items', {
             "SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
             "}\n" +
             "ORDER BY ?valueLabel";
-        var fullUrl = sparqlEndpoint + encodeURIComponent(sparqlQuery);
+        var fullUrl = labelsSPARQLEndpoint + encodeURIComponent(sparqlQuery);
         axios.get(fullUrl)
             .then(response => {
                 if (response.data['results']['bindings']) {
