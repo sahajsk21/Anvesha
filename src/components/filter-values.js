@@ -96,7 +96,7 @@ filtervalues = Vue.component('filter-values', {
             </div>
             <div v-else>
                 <div v-if="itemsType=='Item'">
-                    <p v-if="totalValues!=''" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount, totalValues, true)"></p>
+                    <p v-if="totalValues" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount, totalValues, true)"></p>
                     <a @click="changePage('view-all-items')">{{ viewItemsText() }}</a>
                     <p v-if="appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) != -1" v-html="displayMessage(websiteText.selectAdditionalValue||fallbackText.selectAdditionalValue, currentFilter.valueLabel)"></p>
                     <p v-else v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel)"></p>
@@ -205,7 +205,7 @@ filtervalues = Vue.component('filter-values', {
                     </ul>
                 </div>
                 <div v-else-if="itemsType=='Time'">
-                    <p v-if="totalValues!=''" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount, totalValues, true)"></p>
+                    <p v-if="totalValues" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount, totalValues, true)"></p>
                     <a @click="changePage('view-all-items')">{{ viewItemsText() }}</a>
                     <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel)"></p>
                     <ul v-if="displayCount == 1">
@@ -284,7 +284,7 @@ filtervalues = Vue.component('filter-values', {
                     </ul>
                 </div>
                 <div v-else-if="itemsType=='Quantity'">
-                    <p v-if="displayCount == 1 && totalValues!=''" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount, totalValues, true)"></p>
+                    <p v-if="displayCount == 1 && totalValues" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount, totalValues, true)"></p>
                     <p v-if="displayCount == 0"><i v-html="displayMessage(websiteText.filterTimeout||fallbackText.filterTimeout, currentFilter.valueLabel)"></i></p>
                     <a @click="changePage('view-all-items')">{{ viewItemsText() }}</a>
                     <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel)"></p>
