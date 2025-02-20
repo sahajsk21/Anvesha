@@ -205,7 +205,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
             // Show "Back to main page" if there have been no filters applied,
             // and there's text on the main page - i.e., there is no list to see.
             if ( window.mainPageText && this.appliedFilters.length == 0 && this.appliedRanges.length == 0 && this.appliedQuantities.length == 0 ) {
-                return this.websiteText.backToMain || this.falbackText.backToMain;
+                return this.websiteText.backToMain || this.fallbackText.backToMain;
             } else {
                 return this.websiteText.viewList || this.fallbackText.viewList;
             }
