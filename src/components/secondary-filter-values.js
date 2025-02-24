@@ -9,7 +9,9 @@ secondayFilterValues = Vue.component('secondary-filters', {
             currentPage: 1,
             filterProperty: '',
             query: '#',
-            noValueURL: ''
+            noValueURL: '',
+            filterValue: '',
+            searchResults: ''
         }
     },
     template: `
@@ -26,9 +28,30 @@ secondayFilterValues = Vue.component('secondary-filters', {
         >
         </header-view>
         <div class="content">
-            <div v-if="itemsType==''">
+            <div v-if="itemsType==''" || itemsType=='ItemLoading'">
                 <a @click="changePage('view-all-items')">{{ viewItemsText() }}</a>
                 <p v-html="displayMessage(websiteText.gettingValues||fallbackText.gettingValues, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
+                <div v-if="itemsType=='ItemLoading'" class="filterValueInputWrapper">
+                    <p v-html="websiteText.customFilterValue||fallbackText.customFilterValue"></p>
+                    <div class="filterValueInput">
+                        <input
+                            v-model="filterValue"
+                            @input="showFilterValues"
+                            type="search"
+                            :placeholder='websiteText.filterValuePlaceholder||fallbackText.filterValuePlaceholder'>
+                    </div>
+                    <div v-if="filterValue.length>0" class="searchOptions">
+                        <a
+                            class="searchOption"
+                            v-for="searchResult in searchResults"
+                            @click="submitFreeFormFilterValue(searchResult)">
+                                <b>
+                                    {{ searchResult.label.replace(/^./, searchResult.label[0].toUpperCase()) }}
+                                </b>
+                                : {{ searchResult.description }}
+                        </a>
+                    </div>
+                </div>
                 <img src='images/loading.gif'>
             </div>
             <div v-else-if="itemsType=='Additionalempty'">
@@ -45,6 +68,27 @@ secondayFilterValues = Vue.component('secondary-filters', {
                     <a @click="changePage('view-all-items')">{{ viewItemsText() }}</a>
                     <p v-if="appliedFilters.findIndex(filter => filter.filterValue == secondaryFilter.value) != -1" v-html="displayMessage(websiteText.selectAdditionalValue||fallbackText.selectAdditionalValue, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
                     <p v-else v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
+                    <div v-if="items.length > 150" class="filterValueInputWrapper">
+                        <p v-html="websiteText.customFilterValue||fallbackText.customFilterValue"></p>
+                        <div class="filterValueInput">
+                            <input
+                                v-model="filterValue"
+                                @input="showFilterValues"
+                                type="search"
+                                :placeholder='websiteText.filterValuePlaceholder||fallbackText.filterValuePlaceholder'>
+                        </div>
+                        <div v-if="filterValue.length>0" class="searchOptions">
+                            <a
+                                class="searchOption"
+                                v-for="searchResult in searchResults"
+                                @click="submitFreeFormFilterValue(searchResult)">
+                                    <b>
+                                        {{ searchResult.label.replace(/^./, searchResult.label[0].toUpperCase()) }}
+                                    </b>
+                                    : {{ searchResult.description }}
+                            </a>
+                        </div>
+                    </div>                    
                     <div v-if="items.length>resultsPerPage && itemsType=='Item'" style="text-align: center">
                         <a v-if="currentPage>1" @click="currentPage>1?currentPage--:''">&lt;</a>
                         <input 
@@ -73,6 +117,28 @@ secondayFilterValues = Vue.component('secondary-filters', {
                     <p><i v-html="displayMessage(websiteText.filterTimeout||fallbackText.filterTimeout, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></i></p>
                     <a @click="changePage('view-all-items')">{{ viewItemsText() }}</a>
                     <p v-html="displayMessage(websiteText.selectValue||fallbackText.selectValue, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
+                    <div class="filterValueInputWrapper">
+                        <p v-html="websiteText.customFilterValue||fallbackText.customFilterValue"></p>
+                        <div class="filterValueInput">
+                            <input
+                                v-model="filterValue"
+                                @input="showFilterValues"
+                                style="border: none;outline: none;width: 100%;font-size:1em"
+                                type="search"
+                                :placeholder='websiteText.filterValuePlaceholder||fallbackText.filterValuePlaceholder'>
+                        </div>
+                        <div v-if="filterValue.length>0" class="searchOptions">
+                            <a
+                                class="searchOption"
+                                v-for="searchResult in searchResults"
+                                @click="submitFreeFormFilterValue(searchResult)">
+                                    <b>
+                                        {{ searchResult.label.replace(/^./, searchResult.label[0].toUpperCase()) }}
+                                    </b>
+                                    : {{ searchResult.description }}
+                            </a>
+                        </div>
+                    </div>
                     <ul>
                         <li v-for="item in items">
                             <a 
@@ -227,6 +293,28 @@ secondayFilterValues = Vue.component('secondary-filters', {
         },
         removeQuantity(quantity) {
             this.$emit("remove-quantity", quantity, 'secondary-filter-values');
+        },
+        showFilterValues() {
+            if (this.filterValue.length > 0) {
+                const fullURL = entityAPIURL + '?action=wbsearchentities&origin=*&format=json&language=' +
+                        lang.split(",")[0] + '&uselang=' + lang.split(",")[0] +
+                        '&type=item&search=' + this.filterValue;
+                axios.get(fullURL)
+                    .then(response => {
+                        this.searchResults = [...response.data['search']]
+                    })
+            }
+        },
+        submitFreeFormFilterValue(searchResult) {
+            var filter = {
+                value: {
+                        value: searchResult.url
+                },
+                valueLabel: {
+                        value: searchResult.label
+                }
+            };
+            this.$emit('apply-secondary-filter', filter);
         },
         exportCSV() {
             document.getElementsByTagName("body")[0].style.cursor = "progress";
@@ -640,6 +728,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                 }
                 else {
                     // Item property type
+                    vm.itemsType = "ItemLoading";
                     // Set the URL parameters for href attribute, i.e., only for display purpose. 
                     var q = window.location.search;
                     parameters = new URLSearchParams(q)
