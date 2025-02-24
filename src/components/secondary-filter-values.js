@@ -28,7 +28,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
         >
         </header-view>
         <div class="content">
-            <div v-if="itemsType==''" || itemsType=='ItemLoading'">
+            <div v-if="itemsType=='' || itemsType=='ItemLoading'">
                 <a @click="changePage('view-all-items')">{{ viewItemsText() }}</a>
                 <p v-html="displayMessage(websiteText.gettingValues||fallbackText.gettingValues, currentFilter.valueLabel + arrow + secondaryFilter.valueLabel)"></p>
                 <div v-if="itemsType=='ItemLoading'" class="filterValueInputWrapper">
