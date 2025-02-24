@@ -2,6 +2,7 @@
 	"@metadata": {
 		"authors": [
 			"1917 Ekim Devrimi",
+			"GolyatGeri",
 			"Mirzali"
 		]
 	},
@@ -14,6 +15,8 @@
 	"noItems": "Gorey nê izahati unsur çıniyo",
 	"displayItemsError": "Cerbnayışê mısnayışê listey obcey zef derg ramıto; Dehana zaf parzun dekedışi bıfıkıriyê.",
 	"gettingValues": "Qandê parzunê $1 erci gêrênê...",
+	"filterValuePlaceholder": "Ercê parzuni cıkerê",
+	"customFilterValue": "Şıma şenê bıvurnê ercê nê parzuni weçinê",
 	"noAdditionalValues": "Qandê parzunê $1 erco zêde çıniyo.",
 	"filterError": "Qandê parzunê $1 gırotışê erca zaf derg ramıto.",
 	"filterTimeout": "(Qandê parzunê $1 yew tam kumey erci gırotış zaf derg ramıt; heruna neyi, tiya de mara ke kumeya kemi eata.)",

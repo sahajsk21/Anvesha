@@ -15,6 +15,8 @@
 	"noItems": "Tomuto popisu neodpovedá žiadna položka.",
 	"displayItemsError": "Pokus o zobrazenie zoznamu položiek trvá príliš dlho; zvážte použitie viacerých filtrov.",
 	"gettingValues": "Získavanie výsledkov pre filter $1 ...",
+	"filterValuePlaceholder": "Zadajte hodnotu filtra",
+	"customFilterValue": "Môžete si tiež vybrať vlastnú hodnotu pre tento filter:",
 	"noAdditionalValues": "Pre filter $1 už neexistuje viac hodnôt.",
 	"filterError": "Získavanie hodnôt pre filter $1 trvalo príliš dlho.",
 	"filterTimeout": "(Získanie kompletných hodnôt pre filter $1 trvalo príliš dlho; toto je pravdepodobne nekompletný výsledok.)",
@@ -25,6 +27,7 @@
 	"specificClass": "Zmenia na viac špecifikovaný typ:",
 	"generalClass": "Zmena na viac všeobecný typ:",
 	"viewList": "Zobraziť zoznam položiek",
+	"backToMain": "Späť na hlavnú stránku",
 	"results": "( {{PLURAL:$1| 1 výsledok| $1 výsledkov}})",
 	"applyLinkedFilter": "Použiť filter na $1",
 	"chooseLinkedFilter": "Vybrať filter z jedného z nasledovných typov:"
