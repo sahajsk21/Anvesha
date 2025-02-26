@@ -479,21 +479,40 @@ filtervalues = Vue.component('filter-values', {
             if (this.currentPage > numPages) {
                 this.currentPage = numPages;
             }
+            var queryString = window.location.search;
+            cachedFilterValues[queryString]['currentPage'] = this.currentPage;
         },
         goToNextPage() {
             if (this.currentPage >= Math.ceil(this.items.length / resultsPerPage)) {
                 return;
             }
             this.currentPage++;
+            var queryString = window.location.search;
+            cachedFilterValues[queryString]['currentPage'] = this.currentPage;
         },
         goToPreviousPage() {
             if (this.currentPage <= 1) {
                 return;
             }
             this.currentPage--;
+            var queryString = window.location.search;
+            cachedFilterValues[queryString]['currentPage'] = this.currentPage;
         },
     },
     mounted() {
+        // Escape if the user has been here before, and thus the set of
+        // filter values has already been stored.
+        var queryString = window.location.search;
+        if ( cachedFilterValues.hasOwnProperty(queryString) ) {
+            this.items = cachedFilterValues[queryString]['items'];
+            this.itemsType = cachedFilterValues[queryString]['itemsType'];
+            this.currentPage = cachedFilterValues[queryString]['currentPage'] ?? 1;
+            this.secondaryFilters = cachedFilterValues[queryString]['secondaryFilters'] ?? {};
+            this.secondaryFiltersCount = Object.keys(this.secondaryFilters).length;
+            this.displayCount = 1;
+            return;
+        }
+
         /* 
          Get linked filters related to current filter using value type constraint.
          Exclude all filters with property types other than Time, Quantity and Item.
@@ -676,8 +695,9 @@ filtervalues = Vue.component('filter-values', {
                                 }
                                 if (arr.length) {
                                     vm.items = arr;
-                                    vm.itemsType = 'Time'
-                                    vm.displayCount = 1
+                                    vm.itemsType = 'Time';
+                                    vm.displayCount = 1;
+                                    cachedFilterValues[queryString] = {items: vm.items, itemsType: "Time"};
                                 }
                                 else {
                                     vm.itemsType = 'Additionalempty'
@@ -795,6 +815,7 @@ filtervalues = Vue.component('filter-values', {
                                                 vm.items = arr;
                                                 vm.itemsType = 'Quantity';
                                                 vm.displayCount = 1;
+                                                cachedFilterValues[queryString] = {items: vm.items, itemsType: "Quantity"};
                                             }
                                             else {
                                                 // Check if "No value" is to be displayed or not.
@@ -876,6 +897,7 @@ filtervalues = Vue.component('filter-values', {
                                                 vm.items = arr;
                                                 vm.itemsType = 'Quantity';
                                                 vm.displayCount = 1;
+                                                cachedFilterValues[queryString] = {items: vm.items, itemsType: "Quantity"};
                                             }
                                             else {
                                                 // Check if "No value" is to be displayed or not.
@@ -975,8 +997,9 @@ filtervalues = Vue.component('filter-values', {
                                         !index.includes(x.value.value.split('/').slice(-1)[0])));
                                 if (arr.length > 0) {
                                     vm.itemsType = "Item"
-                                    vm.items = arr
-                                    vm.displayCount = 1
+                                    vm.items = arr;
+                                    vm.displayCount = 1;
+                                    cachedFilterValues[queryString] = {items: vm.items, itemsType: "Item", secondaryFilters: vm.secondaryFilters};
                                 }
                                 else {
                                     vm.itemsType = "Additionalempty"

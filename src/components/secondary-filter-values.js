@@ -347,21 +347,38 @@ secondayFilterValues = Vue.component('secondary-filters', {
             if (this.currentPage > numPages) {
                 this.currentPage = numPages;
             }
+            var queryString = window.location.search;
+            cachedFilterValues[queryString]['currentPage'] = this.currentPage;
         },
         goToNextPage() {
             if (this.currentPage >= Math.ceil(this.items.length / resultsPerPage)) {
                 return;
             }
             this.currentPage++;
+            var queryString = window.location.search;
+            cachedFilterValues[queryString]['currentPage'] = this.currentPage;
         },
         goToPreviousPage() {
             if (this.currentPage <= 1) {
                 return;
             }
             this.currentPage--;
+            var queryString = window.location.search;
+            cachedFilterValues[queryString]['currentPage'] = this.currentPage;
         },
     },
     mounted() {
+        // Escape if the user has been here before, and thus the set of
+        // filter values has already been stored.
+        var queryString = window.location.search;
+        if ( cachedFilterValues.hasOwnProperty(queryString) ) {
+            this.items = cachedFilterValues[queryString]['items'];
+            this.itemsType = cachedFilterValues[queryString]['itemsType'];
+            this.currentPage = cachedFilterValues[queryString]['currentPage'] ?? 1;
+            this.displayCount = 1;
+            return;
+        }
+
         // Find items both in this class and in any of its subclasses.
         this.classSelector = "{\n" +
             "    ?item wdt:" + instanceOf + " wd:" + this.classValue + "\n" +
@@ -501,7 +518,8 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                 if (arr.length) {
                                     vm.items = arr;
                                     vm.itemsType = 'Time'
-                                    vm.displayCount = 1
+                                    vm.displayCount = 1;
+                                    cachedFilterValues[queryString] = {items: vm.items, itemsType: "Time"};
                                 }
                                 else {
                                     vm.itemsType = 'Additionalempty'
@@ -623,6 +641,7 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                                 vm.items = arr
                                                 vm.itemsType = 'Quantity'
                                                 vm.displayCount = 1;
+                                                cachedFilterValues[queryString] = {items: vm.items, itemsType: "Quantity"};
                                             }
                                             else {
                                                 // Check if "No value" is to be displayed or not.
@@ -791,9 +810,10 @@ secondayFilterValues = Vue.component('secondary-filters', {
                                 arr = arr.filter(x => (!x.valueLabel.value.includes(".well-known") &&
                                         !index.includes(x.value.value.split('/').slice(-1)[0])))
                                 if (arr.length > 0) {
-                                    vm.itemsType = "Item"
-                                    vm.items = arr
-                                    vm.displayCount = 1
+                                    vm.itemsType = "Item";
+                                    vm.items = arr;
+                                    vm.displayCount = 1;
+                                    cachedFilterValues[queryString] = {items: vm.items, itemsType: "Item"};
                                 }
                                 else {
                                     vm.itemsType = "Additionalempty"
