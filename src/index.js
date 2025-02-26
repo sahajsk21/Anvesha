@@ -61,6 +61,9 @@ if(rtlLanguages.includes(primaryLang)){
     }
 })(window.history);
 
+// Caching
+cachedFilterValues = {};
+
 // Bucket creation and number formatting
 var gBucketsPerFilter = 10;
 
