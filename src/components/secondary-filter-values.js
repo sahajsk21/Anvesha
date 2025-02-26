@@ -89,14 +89,15 @@ secondayFilterValues = Vue.component('secondary-filters', {
                             </a>
                         </div>
                     </div>                    
-                    <div v-if="items.length>resultsPerPage && itemsType=='Item'" style="text-align: center">
-                        <a v-if="currentPage>1" @click="currentPage>1?currentPage--:''">&lt;</a>
-                        <input 
-                            v-model.lazy="currentPage" 
-                            type="text" 
-                            style="margin-bottom: 15px;width: 48px;text-align: center"> 
-                        {{items.length<1000000?" / " + Math.ceil(items.length/resultsPerPage):''}}
-                        <a v-if="currentPage<items.length/resultsPerPage" @click="currentPage<items.length/resultsPerPage?currentPage++:''">&gt;</a>
+                    <div v-if="items.length > resultsPerPage && itemsType=='Item'" style="text-align: center">
+                        <a v-if="currentPage > 1" @click="goToPreviousPage()">&lt;</a>
+                        <input
+                            v-model.lazy="currentPage"
+                            @change="pageChanged($event)"
+                            type="text"
+                            style="margin-bottom: 15px ;width: 48px; text-align: center;">
+                        {{items.length < 1000000 ? " / " + Math.ceil(items.length/resultsPerPage) : ''}}
+                        <a v-if="currentPage < items.length/resultsPerPage" @click="goToNextPage()">&gt;</a>
                     </div>
                     <ul>
                         <li v-for="(item,index) in items" v-if="index < currentPage*resultsPerPage && index >= (currentPage-1)*resultsPerPage">
@@ -245,13 +246,14 @@ secondayFilterValues = Vue.component('secondary-filters', {
                     </ul>
                 </div>
                 <div v-if="items.length>resultsPerPage && itemsType=='Item'" style="text-align: center">
-                    <a v-if="currentPage>1" @click="currentPage>1?currentPage--:''">&lt;</a>
-                    <input 
-                        v-model.lazy="currentPage" 
-                        type="text" 
-                        style="margin-bottom: 15px;width: 48px;text-align: center"> 
-                    {{items.length<1000000?" / " + Math.ceil(items.length/resultsPerPage):''}}
-                    <a v-if="currentPage<items.length/resultsPerPage" @click="currentPage<items.length/resultsPerPage?currentPage++:''">&gt;</a>
+                    <a v-if="currentPage > 1" @click="goToPreviousPage()">&lt;</a>
+                    <input
+                        v-model.lazy="currentPage"
+                        @change="pageChanged($event)"
+                        type="text"
+                        style="margin-bottom: 15px; width: 48px; text-align: center;">
+                    {{items.length < 1000000 ? " / " + Math.ceil(items.length/resultsPerPage) : ''}}
+                    <a v-if="currentPage < items.length/resultsPerPage" @click="goToNextPage()">&gt;</a>
                 </div>
                 <div><a @click="exportCSV">Export as CSV</a></div>
             </div>
@@ -335,7 +337,29 @@ secondayFilterValues = Vue.component('secondary-filters', {
             document.body.appendChild(link);
             link.click();
             document.getElementsByTagName("body")[0].style.cursor = "default";
-        } 
+        },
+        pageChanged($event) {
+            this.currentPage = parseInt(this.currentPage);
+            if (!Number.isInteger(this.currentPage) || this.currentPage < 1) {
+                this.currentPage = 1;
+            }
+            var numPages = Math.ceil(this.items.length / resultsPerPage);
+            if (this.currentPage > numPages) {
+                this.currentPage = numPages;
+            }
+        },
+        goToNextPage() {
+            if (this.currentPage >= Math.ceil(this.items.length / resultsPerPage)) {
+                return;
+            }
+            this.currentPage++;
+        },
+        goToPreviousPage() {
+            if (this.currentPage <= 1) {
+                return;
+            }
+            this.currentPage--;
+        },
     },
     mounted() {
         // Find items both in this class and in any of its subclasses.
