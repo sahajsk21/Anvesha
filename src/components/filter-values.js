@@ -507,7 +507,7 @@ filtervalues = Vue.component('filter-values', {
             this.items = cachedFilterValues[queryString]['items'];
             this.itemsType = cachedFilterValues[queryString]['itemsType'];
             this.currentPage = cachedFilterValues[queryString]['currentPage'] ?? 1;
-            this.secondaryFilters = cachedFilterValues[queryString]['secondaryFilters'] ?? [];
+            this.secondaryFilters = cachedFilterValues[queryString]['secondaryFilters'] ?? {};
             this.secondaryFiltersCount = Object.keys(this.secondaryFilters).length;
             this.displayCount = 1;
             return;
