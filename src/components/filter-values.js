@@ -479,24 +479,18 @@ filtervalues = Vue.component('filter-values', {
             if (this.currentPage > numPages) {
                 this.currentPage = numPages;
             }
-            var queryString = window.location.search;
-            cachedFilterValues[queryString]['currentPage'] = this.currentPage;
         },
         goToNextPage() {
             if (this.currentPage >= Math.ceil(this.items.length / resultsPerPage)) {
                 return;
             }
             this.currentPage++;
-            var queryString = window.location.search;
-            cachedFilterValues[queryString]['currentPage'] = this.currentPage;
         },
         goToPreviousPage() {
             if (this.currentPage <= 1) {
                 return;
             }
             this.currentPage--;
-            var queryString = window.location.search;
-            cachedFilterValues[queryString]['currentPage'] = this.currentPage;
         },
     },
     mounted() {
