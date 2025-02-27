@@ -1011,7 +1011,10 @@ axios
                         value: v,
                         valueLabel: v,
                       });
-                      values += " wd:" + v;
+                      // Add prefix if it's an Item and not a String.
+                      if (v.match(/^Q\d+$/)) {
+                          values += " wd:" + v;
+                      }
                     }
                     filterSet.add(arr[2]);
                   } else {
@@ -1022,7 +1025,10 @@ axios
                         value: v,
                         valueLabel: v,
                       });
-                      values += " wd:" + v;
+                      // Add prefix if it's an Item and not a String.
+                      if (v.match(/^Q\d+$/)) {
+                          values += " wd:" + v;
+                      }
                     }
                   }
                 }
@@ -1320,6 +1326,12 @@ axios
                 " FILTER(NOT EXISTS { ?value wdt:" +
                 this.appliedFilters[i].filterValue +
                 " ?no. }).\n";
+            } else if (this.appliedFilters[i].value.match(/^Q\d+$/) == null) {
+              // String type
+              filterString +=
+                "?value wdt:" +
+                this.appliedFilters[i].filterValue +
+                " '" + this.appliedFilters[i].value + "'.\n";
             } else {
               filterString +=
                 "?value wdt:" +

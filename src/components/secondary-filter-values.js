@@ -771,7 +771,8 @@ secondayFilterValues = Vue.component('secondary-filters', {
                         })
                 }
                 else {
-                    // Item property type
+                    // Property type is hopefully "Item", AKA "WikibaseItem" ("String" is not
+                    // handled yet for secondary filters).
                     vm.itemsType = "ItemLoading";
                     // Set the URL parameters for href attribute, i.e., only for display purpose. 
                     var q = window.location.search;
