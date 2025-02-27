@@ -318,7 +318,7 @@ viewallitems = Vue.component('view-all-items', {
             "?value p:P2302 ?constraint_statement.\n" +
             "?constraint_statement ps:P2302 wd:Q21502410.\n" +
             "})\n" +
-            "FILTER (?property in (wikibase:Time, wikibase:Quantity, wikibase:WikibaseItem))  \n" +
+            "FILTER (?property in (wikibase:Time, wikibase:Quantity, wikibase:WikibaseItem, wikibase:String))  \n" +
             "SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + lang + "\". }\n" +
             "}\n" +
             "ORDER BY ?valueLabel";
