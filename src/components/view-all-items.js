@@ -43,7 +43,7 @@ viewallitems = Vue.component('view-all-items', {
                 <a class="classOptions" @click="changePage('filters')">{{ websiteText.addFilter||fallbackText.addFilter }}</a>
             </div>
             <div v-if="totalValues>0" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount, totalValues, true)"></div>
-            <div v-if="!totalValues || totalValues > resultsPerPage" style="text-align: center">
+            <div v-if="items.length > 0 && (!totalValues || totalValues > resultsPerPage)" style="text-align: center">
                 <a v-if="currentPage>1" @click="displayData('back')">&lt;</a>
                 <input 
                     v-model.lazy="currentPage" 
@@ -85,7 +85,7 @@ viewallitems = Vue.component('view-all-items', {
                         </ul>
                 </div>
             </div>
-            <div v-if="!totalValues || totalValues > resultsPerPage" style="text-align: center">
+            <div v-if="items.length && (!totalValues || totalValues > resultsPerPage)" style="text-align: center">
                 <a v-if="currentPage>1" @click="displayData('back')">&lt;</a>
                 <input 
                     v-model.lazy="currentPage" 
