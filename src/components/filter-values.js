@@ -95,7 +95,7 @@ filtervalues = Vue.component('filter-values', {
                 <p v-html="displayMessage(websiteText.filterError||fallbackText.filterError, currentFilter.valueLabel)"></p>
             </div>
             <div v-else>
-                <div v-if="itemsType=='Item'">
+                <div v-if="itemsType=='Item' || itemsType=='String'">
                     <p v-if="totalValues" v-html="displayPluralCount(websiteText.itemCount||fallbackText.itemCount, totalValues, true)"></p>
                     <a @click="changePage('view-all-items')">{{ viewItemsText() }}</a>
                     <p v-if="appliedFilters.findIndex(filter => filter.filterValue == currentFilter.value) != -1" v-html="displayMessage(websiteText.selectAdditionalValue||fallbackText.selectAdditionalValue, currentFilter.valueLabel)"></p>
@@ -121,7 +121,7 @@ filtervalues = Vue.component('filter-values', {
                             </a>
                         </div>
                     </div>
-                    <div v-if="items.length>resultsPerPage && itemsType=='Item'" style="text-align: center">
+                    <div v-if="items.length>resultsPerPage && (itemsType=='Item' || itemsType=='String')" style="text-align: center">
                         <a v-if="currentPage > 1" @click="goToPreviousPage()">&lt;</a>
                         <input
                             v-model.lazy="currentPage"
@@ -364,7 +364,7 @@ filtervalues = Vue.component('filter-values', {
                         </li>
                     </ul>
                 </div>
-                <div v-if="items.length>resultsPerPage && itemsType=='Item'" style="text-align: center">
+                <div v-if="items.length>resultsPerPage && (itemsType=='Item' || itemsType=='String')" style="text-align: center">
                     <a v-if="currentPage > 1" @click="goToPreviousPage()">&lt;</a>
                     <input
                         v-model.lazy="currentPage"
@@ -439,6 +439,9 @@ filtervalues = Vue.component('filter-values', {
             }
             else if (this.itemsType == 'Quantity' || this.itemsType == 'QuantityFail') {
                 var csvContent = this.items.map(e => `\"${e.bucketName}\" ` + e.unit + (this.displayCount == 1 ? "," + e.numValues : '')).join("\n");
+            }
+            else if (this.itemsType == 'String' || this.itemsType == 'StringFail') {
+                var csvContent = this.items.map(e => e.value.value + "," + `\"${e.valueLabel.value}\"` + (this.displayCount == 1 ? "," + e.count.value : '')).join("\n");
             }
             let downloadURI = csvHeader + encodeURIComponent(csvContent);
             var link = document.createElement("a");
@@ -573,6 +576,10 @@ filtervalues = Vue.component('filter-values', {
             }
             else if (this.appliedFilters[i].value == "novalue") {
                 noValueString += "{#filter " + i +"\nFILTER(NOT EXISTS { ?value wdt:" + this.appliedFilters[i].filterValue + " ?no. }).\n}"
+            }
+            else if (this.appliedFilters[i].value.match(/^Q\d+$/) == null) {
+                // "String" type
+                filterString += "{#filter " + i + "\n?item wdt:" + this.appliedFilters[i].filterValue + " '" + this.appliedFilters[i].value + "' .\n}";
             }
             else {
                 filterString += "{#filter " + i +"\n?item wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n}";
@@ -956,7 +963,10 @@ filtervalues = Vue.component('filter-values', {
                             })
                 }
                 else {
-                    vm.itemsType = "ItemLoading";
+                   // It's (hopefully) either "WikibaseItem" or "String".
+                   if ( propertyType == 'WikibaseItem' ) {
+                       vm.itemsType = "ItemLoading";
+                   }
                     // Item property type
                     // Set the URL parameters for href attribute, i.e., only for display purpose. 
                     var q = window.location.search;
@@ -997,10 +1007,10 @@ filtervalues = Vue.component('filter-values', {
                                 arr = arr.filter(x => (!x.valueLabel.value.includes(".well-known") &&
                                         !index.includes(x.value.value.split('/').slice(-1)[0])));
                                 if (arr.length > 0) {
-                                    vm.itemsType = "Item"
+                                    vm.itemsType = (propertyType == 'WikibaseItem') ? "Item" : "String";
                                     vm.items = arr;
                                     vm.displayCount = 1;
-                                    cachedFilterValues[queryString] = {items: vm.items, itemsType: "Item", secondaryFilters: vm.secondaryFilters};
+                                    cachedFilterValues[queryString] = {items: vm.items, itemsType: vm.itemsType, secondaryFilters: vm.secondaryFilters};
                                 }
                                 else {
                                     vm.itemsType = "Additionalempty"
@@ -1018,8 +1028,12 @@ filtervalues = Vue.component('filter-values', {
                                             existingValues = existingValues + vm.appliedFilters[i].value + "-";
                                         }
                                     }
-                                    parameters.set("f." + vm.currentFilter.value, existingValues + arr[i].value.value.split('/').slice(-1)[0])
-                                    arr[i]['href'] = window.location.pathname + "?" + parameters
+                                    var filterValue =  arr[i].value.value;
+                                    if ( propertyType == 'WikibaseItem' ) {
+                                        filterValue = filterValue.split('/').slice(-1)[0];
+                                    }
+                                    parameters.set("f." + vm.currentFilter.value, existingValues + filterValue);
+                                    arr[i]['href'] = window.location.pathname + "?" + parameters;
                                 }
                             }
                             else {
@@ -1071,10 +1085,14 @@ filtervalues = Vue.component('filter-values', {
                                     // Set the href parameter of each value.
                                     for (var i = 0; i < arr.length; i++) {
                                         var q = window.location.search;
-                                        parameters = new URLSearchParams(q)
-                                        parameters.delete("cf")
-                                        parameters.delete("sf")
-                                        parameters.set("f." + vm.currentFilter.value, arr[i].value.value.split('/').slice(-1)[0])
+                                        parameters = new URLSearchParams(q);
+                                        parameters.delete("cf");
+                                        parameters.delete("sf");
+                                        var filterValue =  arr[i].value.value;
+                                        if ( propertyType == 'WikibaseItem' ) {
+                                            filterValue = filterValue.split('/').slice(-1)[0];
+                                        }
+                                        parameters.set("f." + vm.currentFilter.value, filterValue);
                                         arr[i]['href'] = window.location.pathname + "?" + parameters
                                     }
                                     vm.items = arr
