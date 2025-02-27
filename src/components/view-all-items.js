@@ -367,6 +367,10 @@ viewallitems = Vue.component('view-all-items', {
             else if (this.appliedFilters[i].value == "novalue") {
                 noValueString += "{#filter " + i + "\n FILTER(NOT EXISTS { ?value wdt:" + this.appliedFilters[i].filterValue + " ?no. }).\n}"
             }
+            else if (this.appliedFilters[i].value.match(/^Q\d+$/) == null) {
+                // String type
+                filterString += "{#filter " + i + "\n?value wdt:" + this.appliedFilters[i].filterValue + " '" + this.appliedFilters[i].value + "' .\n}";
+            }
             else {
                 filterString += "{#filter " + i + "\n?value wdt:" + this.appliedFilters[i].filterValue + " wd:" + this.appliedFilters[i].value + ".\n}";
             }
