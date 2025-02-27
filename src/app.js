@@ -1326,6 +1326,12 @@ axios
                 " FILTER(NOT EXISTS { ?value wdt:" +
                 this.appliedFilters[i].filterValue +
                 " ?no. }).\n";
+            } else if (this.appliedFilters[i].value.match(/^Q\d+$/) == null) {
+              // String type
+              filterString +=
+                "?value wdt:" +
+                this.appliedFilters[i].filterValue +
+                " '" + this.appliedFilters[i].value + "'.\n";
             } else {
               filterString +=
                 "?value wdt:" +
