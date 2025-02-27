@@ -1011,7 +1011,10 @@ axios
                         value: v,
                         valueLabel: v,
                       });
-                      values += " wd:" + v;
+                      // Add prefix if it's an Item and not a String.
+                      if (v.match(/^Q\d+$/)) {
+                          values += " wd:" + v;
+                      }
                     }
                     filterSet.add(arr[2]);
                   } else {
@@ -1022,7 +1025,10 @@ axios
                         value: v,
                         valueLabel: v,
                       });
-                      values += " wd:" + v;
+                      // Add prefix if it's an Item and not a String.
+                      if (v.match(/^Q\d+$/)) {
+                          values += " wd:" + v;
+                      }
                     }
                   }
                 }
