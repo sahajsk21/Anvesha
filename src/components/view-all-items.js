@@ -214,8 +214,8 @@ viewallitems = Vue.component('view-all-items', {
             for ( i = 0; i < this.items.length; i++ ) {
                 var fileName = decodeURIComponent( this.items[i].file.value.substring(51) ); // Remove URL stuff
                 var fileSuffix = fileName.substring(fileName.length - 4).toLowerCase();
-                var isImage = [ '.gif', '.jpg', 'jpeg', '.png' ].includes( fileSuffix );
-                var isVideo = [ '.mpg', '.ogv',  'webm', 'webp' ].includes( fileSuffix );
+                var isImage = [ '.gif', '.jpg', 'jpeg', '.png', 'webp' ].includes( fileSuffix );
+                var isVideo = [ '.mpg', '.ogv',  'webm' ].includes( fileSuffix );
                 var notImageButHasThumbnail = isVideo || [ 'djvu', '.pdf', '.stl', '.svg', '.tif', 'tiff' ].includes( fileSuffix );
                 var isAudio = [ 'flac', '.mid', '.mp3', '.oga', '.ogg', 'opus', '.wav' ].includes( fileSuffix );
                 if ( isImage || notImageButHasThumbnail ) {
