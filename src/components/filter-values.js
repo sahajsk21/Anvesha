@@ -655,7 +655,8 @@ filtervalues = Vue.component('filter-values', {
         var vm = this;
         axios.get(fullUrl)
             .then((response) => {
-                if (response.data['results']['bindings'][0].property.value.split("#")[1] == "Time") {
+                var propertyType = response.data['results']['bindings'][0].property.value.split("#")[1];
+                if (propertyType == "Time") {
                     // Time property type
                     // Set the URL parameters for href attribute, i.e., only for display purpose. 
                     var q = window.location.search;
@@ -757,7 +758,7 @@ filtervalues = Vue.component('filter-values', {
                                 })
                         })
                 }
-                else if (response.data['results']['bindings'][0].property.value.split("#")[1] == "Quantity") {
+                else if (propertyType == "Quantity") {
                     // Quantity property type
                     // Set the URL parameters for href attribute, i.e., only for display purpose. 
                     var q = window.location.search;
